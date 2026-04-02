@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Provider Report — Last Month</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922;
+  }
+  * { margin:0; padding:0; box-sizing:border-box }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; padding:2rem }
+  header { margin-bottom:2rem }
+  h1 { font-size:1.5rem; font-weight:700; color:var(--accent) }
+  .meta { color:var(--muted); font-size:.875rem; margin-top:.35rem }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:auto }
+  table { width:100%; border-collapse:collapse; font-size:.875rem }
+  thead th {
+    background:#1c2128; color:var(--muted); font-weight:600;
+    text-align:left; padding:.75rem 1rem; white-space:nowrap;
+    border-bottom:1px solid var(--border); position:sticky; top:0;
+  }
+  tbody tr:hover { background:rgba(88,166,255,.04) }
+  td { padding:.65rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle }
+  tbody tr:last-child td { border-bottom:none }
+  .mono { font-family:'SF Mono',monospace; font-size:.8rem; color:var(--muted) }
+  .num { text-align:right; font-variant-numeric:tabular-nums }
+  .badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:600 }
+  .badge-active   { background:rgba(63,185,80,.15);  color:var(--green) }
+  .badge-inactive { background:rgba(248,81,73,.15);  color:var(--red) }
+  .badge-other    { background:rgba(210,153,34,.15); color:var(--yellow) }
+  .badge-unknown  { background:#21262d; color:var(--muted) }
+  .legend { display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:1.25rem; font-size:.8rem; color:var(--muted) }
+  .legend span { display:flex; align-items:center; gap:.4rem }
+  .dot { width:8px;height:8px;border-radius:50% }
+  .dot-green { background:var(--green) } .dot-red { background:var(--red) }
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Provider Report — Last Month</h1>
+  <div class="meta">Generated: 2026-04-02 12:50 UTC &nbsp;·&nbsp; 18 providers</div>
+</header>
+
+<div class="legend">
+  <span><div class="dot dot-green"></div> Provider Status = active in Bolt platform</span>
+  <span><div class="dot dot-green"></div> Availability Status = active in targeting</span>
+  <span><div class="dot dot-red"></div> inactive / deactivated</span>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Provider Name</th>
+        <th>City</th>
+        <th>Country</th>
+        <th>Segment</th>
+        <th>Platform Status</th>
+        <th>Availability</th>
+        <th>Orders (last month)</th>
+        <th>GMV (last month)</th>
+        <th>Churn Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td class="mono">36453</td>
+          <td><strong>Sushi Family Науки</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">18</td>
+          <td class="num">252 €</td>
+          <td class="num">1%</td>
+        </tr>
+        <tr>
+          <td class="mono">36454</td>
+          <td><strong>Sushi Family Робоча 162К</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">20</td>
+          <td class="num">523 €</td>
+          <td class="num">0%</td>
+        </tr>
+        <tr>
+          <td class="mono">36455</td>
+          <td><strong>Sushi Family Робоча 67к</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">27</td>
+          <td class="num">507 €</td>
+          <td class="num">2%</td>
+        </tr>
+        <tr>
+          <td class="mono">36456</td>
+          <td><strong>Sushi Family Титова</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">35</td>
+          <td class="num">554 €</td>
+          <td class="num">1%</td>
+        </tr>
+        <tr>
+          <td class="mono">36457</td>
+          <td><strong>Sushi Family Калнишевського</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">33</td>
+          <td class="num">554 €</td>
+          <td class="num">1%</td>
+        </tr>
+        <tr>
+          <td class="mono">36503</td>
+          <td><strong>Sushi Family Малиновського</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">2</td>
+          <td class="num">41 €</td>
+          <td class="num">24%</td>
+        </tr>
+        <tr>
+          <td class="mono">36504</td>
+          <td><strong>Sushi Family Міхновського</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">9</td>
+          <td class="num">231 €</td>
+          <td class="num">0%</td>
+        </tr>
+        <tr>
+          <td class="mono">36505</td>
+          <td><strong>Sushi Family Панікахи</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">24</td>
+          <td class="num">373 €</td>
+          <td class="num">0%</td>
+        </tr>
+        <tr>
+          <td class="mono">36571</td>
+          <td><strong>Sushi Family Калинова 14</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-other">deleted</span></td>
+          <td><span class="badge badge-other">nan</span></td>
+          <td class="num">8</td>
+          <td class="num">104 €</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td class="mono">36572</td>
+          <td><strong>Sushi Family Луговська</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">23</td>
+          <td class="num">443 €</td>
+          <td class="num">1%</td>
+        </tr>
+        <tr>
+          <td class="mono">36573</td>
+          <td><strong>Sushi Family Лисиченко</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-other">deleted</span></td>
+          <td><span class="badge badge-other">nan</span></td>
+          <td class="num">0</td>
+          <td class="num">0 €</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td class="mono">36576</td>
+          <td><strong>Sushi Family просп. Героїв</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">20</td>
+          <td class="num">414 €</td>
+          <td class="num">0%</td>
+        </tr>
+        <tr>
+          <td class="mono">46296</td>
+          <td><strong>Sushi Family Метробудівська</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">18</td>
+          <td class="num">264 €</td>
+          <td class="num">5%</td>
+        </tr>
+        <tr>
+          <td class="mono">46297</td>
+          <td><strong>Sushi Family б-р Слави</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">7</td>
+          <td class="num">96 €</td>
+          <td class="num">5%</td>
+        </tr>
+        <tr>
+          <td class="mono">52802</td>
+          <td><strong>Sushi Family Донецьке шосе</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">13</td>
+          <td class="num">250 €</td>
+          <td class="num">0%</td>
+        </tr>
+        <tr>
+          <td class="mono">56367</td>
+          <td><strong>Sushi Family пров. Вільний</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">7</td>
+          <td class="num">146 €</td>
+          <td class="num">14%</td>
+        </tr>
+        <tr>
+          <td class="mono">70994</td>
+          <td><strong>Sushi Family Кам’янська</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Key Account (Segment)</td>
+          <td><span class="badge badge-other">deleted</span></td>
+          <td><span class="badge badge-other">nan</span></td>
+          <td class="num">0</td>
+          <td class="num">0 €</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td class="mono">194542</td>
+          <td><strong>Sushi Family вул. Широка</strong></td>
+          <td>Dnipro</td>
+          <td>UA</td>
+          <td>Missing Segment Trait</td>
+          <td><span class="badge badge-active">active</span></td>
+          <td><span class="badge badge-active">active</span></td>
+          <td class="num">1</td>
+          <td class="num">8 €</td>
+          <td class="num">42%</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
