@@ -209,6 +209,33 @@ body.dark .sub-item:hover{background:#252535}
 /* ── Easter layer ───────────────────────────────────────────────── */
 .act-btn.easter-on{background:#fff3e0;color:#e65100}
 .act-btn.easter-off{color:#999}
+
+/* ── Engagement panels ──────────────────────────────────────────── */
+.act-btn.eng-btn{background:#fff;color:#7b2d8b}
+body.dark .act-btn.eng-btn{background:#1e1a2e;color:#c97fe0}
+.act-btn.kyiv-btn{background:#fff;color:#1a5276}
+body.dark .act-btn.kyiv-btn{background:#1a2233;color:#7fc0f0}
+
+.eng-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+.eng-table th{background:#7b2d8b;color:#fff;padding:4px 6px;text-align:left;font-weight:700;position:sticky;top:0}
+.eng-table td{padding:3px 6px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.eng-table tr:nth-child(even) td{background:#fdf5ff}
+body.dark .eng-table th{background:#5b1f6e}
+body.dark .eng-table td{border-color:#2a2a3a}
+body.dark .eng-table tr:nth-child(even) td{background:#1e1a2e}
+.eng-bar-wrap{width:70px;background:#eee;border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:4px}
+.eng-bar{height:8px;background:linear-gradient(90deg,#7b2d8b,#c97fe0);border-radius:3px;transition:width .3s}
+body.dark .eng-bar-wrap{background:#333}
+.kyiv-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+.kyiv-table th{background:#1a5276;color:#fff;padding:4px 6px;text-align:left;font-weight:700;position:sticky;top:0}
+.kyiv-table td{padding:3px 6px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.kyiv-table tr:nth-child(even) td{background:#eaf4fc}
+body.dark .kyiv-table th{background:#1a3a5c}
+body.dark .kyiv-table td{border-color:#2a2a3a}
+body.dark .kyiv-table tr:nth-child(even) td{background:#1a2233}
+.kyiv-bar{height:8px;background:linear-gradient(90deg,#1a5276,#5dade2);border-radius:3px;transition:width .3s}
+
+#data-freshness{font-size:10px;text-align:right;padding:2px 6px;color:#888;line-height:1.4;word-break:break-word;max-width:240px}
 </style>
 </head>
 <body>
@@ -241,8 +268,7 @@ body.dark .sub-item:hover{background:#252535}
     <div class="leg-row"><div class="leg-sw" style="background:rgba(41,182,246,.38);border:2px solid #0288d1"></div><span>Зона з партнерами</span></div>
     <div class="leg-row"><div class="leg-sw" style="background:rgba(239,83,80,.42);border:2px solid #c62828"></div><span>Зона без покриття</span></div>
     <div class="leg-row"><div class="leg-sw circle" style="background:rgba(102,187,106,.22);border:2px solid #43a047"></div><span>Радіус доставки</span></div>
-    <div class="leg-row"><div class="leg-sw circle" style="background:#1565c0;border:2px solid #0d47a1"></div><span>Локація партнера</span></div>
-    <div class="leg-row"><div class="leg-sw circle" style="background:#e65100;border:2px solid #bf360c"></div><span>🐣 Easter 2026 (ua-easter-2026)</span></div>
+    <div class="leg-row"><div class="leg-sw circle" style="background:#e65100;border:2px solid #bf360c"></div><span>🐣 Партнер Easter 2026</span></div>
     <div id="stats"></div>
   </div>
 
@@ -280,17 +306,35 @@ body.dark .sub-item:hover{background:#252535}
     <button class="act-btn update-btn" id="refresh-btn" onclick="refreshData()">
       🔄 Оновити дані
     </button>
-    <div id="refresh-status" style="font-size:11px;color:#888;text-align:right;padding:2px 4px;display:none"></div>
   </div>
 
-  <!-- Easter partners toggle -->
+  <!-- Engagement by city -->
   <div style="width:100%">
-    <button class="act-btn" id="easter-btn" onclick="toggleEaster()"
-      style="background:#fff;color:#e65100">
-      🐣 Партнери Easter 2026: <b>Вкл</b>
+    <button class="act-btn eng-btn" onclick="togglePanel('eng-panel')">
+      📊 Залученість по містам&nbsp;(<span id="eng-cities-cnt">…</span>)
     </button>
-    <div style="font-size:10px;color:#888;text-align:right;padding:2px 4px" id="easter-count-label"></div>
+    <div class="sub-panel" id="eng-panel" style="max-height:320px">
+      <div class="sub-panel-title">% залученості по містам</div>
+      <div id="eng-panel-content"><div style="padding:8px;color:#888;font-size:12px">Завантаження…</div></div>
+    </div>
   </div>
+
+  <!-- Kyiv zone breakdown -->
+  <div style="width:100%">
+    <button class="act-btn kyiv-btn" onclick="togglePanel('kyiv-panel')">
+      🏙 Київ — залученість по зонам
+    </button>
+    <div class="sub-panel" id="kyiv-panel" style="max-height:320px">
+      <div class="sub-panel-title">Київ: % залученості по зонам</div>
+      <div id="kyiv-panel-content"><div style="padding:8px;color:#888;font-size:12px">Завантаження…</div></div>
+    </div>
+  </div>
+
+  <!-- Data freshness / status -->
+  <div id="data-freshness"></div>
+
+  <!-- Easter count label -->
+  <div style="font-size:11px;color:#e65100;text-align:right;padding:2px 6px;font-weight:600" id="easter-count-label"></div>
 
 </div>
 
@@ -1936,16 +1980,8 @@ const palette=['#1565c0','#6a1b9a','#00695c','#bf360c','#4e342e','#0d47a1','#558
 let ci=0;
 function getBrandColor(b){if(!brandColors[b]){brandColors[b]=palette[ci++%palette.length];}return brandColors[b];}
 
-function drawPartners(){
-  partners.forEach(p=>{
-    const color=getBrandColor(p.name);
-    L.circle([p.lat,p.lng],{radius:p.r*1000,color,weight:1,fillColor:color,fillOpacity:0.07,dashArray:'4,4'}).addTo(radiusLayer);
-    const marker=L.circleMarker([p.lat,p.lng],{radius:7,fillColor:color,color:'#fff',weight:2,fillOpacity:0.95});
-    marker.bindPopup(`<div class="pop-wrap"><div class="pop-title">🏪 ${p.name}</div><div class="pop-row"><b>Місто:</b> ${p.city}</div><div class="pop-row"><b>Зона:</b> ${p.zone}</div><div class="pop-row"><b>Радіус:</b> ${p.r} км</div></div>`,{maxWidth:260});
-    marker.bindTooltip(p.name,{direction:'top',offset:[0,-8]});
-    marker.addTo(partnerLayer);
-  });
-}
+// Regular partners are hidden; Easter layer is the active partner layer.
+function drawPartners(){ /* intentionally empty — Easter layer is used instead */ }
 drawPartners();
 
 // ═══════════════════════════════════════════════════════
@@ -2002,7 +2038,7 @@ function toggleEaster(){
 }
 
 document.getElementById('easter-count-label').textContent=
-  `${easterPartners.length} партнерів | Дані: 2026-04-02`;
+  `${easterPartners.length} партнерів | завантаження…`;
 
 // ═══════════════════════════════════════════════════════
 //  STATS
@@ -2012,7 +2048,7 @@ function updateStats(){
   const uncovZ=zoneData.length-covZ;
   const uncovC=Object.values(cityData).filter(c=>c.allUncovered).length;
   document.getElementById('stats').innerHTML=
-    `🔵 Зон з покриттям: <b>${covZ}</b><br>🔴 Зон без покриття: <b>${uncovZ}</b><br>🏙 Міст без покриття: <b>${uncovC}</b><br>📌 Партнерів: <b>${partners.length}</b><br>🐣 Easter 2026: <b>${easterPartners.length}</b>`;
+    `🔵 Зон з покриттям: <b>${covZ}</b><br>🔴 Зон без покриття: <b>${uncovZ}</b><br>🏙 Міст без покриття: <b>${uncovC}</b><br>🐣 Easter 2026: <b>${easterPartners.length}</b>`;
   document.getElementById('uc-zones-cnt').textContent=uncovZ;
   document.getElementById('uc-cities-cnt').textContent=uncovC;
 }
@@ -2165,11 +2201,11 @@ function toggleRadius(){
   radiusVisible=!radiusVisible;
   const btn=document.getElementById('radius-btn');
   if(radiusVisible){
-    map.addLayer(radiusLayer);
+    map.addLayer(easterRadiusLayer);
     btn.innerHTML='👁 Радіуси доставки: <b>Вкл</b>';
     btn.classList.remove('radius-off');
   }else{
-    map.removeLayer(radiusLayer);
+    map.removeLayer(easterRadiusLayer);
     btn.innerHTML='🚫 Радіуси доставки: <b>Вимк</b>';
     btn.classList.add('radius-off');
   }
@@ -2205,34 +2241,9 @@ function toggleTheme(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  REFRESH DATA
+//  LIVE DATA FROM GITHUB
 // ═══════════════════════════════════════════════════════
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTEbcEMNJcF5H0tzqo4ZCQCzH_eYFKIzkvJhIAp0H_v6F2U2QzoYLk_1hlerVusfo98Z8MBJ3cryGtD/pub?gid=0&single=true&output=csv';
-
-function parseCSV(text){
-  const rows=[];
-  const lines=text.split(/\r?\n/);
-  for(const line of lines){
-    if(!line.trim())continue;
-    const row=[];
-    let cur='',inQ=false;
-    for(let i=0;i<line.length;i++){
-      const ch=line[i];
-      if(inQ){
-        if(ch==='"'&&line[i+1]==='"'){cur+='"';i++;}
-        else if(ch==='"'){inQ=false;}
-        else cur+=ch;
-      }else{
-        if(ch==='"'){inQ=true;}
-        else if(ch===','){row.push(cur);cur='';}
-        else cur+=ch;
-      }
-    }
-    row.push(cur);
-    rows.push(row);
-  }
-  return rows;
-}
+const DATA_JSON_URL = 'https://raw.githubusercontent.com/marharytazhytnyk-create/partner-reports/main/data.json';
 
 function updateCoverage(){
   Object.values(cityData).forEach(c=>{c.anyCovered=false;});
@@ -2255,99 +2266,138 @@ function updateCoverage(){
   Object.values(cityData).forEach(c=>{c.allUncovered=!c.anyCovered;});
 }
 
-async function refreshData(){
-  const btn=document.getElementById('refresh-btn');
-  btn.innerHTML='⏳ Оновлення...';
-  btn.disabled=true;
-  try{
-    const resp=await fetch(CSV_URL);
-    if(!resp.ok)throw new Error('HTTP '+resp.status);
-    const text=await resp.text();
-    const rows=parseCSV(text);
-    if(rows.length<2)throw new Error('Порожні дані');
+/* Render engagement % table for all cities */
+function renderCityEngagement(cityStats){
+  const el=document.getElementById('eng-panel-content');
+  if(!el)return;
+  const cntEl=document.getElementById('eng-cities-cnt');
+  const withEaster=cityStats.filter(r=>r.easter>0);
+  if(cntEl)cntEl.textContent=withEaster.length;
+  if(!cityStats.length){el.innerHTML='<div style="padding:8px;color:#888;font-size:12px">Немає даних</div>';return;}
+  const maxPct=Math.max(...cityStats.map(r=>r.pct),1);
+  let html='<table class="eng-table"><thead><tr><th>Місто</th><th>Всього</th><th>Easter</th><th>%</th></tr></thead><tbody>';
+  cityStats.forEach(r=>{
+    const bar=Math.round(r.pct/maxPct*70);
+    html+=`<tr>
+      <td style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.city}">${r.city}</td>
+      <td style="text-align:right">${r.total.toLocaleString()}</td>
+      <td style="text-align:right">${r.easter}</td>
+      <td><span style="font-weight:700">${r.pct}%</span>
+        <div class="eng-bar-wrap"><div class="eng-bar" style="width:${bar}px"></div></div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
 
-    const hdrs=rows[0].map(h=>h.trim().toLowerCase());
-    const col=name=>hdrs.findIndex(h=>h===name);
-    const nameIdx=col('brand name');
-    const cityIdx=col('city');
-    const zoneIdx=col('zone name');
-    const latIdx=col('provider lat');
-    const lngIdx=col('provider lng');
-    const radIdx=col('delivery radius in km');
-    const custRadIdx=col('custom delivery radius in km');
+/* Render Kyiv zone engagement table */
+function renderKyivZones(kyivZones){
+  const el=document.getElementById('kyiv-panel-content');
+  if(!el)return;
+  if(!kyivZones||!kyivZones.length){el.innerHTML='<div style="padding:8px;color:#888;font-size:12px">Немає даних по зонам Києва</div>';return;}
+  const maxPct=Math.max(...kyivZones.map(r=>r.pct),1);
+  let html='<table class="kyiv-table"><thead><tr><th>Зона</th><th>Всього</th><th>Easter</th><th>%</th></tr></thead><tbody>';
+  kyivZones.forEach(r=>{
+    const zoneName=r.zone||'—';
+    const bar=Math.round(r.pct/maxPct*70);
+    html+=`<tr>
+      <td style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${zoneName}">${zoneName}</td>
+      <td style="text-align:right">${r.total.toLocaleString()}</td>
+      <td style="text-align:right">${r.easter}</td>
+      <td><span style="font-weight:700">${r.pct}%</span>
+        <div class="eng-bar-wrap"><div class="kyiv-bar" style="width:${bar}px"></div></div>
+      </td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
 
-    if(nameIdx<0||latIdx<0||lngIdx<0)throw new Error('Неправильний формат CSV');
+/* Apply fetched data to map + panels */
+function applyLiveData(data){
+  // Update Easter partner markers
+  if(data.easter_partners&&data.easter_partners.length){
+    easterPartners.length=0;
+    data.easter_partners.forEach(p=>{
+      easterPartners.push({id:p[0],name:p[1],lat:p[2],lng:p[3],r:p[4],city:p[5]});
+    });
+    easterMarkerLayer.clearLayers();
+    easterRadiusLayer.clearLayers();
+    drawEasterPartners();
+    if(!radiusVisible) map.removeLayer(easterRadiusLayer);
+    if(!easterVisible){map.removeLayer(easterMarkerLayer);map.removeLayer(easterRadiusLayer);}
+  }
 
-    partners=rows.slice(1).map(r=>({
-      name:(r[nameIdx]||'').trim(),
-      city:(r[cityIdx]||'').trim(),
-      zone:(r[zoneIdx]||'').trim(),
-      lat:parseFloat(r[latIdx]),
-      lng:parseFloat(r[lngIdx]),
-      r:parseFloat((custRadIdx>=0&&r[custRadIdx]&&r[custRadIdx].trim())?r[custRadIdx]:r[radIdx])||9
-    })).filter(p=>p.name&&!isNaN(p.lat)&&!isNaN(p.lng));
+  // Update engagement panels
+  if(data.city_stats) renderCityEngagement(data.city_stats);
+  if(data.kyiv_zones) renderKyivZones(data.kyiv_zones);
 
-    // Reset brand color assignments
-    Object.keys(brandColors).forEach(k=>delete brandColors[k]);
-    ci=0;
+  // Update stats
+  updateStats();
+  const easterEl=document.getElementById('easter-count-label');
+  if(easterEl) easterEl.textContent=easterPartners.length+' партнерів | Дані: '+(data.date||'—');
 
-    // Redraw partner markers and radii
-    radiusLayer.clearLayers();
-    partnerLayer.clearLayers();
-    drawPartners();
-
-    // Recalculate zone coverage
-    updateCoverage();
-
-    // Rebuild UI
-    buildSidebar();
-    buildUncoveredPanels();
-    updateStats();
-
-    btn.innerHTML='✅ Оновлено!';
-    setTimeout(()=>{btn.innerHTML='🔄 Оновити дані';btn.disabled=false;},2500);
-  }catch(e){
-    console.error('refreshData:',e);
-    btn.innerHTML='❌ Помилка';
-    setTimeout(()=>{btn.innerHTML='🔄 Оновити дані';btn.disabled=false;},3000);
+  // Freshness
+  const fresh=document.getElementById('data-freshness');
+  if(fresh){
+    const total=data.total_providers?data.total_providers.toLocaleString():'—';
+    const eng=data.total_providers?((data.total_easter/data.total_providers)*100).toFixed(1)+'%':'—';
+    fresh.innerHTML=`<span style="color:#27ae60">✓ Оновлено: ${data.date||'—'}</span><br>Всього: ${total} | Easter: ${(data.total_easter||0).toLocaleString()} (${eng})`;
   }
 }
 
+function refreshData(){
+  const btn=document.getElementById('refresh-btn');
+  function setBtn(html,disabled){if(btn){btn.innerHTML=html;btn.disabled=!!disabled;}}
+
+  setBtn('⏳ Завантаження...', true);
+
+  fetch(DATA_JSON_URL+'?t='+Date.now())
+    .then(r=>{
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(data=>{
+      applyLiveData(data);
+      setBtn('✅ Оновлено!', false);
+      setTimeout(()=>setBtn('🔄 Оновити дані', false), 2500);
+    })
+    .catch(err=>{
+      console.warn('Live data fetch failed:', err);
+      // Fallback: redraw from embedded static data
+      easterMarkerLayer.clearLayers();
+      easterRadiusLayer.clearLayers();
+      drawEasterPartners();
+      if(!radiusVisible) map.removeLayer(easterRadiusLayer);
+      updateStats();
+      setBtn('⚠ Помилка (статичні дані)', false);
+      const fresh=document.getElementById('data-freshness');
+      if(fresh) fresh.innerHTML='<span style="color:#e74c3c">⚠ Не вдалося завантажити з GitHub</span>';
+      setTimeout(()=>setBtn('🔄 Оновити дані', false), 3000);
+    });
+}
+
 // ═══════════════════════════════════════════════════════
-//  AUTO DAILY REFRESH
+//  AUTO-LOAD LIVE DATA ON PAGE OPEN
 // ═══════════════════════════════════════════════════════
-(function(){
-  const TODAY = new Date().toISOString().slice(0,10);
-  const lastRefresh = localStorage.getItem('mapLastRefreshDate');
-  
-  function showRefreshStatus(msg){
-    const el=document.getElementById('refresh-status');
-    if(el){el.textContent=msg;el.style.display='block';}
-  }
-  
-  if(lastRefresh !== TODAY){
-    // Auto-refresh once per day
-    setTimeout(async ()=>{
-      try{
-        await refreshData();
-        localStorage.setItem('mapLastRefreshDate', TODAY);
-        showRefreshStatus(`✅ Автооновлено ${TODAY}`);
-      }catch(e){
-        showRefreshStatus(`⚠ Автооновлення не вдалося`);
-      }
-    }, 1500);
-  } else {
-    showRefreshStatus(`📅 Оновлено сьогодні (${TODAY})`);
-  }
-  
-  // Override refreshData to save date after manual refresh
-  const _origRefresh = refreshData;
-  window.refreshData = async function(){
-    await _origRefresh();
-    const now = new Date().toISOString().slice(0,10);
-    localStorage.setItem('mapLastRefreshDate', now);
-    showRefreshStatus(`✅ Оновлено ${now}`);
-  };
+(function loadOnStart(){
+  // Show initial static-data stats while we load
+  const fresh=document.getElementById('data-freshness');
+  if(fresh) fresh.innerHTML='<span style="color:#888">⏳ Завантаження даних…</span>';
+
+  fetch(DATA_JSON_URL+'?t='+Date.now())
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data=>{ applyLiveData(data); })
+    .catch(()=>{
+      // Use embedded static data as fallback
+      renderCityEngagement([]);
+      renderKyivZones([]);
+      const fresh2=document.getElementById('data-freshness');
+      if(fresh2) fresh2.innerHTML='<span style="color:#888">Статичні дані (без мережі)</span>';
+      const easterEl=document.getElementById('easter-count-label');
+      if(easterEl) easterEl.textContent=easterPartners.length+' партнерів | Дані: 2026-04-03';
+    });
 })();
 </script>
 </body>
