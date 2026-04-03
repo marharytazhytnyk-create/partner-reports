@@ -2,8 +2,8 @@ name: Update Partner Reports
 
 on:
   schedule:
-    - cron: '0 13 * * 1'
-  workflow_dispatch:
+    - cron: '0 10 * * *'   # 13:00 EEST (UTC+3) every day
+  workflow_dispatch:         # manual trigger
 
 permissions:
   contents: write
@@ -15,18 +15,32 @@ jobs:
       - uses: actions/checkout@v4
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
       - uses: actions/setup-python@v5
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           python-version: '3.12'
+
       - name: Install dependencies
-        run: pip install -r scripts/requirements.txt
+        run: |
+          pip install -r scripts/requirements.txt
+          pip install requests pandas openpyxl
+
+      - name: Generate Easter partner report
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python generate_report.py
+        working-directory: ${{ github.workspace }}
+
       - name: Generate provider report
         env:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: python scripts/generate_provider_report.py
-      - name: Commit and push
+
+      - name: Commit and push reports
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
