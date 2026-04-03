@@ -448,6 +448,91 @@ def build_report(df_all: pd.DataFrame, df_easter: pd.DataFrame, output_path: str
     return output_path
 
 
+# ─── JSON EXPORT FOR MAP ────────────────────────────────────────────────────────
+
+def build_data_json(df_all: pd.DataFrame, df_easter: pd.DataFrame, output_path: str):
+    """Export data.json consumed by the interactive map for live refresh."""
+
+    # Easter partners list for map markers
+    ep_cols = ["provider_id", "brand_name", "latitude", "longitude", "delivery_radius_km", "city"]
+    ep_cols_present = [c for c in ep_cols if c in df_easter.columns]
+    easter_list = []
+    for row in df_easter[ep_cols_present].itertuples(index=False):
+        r = row._asdict()
+        try:
+            lat = float(r.get("latitude", 0) or 0)
+            lng = float(r.get("longitude", 0) or 0)
+            radius = float(r.get("delivery_radius_km", 3) or 3)
+            pid = int(r.get("provider_id", 0) or 0)
+            name = str(r.get("brand_name", "") or "")
+            city = str(r.get("city", "") or "")
+            if lat and lng:
+                easter_list.append([pid, name, round(lat, 6), round(lng, 6), radius, city])
+        except Exception:
+            pass
+
+    # Engagement by city
+    easter_ids = set(df_easter["provider_id"].dropna().astype(int).tolist())
+    city_stats_list = []
+    kyiv_zone_stats_list = []
+
+    if not df_all.empty:
+        df_tmp = df_all.copy()
+        df_tmp["is_easter"] = df_tmp["provider_id"].astype(float).astype("Int64").isin(easter_ids)
+        cs = (
+            df_tmp.groupby("city")
+            .agg(total=("provider_id", "count"), easter=("is_easter", "sum"))
+            .reset_index()
+        )
+        cs["pct"] = (cs["easter"] / cs["total"] * 100).round(1)
+        cs = cs.sort_values("easter", ascending=False)
+        for row in cs.itertuples(index=False):
+            city_stats_list.append({
+                "city": str(row.city),
+                "total": int(row.total),
+                "easter": int(row.easter),
+                "pct": float(row.pct),
+            })
+
+        # Kyiv zone breakdown
+        kyiv_mask = df_tmp["city"].str.lower().str.contains("kyiv|kiev|київ", na=False)
+        kyiv_df = df_tmp[kyiv_mask]
+        if not kyiv_df.empty and "zone" in kyiv_df.columns:
+            zs = (
+                kyiv_df.groupby("zone")
+                .agg(total=("provider_id", "count"), easter=("is_easter", "sum"))
+                .reset_index()
+            )
+            zs["pct"] = (zs["easter"] / zs["total"] * 100).round(1)
+            zs = zs.sort_values("easter", ascending=False)
+            for row in zs.itertuples(index=False):
+                kyiv_zone_stats_list.append({
+                    "zone": str(row.zone),
+                    "total": int(row.total),
+                    "easter": int(row.easter),
+                    "pct": float(row.pct),
+                })
+    else:
+        # Fallback: only easter-side city counts
+        cs = df_easter.groupby("city").agg(easter=("provider_id", "count")).reset_index()
+        for row in cs.sort_values("easter", ascending=False).itertuples(index=False):
+            city_stats_list.append({"city": str(row.city), "total": int(row.easter),
+                                    "easter": int(row.easter), "pct": 100.0})
+
+    payload = {
+        "date": REPORT_DATE,
+        "total_providers": len(df_all) if not df_all.empty else 0,
+        "total_easter": len(df_easter),
+        "easter_partners": easter_list,
+        "city_stats": city_stats_list,
+        "kyiv_zones": kyiv_zone_stats_list,
+    }
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"✅  data.json saved → {output_path}  ({len(easter_list):,} partners, {len(city_stats_list)} cities)")
+    return output_path
+
+
 # ─── MAIN ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -462,8 +547,13 @@ def main():
         print("  → Continuing with Easter data only")
         df_all = pd.DataFrame()
 
-    out_path = os.path.join(os.path.dirname(__file__), OUTPUT_FILE)
+    base_dir = os.path.dirname(__file__)
+    out_path = os.path.join(base_dir, OUTPUT_FILE)
     build_report(df_all, df_easter, out_path)
+
+    json_path = os.path.join(base_dir, "data.json")
+    build_data_json(df_all, df_easter, json_path)
+
     return out_path
 
 
