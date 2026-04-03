@@ -115,9 +115,16 @@ body.dark #open-sb-btn:hover{background:#333350}
 /* ── Right panel ───────────────────────────────────────────────── */
 #right-panel{
   position:fixed;top:16px;right:16px;z-index:9999;
-  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
-  max-width:260px;
+  display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+  max-width:270px;
+  max-height:calc(100vh - 32px);
+  overflow-y:auto;overflow-x:hidden;
+  padding-right:2px;
+  scrollbar-width:thin;scrollbar-color:#c0c4cc transparent;
 }
+#right-panel::-webkit-scrollbar{width:4px}
+#right-panel::-webkit-scrollbar-thumb{background:#c0c4cc;border-radius:2px}
+body.dark #right-panel::-webkit-scrollbar-thumb{background:#444}
 
 #theme-btn{
   width:48px;height:48px;border-radius:50%;border:none;
@@ -236,6 +243,25 @@ body.dark .kyiv-table tr:nth-child(even) td{background:#1a2233}
 .kyiv-bar{height:8px;background:linear-gradient(90deg,#1a5276,#5dade2);border-radius:3px;transition:width .3s}
 
 #data-freshness{font-size:10px;text-align:right;padding:2px 6px;color:#888;line-height:1.4;word-break:break-word;max-width:240px}
+
+/* ── Engagement summary inside legend ──────────────────────────── */
+#eng-summary{margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,.08);font-size:11px;line-height:1.7}
+body.dark #eng-summary{border-color:rgba(255,255,255,.1)}
+#eng-summary .es-title{font-weight:700;color:#7b2d8b;margin-bottom:4px;font-size:11px}
+body.dark #eng-summary .es-title{color:#c97fe0}
+#eng-summary .es-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+#eng-summary .es-city{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#2c3e50;font-size:11px}
+body.dark #eng-summary .es-city{color:#c8d0e0}
+#eng-summary .es-pct{font-weight:700;color:#7b2d8b;min-width:38px;text-align:right;font-size:11px}
+body.dark #eng-summary .es-pct{color:#c97fe0}
+#eng-summary .es-mini{flex-shrink:0;width:50px;height:6px;background:#eee;border-radius:3px;overflow:hidden}
+body.dark #eng-summary .es-mini{background:#333}
+#eng-summary .es-fill{height:100%;background:linear-gradient(90deg,#7b2d8b,#c97fe0);border-radius:3px}
+#eng-summary .es-kyiv-title{font-weight:700;color:#1a5276;margin:6px 0 3px;font-size:11px}
+body.dark #eng-summary .es-kyiv-title{color:#7fc0f0}
+#eng-summary .es-kyiv-pct{font-weight:700;color:#1a5276;min-width:38px;text-align:right;font-size:11px}
+body.dark #eng-summary .es-kyiv-pct{color:#7fc0f0}
+#eng-summary .es-kyiv-fill{height:100%;background:linear-gradient(90deg,#1a5276,#5dade2);border-radius:3px}
 </style>
 </head>
 <body>
@@ -270,6 +296,7 @@ body.dark .kyiv-table tr:nth-child(even) td{background:#1a2233}
     <div class="leg-row"><div class="leg-sw circle" style="background:rgba(102,187,106,.22);border:2px solid #43a047"></div><span>Радіус доставки</span></div>
     <div class="leg-row"><div class="leg-sw circle" style="background:#e65100;border:2px solid #bf360c"></div><span>🐣 Партнер Easter 2026</span></div>
     <div id="stats"></div>
+    <div id="eng-summary"></div>
   </div>
 
   <!-- Radius toggle -->
@@ -2314,6 +2341,50 @@ function renderKyivZones(kyivZones){
   el.innerHTML=html;
 }
 
+/* Fill the always-visible engagement summary inside the legend */
+function renderEngSummary(cityStats, kyivZones){
+  const el=document.getElementById('eng-summary');
+  if(!el) return;
+
+  const overallTotal = cityStats.reduce((s,r)=>s+r.total,0);
+  const overallEaster = cityStats.reduce((s,r)=>s+r.easter,0);
+  const overallPct = overallTotal ? (overallEaster/overallTotal*100).toFixed(1) : '—';
+
+  // Top-8 cities by easter count (filter those with at least 1 easter partner)
+  const topCities = cityStats.filter(r=>r.easter>0).slice(0,8);
+  const maxPct = Math.max(...topCities.map(r=>r.pct), 1);
+
+  let html = `<div class="es-title">📊 Залученість до Easter (%)</div>`;
+  html += `<div style="font-size:11px;color:#555;margin-bottom:5px">Загалом: <b>${overallEaster.toLocaleString()}</b> / ${overallTotal.toLocaleString()} = <b style="color:#7b2d8b">${overallPct}%</b></div>`;
+
+  topCities.forEach(r=>{
+    const w = Math.round(r.pct/maxPct*50);
+    html+=`<div class="es-row">
+      <span class="es-city" title="${r.city}">${r.city}</span>
+      <div class="es-mini"><div class="es-fill" style="width:${w}px"></div></div>
+      <span class="es-pct">${r.pct}%</span>
+    </div>`;
+  });
+
+  // Kyiv zones summary (top 6)
+  if(kyivZones && kyivZones.length){
+    const topZones = kyivZones.slice(0,6);
+    const maxZ = Math.max(...topZones.map(r=>r.pct), 1);
+    html += `<div class="es-kyiv-title">🏙 Київ — по зонам</div>`;
+    topZones.forEach(r=>{
+      const zoneName = (r.zone||'—').replace(/^Kyiv\s*[-–]\s*/i,'');
+      const w = Math.round(r.pct/maxZ*50);
+      html+=`<div class="es-row">
+        <span class="es-city" title="${r.zone}">${zoneName}</span>
+        <div class="es-mini"><div class="es-kyiv-fill" style="width:${w}px"></div></div>
+        <span class="es-kyiv-pct">${r.pct}%</span>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
+}
+
 /* Apply fetched data to map + panels */
 function applyLiveData(data){
   // Update Easter partner markers
@@ -2329,16 +2400,25 @@ function applyLiveData(data){
     if(!easterVisible){map.removeLayer(easterMarkerLayer);map.removeLayer(easterRadiusLayer);}
   }
 
-  // Update engagement panels
+  // Always-visible summary in legend
+  if(data.city_stats) renderEngSummary(data.city_stats, data.kyiv_zones||[]);
+
+  // Update collapsible detail panels
   if(data.city_stats) renderCityEngagement(data.city_stats);
   if(data.kyiv_zones) renderKyivZones(data.kyiv_zones);
+
+  // Auto-open the detail panels
+  const engPanel=document.getElementById('eng-panel');
+  const kyivPanel=document.getElementById('kyiv-panel');
+  if(engPanel&&!engPanel.classList.contains('open')) engPanel.classList.add('open');
+  if(kyivPanel&&!kyivPanel.classList.contains('open')) kyivPanel.classList.add('open');
 
   // Update stats
   updateStats();
   const easterEl=document.getElementById('easter-count-label');
   if(easterEl) easterEl.textContent=easterPartners.length+' партнерів | Дані: '+(data.date||'—');
 
-  // Freshness
+  // Freshness line
   const fresh=document.getElementById('data-freshness');
   if(fresh){
     const total=data.total_providers?data.total_providers.toLocaleString():'—';
@@ -2390,13 +2470,13 @@ function refreshData(){
     .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(data=>{ applyLiveData(data); })
     .catch(()=>{
-      // Use embedded static data as fallback
+      renderEngSummary([],[]);
       renderCityEngagement([]);
       renderKyivZones([]);
       const fresh2=document.getElementById('data-freshness');
-      if(fresh2) fresh2.innerHTML='<span style="color:#888">Статичні дані (без мережі)</span>';
+      if(fresh2) fresh2.innerHTML='<span style="color:#e67e22">⚠ Дані недоступні (перевірте мережу)</span>';
       const easterEl=document.getElementById('easter-count-label');
-      if(easterEl) easterEl.textContent=easterPartners.length+' партнерів | Дані: 2026-04-03';
+      if(easterEl) easterEl.textContent=easterPartners.length+' партнерів | вбудовані дані';
     });
 })();
 </script>
