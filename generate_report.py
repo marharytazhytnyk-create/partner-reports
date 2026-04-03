@@ -519,6 +519,27 @@ def build_data_json(df_all: pd.DataFrame, df_easter: pd.DataFrame, output_path: 
             city_stats_list.append({"city": str(row.city), "total": int(row.easter),
                                     "easter": int(row.easter), "pct": 100.0})
 
+    # Normalize city names to match zone-polygon names
+    CITY_NORM = {
+        "Zaporizhia": "Zaporizhzhia",
+        "Zaporizhzhya": "Zaporizhzhia",
+    }
+    UA_CITIES = {
+        "Bila Tserkva", "Boryspil", "Brovary", "Bucha", "Cherkasy",
+        "Chernihiv", "Chernivtsi", "Dnipro", "Drohobych", "Irpin",
+        "Ivano-Frankivsk", "Kamianets-Podilskyi", "Kamianske", "Kharkiv",
+        "Khmelnytskyi", "Kovel", "Kremenchuk", "Kropyvnytskyi", "Kryvyi Rih",
+        "Kyiv", "Lutsk", "Lviv", "Mukachevo", "Mykolaiv", "Odesa",
+        "Oleksandriia", "Pavlohrad", "Poltava", "Rivne", "Sumy",
+        "Ternopil", "Uzhhorod", "Vinnytsia", "Vyshhorod",
+        "Zaporizhzhia", "Zhytomyr",
+    }
+    for r in city_stats_list:
+        r["city"] = CITY_NORM.get(r["city"], r["city"])
+    for p in easter_list:
+        p[5] = CITY_NORM.get(p[5], p[5])
+    city_stats_list = [r for r in city_stats_list if r["city"] in UA_CITIES]
+
     payload = {
         "date": REPORT_DATE,
         "total_providers": len(df_all) if not df_all.empty else 0,

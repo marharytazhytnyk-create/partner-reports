@@ -2295,6 +2295,7 @@ function updateCoverage(){
 
 /* Render engagement % table for all cities */
 function renderCityEngagement(cityStats){
+  cityStats = filterUACities(cityStats);
   const el=document.getElementById('eng-panel-content');
   if(!el)return;
   const cntEl=document.getElementById('eng-cities-cnt');
@@ -2341,8 +2342,17 @@ function renderKyivZones(kyivZones){
   el.innerHTML=html;
 }
 
+/* Only show cities that have zone polygon data (Ukrainian cities provided by user) */
+function filterUACities(cityStats){
+  const allowed = new Set(Object.keys(cityData));
+  // also handle Zaporizhia spelling variant
+  allowed.add('Zaporizhia'); allowed.add('Zaporizhzhya');
+  return cityStats.filter(r => allowed.has(r.city));
+}
+
 /* Fill the always-visible engagement summary inside the legend */
 function renderEngSummary(cityStats, kyivZones){
+  cityStats = filterUACities(cityStats);
   const el=document.getElementById('eng-summary');
   if(!el) return;
 
