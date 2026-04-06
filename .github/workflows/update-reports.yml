@@ -2,15 +2,22 @@ name: Update Partner Reports
 
 on:
   schedule:
-    - cron: '0 10 * * *'   # 13:00 EEST (UTC+3) every day
-  workflow_dispatch:         # manual trigger
+    - cron: '0 10 * * *'      # 13:00 EEST (UTC+3) every day — existing daily reports
+    - cron: '30 10 * * 1'     # 13:30 EEST (UTC+3) every Monday — Шавуха Team report
+  workflow_dispatch:            # manual trigger (runs all jobs)
 
 permissions:
   contents: write
 
 jobs:
-  generate:
+  # ── Daily partner reports (existing) ──────────────────────────────────────
+  generate-daily:
+    name: Daily Partner Reports
     runs-on: ubuntu-latest
+    # Only run on the daily cron OR manual dispatch (not the Monday-only cron)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '0 10 * * *'
     steps:
       - uses: actions/checkout@v4
         env:
@@ -29,8 +36,8 @@ jobs:
 
       - name: Generate Easter partner report
         env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
           DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
         run: python generate_report.py
         working-directory: ${{ github.workspace }}
@@ -40,10 +47,47 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: python scripts/generate_provider_report.py
 
-      - name: Commit and push reports
+      - name: Commit and push daily reports
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || git commit -m "Auto-update reports $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git diff --staged --quiet || git commit -m "Auto-update daily reports $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
+
+  # ── SHAVUCHA TEAM weekly report (every Monday 13:30 EEST) ─────────────────
+  generate-shavucha:
+    name: Шавуха Team Weekly Report
+    runs-on: ubuntu-latest
+    # Run on Monday cron OR manual dispatch
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '30 10 * * 1'
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate Шавуха Team report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python scripts/generate_shavucha_report.py
+
+      - name: Commit and push Шавуха Team report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Шавуха Team/"
+          git diff --staged --quiet || git commit -m "🟢 Шавуха Team report — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
