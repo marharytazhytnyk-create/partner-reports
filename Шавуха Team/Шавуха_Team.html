@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Шавуха Team — Черкаси | Bolt Food Partner Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green:       #34D186;
+      --green-dark:  #1aad6a;
+      --green-light: #e6faf2;
+      --black:       #0d0d0d;
+      --gray-900:    #1a1a1a;
+      --gray-700:    #4a4a4a;
+      --gray-400:    #9a9a9a;
+      --gray-100:    #f5f5f5;
+      --white:       #ffffff;
+      --positive:    #1aad6a;
+      --negative:    #e53935;
+      --w1: #34D186; --w2: #1aad6a; --w3: #0d8a52; --w4: #066637;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 13px; line-height: 1.5;
+      color: var(--gray-900); background: var(--gray-100);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--black); padding: 24px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 3px solid var(--green);
+    }
+    .header-logo { display: flex; align-items: center; gap: 12px; }
+    .bolt-logo {
+      width: 44px; height: 44px; background: var(--green);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    }
+    .bolt-logo svg { width: 26px; height: 26px; }
+    .header-title h1 { font-size: 22px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
+    .header-title p  { font-size: 11px; color: var(--green); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+    .header-meta { text-align: right; color: var(--gray-400); font-size: 11px; line-height: 1.9; }
+    .header-meta strong { color: var(--green); }
+
+    /* LOCATIONS STRIP */
+    .locations {
+      background: #111; border-bottom: 1px solid #2a2a2a;
+      padding: 10px 40px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+    }
+    .locations .loc-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--gray-400); font-weight: 700; }
+    .loc-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #1e1e1e; border: 1px solid #333; border-left: 3px solid var(--green);
+      padding: 4px 12px; border-radius: 4px; font-size: 11px; color: var(--white);
+    }
+    .loc-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    /* CONTAINER */
+    .container { max-width: 1300px; margin: 0 auto; padding: 30px 40px; }
+
+    /* PERIOD BAR */
+    .period-bar {
+      background: var(--white); border-radius: 12px; padding: 14px 24px;
+      margin-bottom: 26px; display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); flex-wrap: wrap;
+    }
+    .period-bar .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--gray-700); }
+    .week-chip {
+      display: inline-flex; align-items: center;
+      padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; color: var(--white);
+    }
+    .w1 { background: var(--w1); } .w2 { background: var(--w2); }
+    .w3 { background: var(--w3); } .w4 { background: var(--w4); }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .9px;
+      color: var(--gray-700); padding-bottom: 10px;
+      border-bottom: 2px solid var(--green); margin-bottom: 20px;
+    }
+
+    /* KPI GRID */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+      gap: 16px; margin-bottom: 36px;
+    }
+    .kpi-card {
+      background: var(--white); border-radius: 12px; padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06); border-top: 3px solid var(--green);
+    }
+    .kpi-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--gray-400); margin-bottom: 6px; }
+    .kpi-value { font-size: 26px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.5px; }
+    .kpi-sub   { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+
+    /* CHARTS */
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); gap: 22px; margin-bottom: 36px; }
+    .chart-card { background: var(--white); border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .chart-card h3  { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--gray-700); margin-bottom: 3px; }
+    .chart-card .sub { font-size: 10px; color: var(--gray-400); margin-bottom: 14px; }
+    .chart-wrap { position: relative; height: 220px; }
+
+    /* TABLE */
+    .table-wrap { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 36px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--black); color: var(--white); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; padding: 12px 16px; text-align: left; }
+    th.r { text-align: right; }
+    td { padding: 10px 16px; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+    td.r { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--green-light); }
+    .mn { font-weight: 600; }
+    .c1 { color: var(--w1); font-weight: 600; }
+    .c2 { color: var(--w2); font-weight: 600; }
+    .c3 { color: var(--w3); font-weight: 600; }
+    .c4 { color: var(--w4); font-weight: 600; }
+
+    /* FOOTER */
+    .footer { background: var(--black); color: var(--gray-400); font-size: 10px; padding: 18px 40px; text-align: center; letter-spacing: .5px; }
+    .footer em { color: var(--green); font-style: normal; }
+
+    @media (max-width: 700px) {
+      .container { padding: 20px 16px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .header, .locations { flex-direction: column; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <div class="bolt-logo">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13L13 2Z" fill="#0d0d0d"/></svg>
+    </div>
+    <div class="header-title">
+      <h1>Шавуха Team — Черкаси</h1>
+      <p>Bolt Food · Звіт по партнеру</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>Vendor ID: <strong>62587 / 117729</strong></div>
+    <div>Місто: <strong>Черкаси</strong></div>
+    <div>Провайдерів: <strong>3 локації</strong></div>
+    <div>Оновлено: <strong id="gen-date"></strong></div>
+  </div>
+</header>
+
+<!-- LOCATIONS -->
+<div class="locations">
+  <span class="loc-label">Локації:</span>
+  <span class="loc-chip"><span class="dot"></span>Шавуха street food · вул. Смілянська</span>
+  <span class="loc-chip"><span class="dot"></span>Шавуха Team · вул. Припортова</span>
+  <span class="loc-chip"><span class="dot"></span>Шавуха Team · вул. Хрещатик</span>
+</div>
+
+<div class="container">
+
+  <!-- PERIOD -->
+  <div class="period-bar">
+    <span class="label">Звітний період:</span>
+    <span class="week-chip w1">Тиж. 1 · 9–15 бер. 2026</span>
+    <span class="week-chip w2">Тиж. 2 · 16–22 бер. 2026</span>
+    <span class="week-chip w3">Тиж. 3 · 23–29 бер. 2026</span>
+    <span class="week-chip w4">Тиж. 4 · 30 бер.–5 квіт. 2026</span>
+    <span style="margin-left:auto;font-size:10px;color:var(--gray-400)">Останні 4 завершені тижні · Валюта: UAH</span>
+  </div>
+
+  <!-- KPI -->
+  <div class="section-title">📊 Ключові показники — останній тиждень (Тиж. 4)</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Валовий продаж</div><div class="kpi-value">31&thinsp;673</div><div class="kpi-sub">UAH</div></div>
+    <div class="kpi-card"><div class="kpi-label">Чистий продаж</div><div class="kpi-value">25&thinsp;430</div><div class="kpi-sub">UAH</div></div>
+    <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div><div class="kpi-value">55</div><div class="kpi-sub">замовлень</div></div>
+    <div class="kpi-card"><div class="kpi-label">Середній чек</div><div class="kpi-value">576</div><div class="kpi-sub">UAH / замовлення</div></div>
+    <div class="kpi-card"><div class="kpi-label">Прийняті замовлення</div><div class="kpi-value">100%</div><div class="kpi-sub">відсоток прийняття</div></div>
+    <div class="kpi-card"><div class="kpi-label">Доступність</div><div class="kpi-value">97.9%</div><div class="kpi-sub">ресторан онлайн</div></div>
+    <div class="kpi-card"><div class="kpi-label">Активні користувачі</div><div class="kpi-value">49</div><div class="kpi-sub">унікальних</div></div>
+    <div class="kpi-card"><div class="kpi-label">Частота замовлень</div><div class="kpi-value">1.12</div><div class="kpi-sub">замовлень / користувач</div></div>
+    <div class="kpi-card"><div class="kpi-label">Нові користувачі</div><div class="kpi-value">17</div><div class="kpi-sub">нових клієнтів бренду</div></div>
+    <div class="kpi-card"><div class="kpi-label">Час доставки</div><div class="kpi-value">30.1</div><div class="kpi-sub">хвилин</div></div>
+    <div class="kpi-card"><div class="kpi-label">Рейтинг</div><div class="kpi-value">4.87</div><div class="kpi-sub">з 5.0</div></div>
+    <div class="kpi-card"><div class="kpi-label">Покриття фото</div><div class="kpi-value">100%</div><div class="kpi-sub">фото страв</div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">📈 Динаміка показників по тижнях</div>
+  <div class="charts-grid">
+
+    <div class="chart-card"><h3>Валовий продаж</h3><p class="sub">Сума продажів до знижок · UAH</p><div class="chart-wrap"><canvas id="c01"></canvas></div></div>
+    <div class="chart-card"><h3>Чистий продаж</h3><p class="sub">Сума продажів після знижок · UAH</p><div class="chart-wrap"><canvas id="c02"></canvas></div></div>
+    <div class="chart-card"><h3>Доставлені замовлення</h3><p class="sub">Кількість виконаних замовлень · шт.</p><div class="chart-wrap"><canvas id="c03"></canvas></div></div>
+    <div class="chart-card"><h3>Середній чек (AOV)</h3><p class="sub">Валовий продаж / замовлення · UAH</p><div class="chart-wrap"><canvas id="c04"></canvas></div></div>
+    <div class="chart-card"><h3>Доступність ресторану</h3><p class="sub">Відсоток часу онлайн · %</p><div class="chart-wrap"><canvas id="c05"></canvas></div></div>
+    <div class="chart-card"><h3>Прийняття замовлень</h3><p class="sub">Відсоток прийнятих замовлень · %</p><div class="chart-wrap"><canvas id="c06"></canvas></div></div>
+    <div class="chart-card"><h3>Активні користувачі</h3><p class="sub">Унікальні замовники за тиждень · осіб</p><div class="chart-wrap"><canvas id="c07"></canvas></div></div>
+    <div class="chart-card"><h3>Частота замовлень</h3><p class="sub">Середня кількість замовлень на 1 користувача</p><div class="chart-wrap"><canvas id="c08"></canvas></div></div>
+    <div class="chart-card"><h3>Нові користувачі бренду</h3><p class="sub">Вперше замовили у бренду · осіб</p><div class="chart-wrap"><canvas id="c09"></canvas></div></div>
+    <div class="chart-card"><h3>Загальні знижки для покупців</h3><p class="sub">Різниця між валовим і чистим продажем · UAH</p><div class="chart-wrap"><canvas id="c10"></canvas></div></div>
+    <div class="chart-card"><h3>Витрати Bolt на кампанії</h3><p class="sub">Фінансування кампаній від Bolt · UAH</p><div class="chart-wrap"><canvas id="c11"></canvas></div></div>
+    <div class="chart-card"><h3>Витрати мерчанта на кампанії</h3><p class="sub">Фінансування кампаній від партнера · UAH</p><div class="chart-wrap"><canvas id="c12"></canvas></div></div>
+    <div class="chart-card"><h3>Сесії з показами</h3><p class="sub">Сесії, де ресторан було показано · шт.</p><div class="chart-wrap"><canvas id="c13"></canvas></div></div>
+    <div class="chart-card"><h3>Конверсія: Показ → Перегляд меню</h3><p class="sub">Відсоток переглядів меню від показів · %</p><div class="chart-wrap"><canvas id="c14"></canvas></div></div>
+    <div class="chart-card"><h3>Конверсія: Меню → Додавання до кошика</h3><p class="sub">Відсоток додавань у кошик від перегляду меню · %</p><div class="chart-wrap"><canvas id="c15"></canvas></div></div>
+    <div class="chart-card"><h3>Покриття фото страв меню</h3><p class="sub">Частка страв із фотографією · %</p><div class="chart-wrap"><canvas id="c16"></canvas></div></div>
+    <div class="chart-card"><h3>Замовлення з поверненнями</h3><p class="sub">Частка замовлень, за якими зроблено повернення · %</p><div class="chart-wrap"><canvas id="c17"></canvas></div></div>
+    <div class="chart-card"><h3>Середній час доставки</h3><p class="sub">Від підтвердження до вручення · хв.</p><div class="chart-wrap"><canvas id="c18"></canvas></div></div>
+    <div class="chart-card"><h3>Час прийняття замовлення</h3><p class="sub">Середній час підтвердження замовлення мерчантом · хв.</p><div class="chart-wrap"><canvas id="c19"></canvas></div></div>
+    <div class="chart-card"><h3>Час приготування</h3><p class="sub">Середній час готування страв · хв.</p><div class="chart-wrap"><canvas id="c20"></canvas></div></div>
+    <div class="chart-card"><h3>Час очікування кур'єра</h3><p class="sub">Середній час очікування у ресторані · хв.</p><div class="chart-wrap"><canvas id="c21"></canvas></div></div>
+    <div class="chart-card"><h3>Час кур'єра до ресторану</h3><p class="sub">Від призначення до прибуття до ресторану · хв.</p><div class="chart-wrap"><canvas id="c22"></canvas></div></div>
+    <div class="chart-card"><h3>Час кур'єра до покупця</h3><p class="sub">Від ресторану до доставки покупцю · хв.</p><div class="chart-wrap"><canvas id="c23"></canvas></div></div>
+    <div class="chart-card"><h3>Середній рейтинг ресторану</h3><p class="sub">Оцінка від покупців · від 0 до 5</p><div class="chart-wrap"><canvas id="c24"></canvas></div></div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-title">📋 Зведена таблиця всіх метрик</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Метрика</th>
+          <th class="r">Тиж. 1<br><small style="font-weight:400;opacity:.7">9–15 бер.</small></th>
+          <th class="r">Тиж. 2<br><small style="font-weight:400;opacity:.7">16–22 бер.</small></th>
+          <th class="r">Тиж. 3<br><small style="font-weight:400;opacity:.7">23–29 бер.</small></th>
+          <th class="r">Тиж. 4<br><small style="font-weight:400;opacity:.7">30 бер.–5 квіт.</small></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="mn">Валовий продаж (UAH)</td><td class="r c1">35&thinsp;385.50</td><td class="r c2">46&thinsp;287.50</td><td class="r c3">40&thinsp;442.75</td><td class="r c4">31&thinsp;673.16</td></tr>
+        <tr><td class="mn">Чистий продаж (UAH)</td><td class="r c1">26&thinsp;927.37</td><td class="r c2">34&thinsp;336.18</td><td class="r c3">32&thinsp;204.39</td><td class="r c4">25&thinsp;430.05</td></tr>
+        <tr><td class="mn">Доставлені замовлення</td><td class="r c1">63</td><td class="r c2">83</td><td class="r c3">71</td><td class="r c4">55</td></tr>
+        <tr><td class="mn">Середній чек (UAH)</td><td class="r c1">561.67</td><td class="r c2">557.68</td><td class="r c3">569.62</td><td class="r c4">575.87</td></tr>
+        <tr><td class="mn">Доступність ресторану (%)</td><td class="r c1">97.74%</td><td class="r c2">98.55%</td><td class="r c3">98.32%</td><td class="r c4">97.87%</td></tr>
+        <tr><td class="mn">Прийняття замовлень (%)</td><td class="r c1">98.41%</td><td class="r c2">100.00%</td><td class="r c3">100.00%</td><td class="r c4">100.00%</td></tr>
+        <tr><td class="mn">Активні користувачі</td><td class="r c1">57</td><td class="r c2">74</td><td class="r c3">66</td><td class="r c4">49</td></tr>
+        <tr><td class="mn">Частота замовлень</td><td class="r c1">1.11</td><td class="r c2">1.12</td><td class="r c3">1.08</td><td class="r c4">1.12</td></tr>
+        <tr><td class="mn">Нові користувачі бренду</td><td class="r c1">28</td><td class="r c2">30</td><td class="r c3">26</td><td class="r c4">17</td></tr>
+        <tr><td class="mn">Загальні знижки для покупців (UAH)</td><td class="r c1">8&thinsp;458.19</td><td class="r c2">11&thinsp;951.29</td><td class="r c3">8&thinsp;238.34</td><td class="r c4">6&thinsp;091.39</td></tr>
+        <tr><td class="mn">Витрати Bolt на кампанії (UAH)</td><td class="r c1">3&thinsp;273.65</td><td class="r c2">5&thinsp;057.23</td><td class="r c3">2&thinsp;345.08</td><td class="r c4">1&thinsp;579.14</td></tr>
+        <tr><td class="mn">Витрати мерчанта на кампанії (UAH)</td><td class="r c1">5&thinsp;184.53</td><td class="r c2">6&thinsp;894.02</td><td class="r c3">5&thinsp;893.25</td><td class="r c4">4&thinsp;512.25</td></tr>
+        <tr><td class="mn">Сесії з показами</td><td class="r c1">3&thinsp;406</td><td class="r c2">4&thinsp;282</td><td class="r c3">3&thinsp;028</td><td class="r c4">2&thinsp;822</td></tr>
+        <tr><td class="mn">Конверсія: Показ → Перегляд меню (%)</td><td class="r c1">8.25%</td><td class="r c2">6.80%</td><td class="r c3">7.30%</td><td class="r c4">6.59%</td></tr>
+        <tr><td class="mn">Конверсія: Меню → Додавання до кошика (%)</td><td class="r c1">35.26%</td><td class="r c2">42.23%</td><td class="r c3">47.15%</td><td class="r c4">50.93%</td></tr>
+        <tr><td class="mn">Покриття фото страв меню (%)</td><td class="r c1">100.00%</td><td class="r c2">100.00%</td><td class="r c3">100.00%</td><td class="r c4">100.00%</td></tr>
+        <tr><td class="mn">Замовлення з поверненнями (%)</td><td class="r c1">0.00%</td><td class="r c2">0.00%</td><td class="r c3">6.15%</td><td class="r c4">0.00%</td></tr>
+        <tr><td class="mn">Середній час доставки (хв.)</td><td class="r c1">34.34</td><td class="r c2">29.36</td><td class="r c3">30.93</td><td class="r c4">30.11</td></tr>
+        <tr><td class="mn">Час прийняття замовлення (хв.)</td><td class="r c1">0.30</td><td class="r c2">0.29</td><td class="r c3">0.30</td><td class="r c4">0.28</td></tr>
+        <tr><td class="mn">Час приготування (хв.)</td><td class="r c1">17.91</td><td class="r c2">14.31</td><td class="r c3">16.35</td><td class="r c4">16.54</td></tr>
+        <tr><td class="mn">Час очікування кур'єра (хв.)</td><td class="r c1">2.43</td><td class="r c2">1.12</td><td class="r c3">2.21</td><td class="r c4">2.09</td></tr>
+        <tr><td class="mn">Час кур'єра до ресторану (хв.)</td><td class="r c1">7.22</td><td class="r c2">7.44</td><td class="r c3">6.80</td><td class="r c4">6.79</td></tr>
+        <tr><td class="mn">Час кур'єра до покупця (хв.)</td><td class="r c1">9.03</td><td class="r c2">8.58</td><td class="r c3">8.32</td><td class="r c4">7.05</td></tr>
+        <tr><td class="mn">Середній рейтинг ресторану (0–5)</td><td class="r c1">5.00</td><td class="r c2">4.88</td><td class="r c3">4.34</td><td class="r c4">4.87</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<footer class="footer">
+  <em>Bolt Food</em> · Звіт по партнеру · Шавуха Team — Черкаси ·
+  Локації: вул. Смілянська / вул. Припортова / вул. Хрещатик ·
+  Дані: <em>ng_delivery_spark.fact_provider_weekly</em> ·
+  Автооновлення: кожного понеділка о 13:30
+</footer>
+
+<script>
+  document.getElementById('gen-date').textContent =
+    new Date().toLocaleDateString('uk-UA', { day:'2-digit', month:'long', year:'numeric' });
+
+  const WL = ['Тиж.1 · 9–15 бер.','Тиж.2 · 16–22 бер.','Тиж.3 · 23–29 бер.','Тиж.4 · 30 бер.–5 квіт.'];
+  const CL = ['#34D186','#1aad6a','#0d8a52','#066637'];
+  const CB = ['#2ab872','#1a9a5f','#0b7545','#055430'];
+
+  function bar(id, data, opts) {
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: { labels: WL, datasets: [{ data, backgroundColor: CL, borderColor: CB, borderWidth: 1.5, borderRadius: 6, borderSkipped: false }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => {
+            const v = c.parsed.y;
+            return ' ' + (opts.pct ? v.toFixed(2)+'%' : opts.dec ? v.toFixed(2) : v.toLocaleString('uk-UA',{maximumFractionDigits:2}));
+          }}}
+        },
+        scales: {
+          x: { grid:{display:false}, ticks:{font:{size:9},color:'#7a7a7a'} },
+          y: { beginAtZero: opts.ymin===undefined, min:opts.ymin, max:opts.ymax,
+               grid:{color:'#f0f0f0'},
+               ticks:{font:{size:9},color:'#7a7a7a', callback: v => opts.pct ? v+'%' : v.toLocaleString('uk-UA')} }
+        }
+      }
+    });
+  }
+
+  bar('c01', [35385.5, 46287.5, 40442.75, 31673.16]);
+  bar('c02', [26927.37, 34336.18, 32204.39, 25430.05]);
+  bar('c03', [63, 83, 71, 55]);
+  bar('c04', [561.67, 557.68, 569.62, 575.87], {dec:true});
+  bar('c05', [97.74, 98.55, 98.32, 97.87], {pct:true, ymin:90, ymax:101});
+  bar('c06', [98.41, 100, 100, 100], {pct:true, ymin:90, ymax:101});
+  bar('c07', [57, 74, 66, 49]);
+  bar('c08', [1.11, 1.12, 1.08, 1.12], {dec:true});
+  bar('c09', [28, 30, 26, 17]);
+  bar('c10', [8458.19, 11951.29, 8238.34, 6091.39]);
+  bar('c11', [3273.65, 5057.23, 2345.08, 1579.14]);
+  bar('c12', [5184.53, 6894.02, 5893.25, 4512.25]);
+  bar('c13', [3406, 4282, 3028, 2822]);
+  bar('c14', [8.25, 6.80, 7.30, 6.59], {pct:true, dec:true});
+  bar('c15', [35.26, 42.23, 47.15, 50.93], {pct:true, dec:true});
+  bar('c16', [100, 100, 100, 100], {pct:true, ymin:0, ymax:105});
+  bar('c17', [0, 0, 6.15, 0], {pct:true, dec:true});
+  bar('c18', [34.34, 29.36, 30.93, 30.11], {dec:true});
+  bar('c19', [0.30, 0.29, 0.30, 0.28], {dec:true});
+  bar('c20', [17.91, 14.31, 16.35, 16.54], {dec:true});
+  bar('c21', [2.43, 1.12, 2.21, 2.09], {dec:true});
+  bar('c22', [7.22, 7.44, 6.80, 6.79], {dec:true});
+  bar('c23', [9.03, 8.58, 8.32, 7.05], {dec:true});
+  bar('c24', [5.00, 4.88, 4.34, 4.87], {dec:true, ymin:0, ymax:5.5});
+</script>
+</body>
+</html>

@@ -23,10 +23,14 @@ from pathlib import Path
 DATABRICKS_HOST       = os.getenv("DATABRICKS_HOST", "https://bolt-incentives.cloud.databricks.com")
 DATABRICKS_TOKEN      = os.getenv("DATABRICKS_TOKEN", "")
 CLUSTER_ID            = os.getenv("DATABRICKS_CLUSTER_ID", "0221-081903-9ag4bh69")
-VENDOR_ID             = 117729
-PROVIDER_ID           = 157668   # Шавуха street food вул. Смілянська
+VENDOR_IDS            = [117729, 62587]
+# All 3 active locations of the brand in Cherkasy
+PROVIDER_IDS          = [157668, 93073, 91332]
+# 157668 — Шавуха street food вул. Смілянська (vendor 117729)
+# 91332  — Шавуха Team вул. Припортова       (vendor 62587)
+# 93073  — Шавуха Team вул. Хрещатик         (vendor 62587)
 OUTPUT_DIR            = Path(__file__).parent.parent / "Шавуха Team"
-OUTPUT_FILE           = OUTPUT_DIR / "index.html"
+OUTPUT_FILE           = OUTPUT_DIR / "Шавуха_Team.html"
 POLL_INTERVAL_S       = 5
 MAX_POLL_S            = 300
 
@@ -92,48 +96,53 @@ def fetch_metrics() -> dict:
     """Return last 4 completed weekly rows for SHAVUCHA TEAM."""
     ctx = create_context()
     try:
-        # Main metrics query
+        pids_sql = ", ".join(str(p) for p in PROVIDER_IDS)
+
+        # Main metrics query — aggregate across all 3 providers
         main_sql = f"""
         SELECT
             metric_timestamp_partition,
-            delivered_orders_count,
-            total_gmv_before_discounts,
-            total_gmv_after_discounts,
-            users_activated_vendor_count,
-            provider_acceptance_rate_value,
-            provider_active_rate_value,
-            customer_refunded_order_rate_value,
-            provider_rating_per_order_value,
-            order_total_minutes_per_order_value,
-            provider_acceptance_minutes_per_order_value,
-            provider_preparation_minutes_per_order_value,
-            courier_total_wait_minutes_per_order_value,
-            courier_to_provider_actual_minutes_per_order_value,
-            courier_to_eater_actual_minutes_per_order_value,
-            menu_dish_photo_coverage_rate_value,
-            total_campaign_discount,
-            total_campaign_spend_bolt,
-            total_campaign_spend_provider,
-            provider_impressions_sessions_count,
-            provider_menu_viewed_sessions_count,
-            provider_product_added_sessions_count,
-            provider_product_added_from_menu_viewed_rate_value
+            SUM(delivered_orders_count)                              AS delivered_orders,
+            SUM(total_gmv_before_discounts)                          AS gross_sales,
+            SUM(total_gmv_after_discounts)                           AS net_sales,
+            SUM(users_activated_vendor_count)                        AS new_users,
+            AVG(provider_acceptance_rate_value)                      AS acceptance_rate,
+            AVG(provider_active_rate_value)                          AS availability_rate,
+            AVG(customer_refunded_order_rate_value)                  AS refund_rate,
+            AVG(provider_rating_per_order_value)                     AS rating,
+            AVG(order_total_minutes_per_order_value)                 AS delivery_time,
+            AVG(provider_acceptance_minutes_per_order_value)         AS acceptance_time,
+            AVG(provider_preparation_minutes_per_order_value)        AS prep_time,
+            AVG(courier_total_wait_minutes_per_order_value)          AS courier_wait,
+            AVG(courier_to_provider_actual_minutes_per_order_value)  AS c2merchant,
+            AVG(courier_to_eater_actual_minutes_per_order_value)     AS c2eater,
+            AVG(menu_dish_photo_coverage_rate_value)                 AS photo_coverage,
+            SUM(total_campaign_discount)                             AS discounts,
+            SUM(total_campaign_spend_bolt)                           AS camp_bolt,
+            SUM(total_campaign_spend_provider)                       AS camp_merchant,
+            SUM(provider_impressions_sessions_count)                 AS sessions,
+            SUM(provider_menu_viewed_sessions_count)                 AS menu_viewed,
+            SUM(provider_product_added_sessions_count)               AS prod_added,
+            AVG(provider_product_added_from_menu_viewed_rate_value)  AS menu_prod_rate
         FROM ng_delivery_spark.fact_provider_weekly
-        WHERE provider_id = {PROVIDER_ID}
+        WHERE provider_id IN ({pids_sql})
           AND metric_timestamp_partition >= date_sub(current_date(), 28)
+        GROUP BY metric_timestamp_partition
         ORDER BY metric_timestamp_partition DESC
         LIMIT 4
         """
         main_rows = run_query(ctx, main_sql)
 
-        # Unique active users (non-additive)
+        # Unique active users across all 3 providers (non-additive, summed)
+        pids_str = ", ".join(f"'{p}'" for p in PROVIDER_IDS)
         users_sql = f"""
-        SELECT metric_timestamp_partition, provider_deliveries_unique_user_count
+        SELECT metric_timestamp_partition, SUM(provider_deliveries_unique_user_count) AS active_users
         FROM ng_delivery_spark.int_provider_metrics_non_additive
-        WHERE entity_id = '{PROVIDER_ID}'
+        WHERE entity_id IN ({pids_str})
           AND timeframe_name = 'week'
           AND metric_timestamp_partition BETWEEN
               date_sub(current_date(), 28) AND current_date()
+        GROUP BY metric_timestamp_partition
         LIMIT 8
         """
         users_rows = run_query(ctx, users_sql)
@@ -287,18 +296,18 @@ def generate_html(data: dict) -> str:
         week_chips += f'<span class="week-chip {chip_cls[i]}">W{i+1} · {w["label"]}</span>\n'
 
     kpi_block = "".join([
-        _kpi("Gross Sales",           f'{last["gross"]:,.0f}'.replace(",", "\u00a0"), "UAH"),
-        _kpi("Net Sales",             f'{last["net"]:,.0f}'.replace(",", "\u00a0"),   "UAH"),
-        _kpi("Delivered Orders",      last["orders"],      "замовлень"),
-        _kpi("AOV",                   f'{last["aov"]:.0f}', "UAH / замовлення"),
-        _kpi("Acceptance Rate",       f'{last["accept"]:.1f}%', "прийнято"),
-        _kpi("Availability Rate",     f'{last["avail"]:.1f}%',  "доступність"),
-        _kpi("Active Users",          last["active_users"], "унікальних користувачів"),
-        _kpi("Order Frequency",       f'{last["freq"]:.2f}', "замовлень / користувач"),
-        _kpi("New Users",             last["new_users"],    "нових клієнтів"),
-        _kpi("Avg Delivery Time",     f'{last["del_time"]:.1f}', "хвилин"),
-        _kpi("Merchant Rating",       f'{last["rating"]:.1f}', "з 5.0"),
-        _kpi("Photo Coverage",        f'{last["photo_cov"]:.0f}%', "фото страв"),
+        _kpi("Валовий продаж",              f'{last["gross"]:,.0f}'.replace(",", "\u00a0"), "UAH"),
+        _kpi("Чистий продаж",               f'{last["net"]:,.0f}'.replace(",", "\u00a0"),   "UAH"),
+        _kpi("Доставлені замовлення",        last["orders"],      "замовлень"),
+        _kpi("Середній чек (AOV)",           f'{last["aov"]:.0f}', "UAH / замовлення"),
+        _kpi("Прийняття замовлень",          f'{last["accept"]:.1f}%', "прийнято"),
+        _kpi("Доступність ресторану",        f'{last["avail"]:.1f}%',  "онлайн"),
+        _kpi("Активні користувачі",          last["active_users"], "унікальних"),
+        _kpi("Частота замовлень",            f'{last["freq"]:.2f}', "замовлень / користувач"),
+        _kpi("Нові користувачі бренду",      last["new_users"],    "нових клієнтів"),
+        _kpi("Середній час доставки",        f'{last["del_time"]:.1f}', "хвилин"),
+        _kpi("Середній рейтинг ресторану",   f'{last["rating"]:.1f}', "з 5.0"),
+        _kpi("Покриття фото страв меню",     f'{last["photo_cov"]:.0f}%', "страв з фото"),
     ])
 
     colors_js = json.dumps(WEEK_COLORS)
@@ -307,59 +316,59 @@ def generate_html(data: dict) -> str:
 
     charts_block = ""
     chart_defs = [
-        ("c-gross",      "Gross Sales",                           "Валовий продаж · UAH",            "gross",      "{}"),
-        ("c-net",        "Net Sales",                             "Чистий продаж після знижок · UAH","net",        "{}"),
-        ("c-orders",     "Delivered Orders",                      "Доставлені замовлення · шт.",     "orders",     "{}"),
-        ("c-aov",        "AOV (Average Order Value)",             "Середній чек · UAH",              "aov",        '{"dec":true}'),
-        ("c-avail",      "Availability Rate",                     "Доступність ресторану · %",        "avail",      '{"pct":true,"ymin":90,"ymax":101}'),
-        ("c-accept",     "Acceptance Rate",                       "Відсоток прийнятих замовлень · %","accept",     '{"pct":true,"ymin":90,"ymax":101}'),
-        ("c-users",      "Active Users",                          "Унікальні замовники · осіб",      "active_users","{}"),
-        ("c-freq",       "Order Frequency",                       "Замовлень на користувача",        "freq",       '{"dec":true}'),
-        ("c-new-users",  "New Users (vendor-level)",              "Нові клієнти бренду · осіб",      "new_users",  "{}"),
-        ("c-discounts",  "Total Discounts for Users",             "Загальні знижки для покупців · UAH","discounts","{}"),
-        ("c-camp-bolt",  "Campaigns Spend by Bolt",               "Витрати Bolt на кампанії · UAH",  "camp_bolt",  "{}"),
-        ("c-camp-merch", "Campaigns Spend by Merchant",           "Витрати мерчанта на кампанії · UAH","camp_merch","{}"),
-        ("c-sessions",   "Sessions with Impressions",             "Сесії з показами · шт.",          "sessions",   "{}"),
-        ("c-imp-menu",   "Impression → Menu Viewed Conversion",   "Конверсія в перегляд меню · %",   "imp_menu",   '{"pct":true,"dec":true}'),
-        ("c-menu-prod",  "Menu Viewed → Product Added",           "Конверсія додавання до кошика · %","menu_prod", '{"pct":true,"dec":true}'),
-        ("c-photo",      "Menu Photo Coverage",                   "Покриття фото страв меню · %",    "photo_cov",  '{"pct":true,"ymin":0,"ymax":105}'),
-        ("c-refunds",    "Orders with Refunds",                   "Замовлення з поверненнями · %",   "refunds",    '{"pct":true,"dec":true}'),
-        ("c-del-time",   "Average Delivery Time",                 "Загальний час доставки · хв.",    "del_time",   '{"dec":true}'),
-        ("c-acc-time",   "Avg. Merchant Acceptance Time",         "Час прийняття замовлення · хв.",  "acc_time",   '{"dec":true}'),
-        ("c-prep-time",  "Avg. Preparation Time",                 "Час приготування · хв.",          "prep_time",  '{"dec":true}'),
-        ("c-cour-wait",  "Avg. Courier Wait Time",                "Час очікування кур'єра · хв.",    "wait_time",  '{"dec":true}'),
-        ("c-cour-merch", "Avg. Courier to Merchant Time",         "Кур'єр → ресторан · хв.",         "c2m_time",   '{"dec":true}'),
-        ("c-cour-eater", "Avg. Courier to Eater Time",            "Кур'єр → покупець · хв.",         "c2e_time",   '{"dec":true}'),
-        ("c-rating",     "Average Merchant Rating",               "Середній рейтинг ресторану · з 5.0","rating",  '{"dec":true,"ymin":0,"ymax":5.5}'),
+        ("c-gross",      "Валовий продаж",                              "Сума продажів до знижок · UAH",             "gross",       "{}"),
+        ("c-net",        "Чистий продаж",                               "Сума продажів після знижок · UAH",          "net",         "{}"),
+        ("c-orders",     "Доставлені замовлення",                       "Кількість виконаних замовлень · шт.",        "orders",      "{}"),
+        ("c-aov",        "Середній чек (AOV)",                          "Валовий продаж / замовлення · UAH",          "aov",         '{"dec":true}'),
+        ("c-avail",      "Доступність ресторану",                       "Відсоток часу онлайн · %",                   "avail",       '{"pct":true,"ymin":90,"ymax":101}'),
+        ("c-accept",     "Прийняття замовлень",                         "Відсоток прийнятих замовлень · %",           "accept",      '{"pct":true,"ymin":90,"ymax":101}'),
+        ("c-users",      "Активні користувачі",                         "Унікальні замовники за тиждень · осіб",      "active_users","{}"),
+        ("c-freq",       "Частота замовлень",                           "Середня кількість замовлень на 1 користувача","freq",        '{"dec":true}'),
+        ("c-new-users",  "Нові користувачі бренду",                     "Вперше замовили у бренду · осіб",            "new_users",   "{}"),
+        ("c-discounts",  "Загальні знижки для покупців",                "Різниця між валовим і чистим продажем · UAH","discounts",   "{}"),
+        ("c-camp-bolt",  "Витрати Bolt на кампанії",                    "Фінансування кампаній від Bolt · UAH",       "camp_bolt",   "{}"),
+        ("c-camp-merch", "Витрати мерчанта на кампанії",                "Фінансування кампаній від партнера · UAH",   "camp_merch",  "{}"),
+        ("c-sessions",   "Сесії з показами",                            "Сесії, де ресторан було показано · шт.",     "sessions",    "{}"),
+        ("c-imp-menu",   "Конверсія: Показ → Перегляд меню",            "Відсоток переглядів меню від показів · %",   "imp_menu",    '{"pct":true,"dec":true}'),
+        ("c-menu-prod",  "Конверсія: Меню → Додавання до кошика",       "Частка додавань у кошик від перегляду · %",  "menu_prod",   '{"pct":true,"dec":true}'),
+        ("c-photo",      "Покриття фото страв меню",                    "Частка страв із фотографією · %",            "photo_cov",   '{"pct":true,"ymin":0,"ymax":105}'),
+        ("c-refunds",    "Замовлення з поверненнями",                   "Частка замовлень з поверненням коштів · %",  "refunds",     '{"pct":true,"dec":true}'),
+        ("c-del-time",   "Середній час доставки",                       "Від підтвердження до вручення · хв.",        "del_time",    '{"dec":true}'),
+        ("c-acc-time",   "Час прийняття замовлення",                    "Середній час підтвердження мерчантом · хв.", "acc_time",    '{"dec":true}'),
+        ("c-prep-time",  "Час приготування",                            "Середній час готування страв · хв.",         "prep_time",   '{"dec":true}'),
+        ("c-cour-wait",  "Час очікування кур'єра",                      "Середній час очікування у ресторані · хв.",  "wait_time",   '{"dec":true}'),
+        ("c-cour-merch", "Час кур'єра до ресторану",                    "Від призначення до прибуття в ресторан · хв.","c2m_time",   '{"dec":true}'),
+        ("c-cour-eater", "Час кур'єра до покупця",                      "Від ресторану до доставки покупцю · хв.",    "c2e_time",    '{"dec":true}'),
+        ("c-rating",     "Середній рейтинг ресторану",                  "Оцінка від покупців · від 0 до 5",           "rating",      '{"dec":true,"ymin":0,"ymax":5.5}'),
     ]
     for cid, title, unit, key, opts in chart_defs:
         charts_block += _chart(cid, title, unit, key, weeks, opts)
 
     table_rows = "".join([
-        _table_row("Gross Sales (UAH)",                    weeks, "gross"),
-        _table_row("Net Sales (UAH)",                      weeks, "net"),
-        _table_row("Delivered Orders",                     weeks, "orders", "dec"),
-        _table_row("AOV (UAH)",                            weeks, "aov",    "dec"),
-        _table_row("Availability Rate (%)",                weeks, "avail",  "pct"),
-        _table_row("Acceptance Rate (%)",                  weeks, "accept", "pct"),
-        _table_row("Active Users",                         weeks, "active_users", "dec"),
-        _table_row("Order Frequency",                      weeks, "freq",   "dec"),
-        _table_row("New Users (vendor)",                   weeks, "new_users","dec"),
-        _table_row("Total Discounts (UAH)",                weeks, "discounts"),
-        _table_row("Campaign Spend Bolt (UAH)",            weeks, "camp_bolt"),
-        _table_row("Campaign Spend Merchant (UAH)",        weeks, "camp_merch"),
-        _table_row("Sessions with Impressions",            weeks, "sessions","dec"),
-        _table_row("Impression → Menu Viewed Conv. (%)",   weeks, "imp_menu","pct"),
-        _table_row("Menu Viewed → Product Added Conv. (%)",weeks, "menu_prod","pct"),
-        _table_row("Menu Photo Coverage (%)",              weeks, "photo_cov","pct"),
-        _table_row("Orders with Refunds (%)",              weeks, "refunds", "pct"),
-        _table_row("Avg. Delivery Time (хв.)",             weeks, "del_time","dec"),
-        _table_row("Avg. Merchant Acceptance Time (хв.)",  weeks, "acc_time","dec"),
-        _table_row("Avg. Preparation Time (хв.)",          weeks, "prep_time","dec"),
-        _table_row("Avg. Courier Wait Time (хв.)",         weeks, "wait_time","dec"),
-        _table_row("Avg. Courier to Merchant (хв.)",       weeks, "c2m_time","dec"),
-        _table_row("Avg. Courier to Eater (хв.)",          weeks, "c2e_time","dec"),
-        _table_row("Average Merchant Rating (0–5)",        weeks, "rating",  "dec"),
+        _table_row("Валовий продаж (UAH)",                         weeks, "gross"),
+        _table_row("Чистий продаж (UAH)",                          weeks, "net"),
+        _table_row("Доставлені замовлення",                        weeks, "orders", "dec"),
+        _table_row("Середній чек — AOV (UAH)",                     weeks, "aov",    "dec"),
+        _table_row("Доступність ресторану (%)",                    weeks, "avail",  "pct"),
+        _table_row("Прийняття замовлень (%)",                      weeks, "accept", "pct"),
+        _table_row("Активні користувачі",                          weeks, "active_users", "dec"),
+        _table_row("Частота замовлень",                            weeks, "freq",   "dec"),
+        _table_row("Нові користувачі бренду",                      weeks, "new_users","dec"),
+        _table_row("Загальні знижки для покупців (UAH)",           weeks, "discounts"),
+        _table_row("Витрати Bolt на кампанії (UAH)",               weeks, "camp_bolt"),
+        _table_row("Витрати мерчанта на кампанії (UAH)",           weeks, "camp_merch"),
+        _table_row("Сесії з показами",                             weeks, "sessions","dec"),
+        _table_row("Конверсія: Показ → Перегляд меню (%)",         weeks, "imp_menu","pct"),
+        _table_row("Конверсія: Меню → Додавання до кошика (%)",    weeks, "menu_prod","pct"),
+        _table_row("Покриття фото страв меню (%)",                 weeks, "photo_cov","pct"),
+        _table_row("Замовлення з поверненнями (%)",                weeks, "refunds", "pct"),
+        _table_row("Середній час доставки (хв.)",                  weeks, "del_time","dec"),
+        _table_row("Час прийняття замовлення мерчантом (хв.)",     weeks, "acc_time","dec"),
+        _table_row("Час приготування (хв.)",                       weeks, "prep_time","dec"),
+        _table_row("Час очікування кур'єра (хв.)",                 weeks, "wait_time","dec"),
+        _table_row("Час кур'єра до ресторану (хв.)",               weeks, "c2m_time","dec"),
+        _table_row("Час кур'єра до покупця (хв.)",                 weeks, "c2e_time","dec"),
+        _table_row("Середній рейтинг ресторану (0–5)",             weeks, "rating",  "dec"),
     ])
 
     return f"""<!DOCTYPE html>
@@ -367,7 +376,7 @@ def generate_html(data: dict) -> str:
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>SHAVUCHA TEAM — Черкаси | Bolt Food Partner Report</title>
+  <title>Шавуха Team — Черкаси | Bolt Food Partner Report</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <style>
     :root {{
@@ -431,14 +440,14 @@ def generate_html(data: dict) -> str:
       </svg>
     </div>
     <div class="header-title">
-      <h1>SHAVUCHA TEAM — Черкаси</h1>
-      <p>Bolt Food · Partner Performance Report</p>
+      <h1>Шавуха Team — Черкаси</h1>
+      <p>Bolt Food · Звіт по партнеру</p>
     </div>
   </div>
   <div class="header-meta">
-    <div>Vendor ID: <strong>{VENDOR_ID}</strong></div>
+    <div>Vendor ID: <strong>62587 / 117729</strong></div>
     <div>Місто: <strong>Черкаси</strong></div>
-    <div>Провайдер: <strong>Шавуха street food вул. Смілянська</strong></div>
+    <div>Локацій: <strong>3 точки</strong></div>
     <div>Оновлено: <strong>{gen}</strong></div>
   </div>
 </header>
@@ -450,13 +459,13 @@ def generate_html(data: dict) -> str:
     <span style="margin-left:auto;font-size:10px;color:var(--gray-400);">Останні 4 завершені тижні · Валюта UAH</span>
   </div>
 
-  <div class="section-title">📊 Ключові показники (остання тиждень)</div>
+  <div class="section-title">📊 Ключові показники — останній тиждень</div>
   <div class="kpi-grid">{kpi_block}</div>
 
-  <div class="section-title">📈 Динаміка по тижнях</div>
+  <div class="section-title">📈 Динаміка показників по тижнях</div>
   <div class="charts-grid">{charts_block}</div>
 
-  <div class="section-title">📋 Зведена таблиця метрик</div>
+  <div class="section-title">📋 Зведена таблиця всіх метрик</div>
   <div class="table-wrap">
     <table>
       <thead>{_col_headers(weeks)}</thead>
@@ -466,9 +475,10 @@ def generate_html(data: dict) -> str:
 </div>
 
 <footer class="footer">
-  <span>Bolt Food</span> Partner Performance Report · SHAVUCHA TEAM Черкаси · Vendor #{VENDOR_ID} ·
-  Дані: Databricks <span>ng_delivery_spark.fact_provider_weekly</span> ·
-  Автоматичне оновлення кожного понеділка о 13:30
+  <span>Bolt Food</span> · Звіт по партнеру · Шавуха Team — Черкаси ·
+  Локації: вул. Смілянська / вул. Припортова / вул. Хрещатик ·
+  Дані: <span>ng_delivery_spark.fact_provider_weekly</span> ·
+  Автооновлення: кожного понеділка о 13:30
 </footer>
 
 <script>
@@ -531,7 +541,7 @@ def main():
         print("ERROR: DATABRICKS_TOKEN env var is not set.", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Fetching metrics for SHAVUCHA TEAM (vendor={VENDOR_ID}, provider={PROVIDER_ID})…")
+    print(f"Fetching metrics for Шавуха Team (vendors={VENDOR_IDS}, providers={PROVIDER_IDS})…")
     data = fetch_metrics()
     print(f"  Got {len(data['weeks'])} weeks of data.")
 
