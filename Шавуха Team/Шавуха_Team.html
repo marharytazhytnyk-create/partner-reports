@@ -276,7 +276,7 @@
   const CL = ['#34D186','#1aad6a','#0d8a52','#066637'];
   const CB = ['#2ab872','#1a9a5f','#0b7545','#055430'];
 
-  function bar(id, data, opts) {
+  function bar(id, data, opts = {}) {
     const ctx = document.getElementById(id);
     if (!ctx) return;
     new Chart(ctx, {
