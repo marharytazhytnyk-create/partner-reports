@@ -91,3 +91,40 @@ jobs:
           git add "Шавуха Team/"
           git diff --staged --quiet || git commit -m "🟢 Шавуха Team report — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
+
+  # ── BARANCHIK weekly report (every Monday 13:30 EEST) ────────────────────
+  generate-baranchik:
+    name: BARANCHIK Той самий баранчик — Weekly Report
+    runs-on: ubuntu-latest
+    # Run on Monday cron (30 10 * * 1) OR manual dispatch
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '30 10 * * 1'
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate BARANCHIK report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python "той самий баранчик/generate_baranchik.py"
+
+      - name: Commit and push BARANCHIK report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "той самий баранчик/"
+          git diff --staged --quiet || git commit -m "🐑 BARANCHIK report — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аналітика BARANCHIK | Звіт за 8 тижнів</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #f5a623;
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --muted: #6c757d;
+    --border: #dee2e6;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --blue: #2980b9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-brand { display: flex; align-items: center; gap: 16px; }
+  .header-logo {
+    width: 60px; height: 60px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; color: white;
+  }
+  .header-title h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .header-title p { font-size: 14px; opacity: 0.75; margin-top: 4px; }
+  .header-meta { text-align: right; }
+  .header-meta .period { font-size: 15px; font-weight: 600; }
+  .header-meta .updated { font-size: 12px; opacity: 0.65; margin-top: 4px; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-top: 6px;
+  }
+  .badge-live { background: #27ae60; color: white; }
+
+  /* MAIN */
+  .main { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SUMMARY CARDS */
+  .summary-section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 18px; font-weight: 700; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+    color: var(--primary);
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 2px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+  .city-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .city-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 5px solid var(--accent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .city-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .city-card::before {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, transparent, rgba(233,69,96,0.06));
+    border-radius: 0 0 0 80px;
+  }
+  .city-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--primary); }
+  .city-card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .city-stat { }
+  .city-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .city-stat-value { font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 2px; }
+  .city-stat-value.green { color: var(--green); }
+  .city-stat-value.red { color: var(--red); }
+  .city-card-btn {
+    margin-top: 14px;
+    background: linear-gradient(135deg, var(--accent), #c0392b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .city-card-btn:hover { opacity: 0.9; }
+  .city-card-btn .arrow { transition: transform 0.3s; }
+  .city-card-btn.open .arrow { transform: rotate(180deg); }
+
+  /* CITY ACCORDION */
+  .city-section { margin-bottom: 20px; }
+  .city-panel {
+    background: var(--card);
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: none;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .city-panel.open {
+    display: block;
+    border-color: var(--accent);
+    animation: slideDown 0.35s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .city-panel-header {
+    background: linear-gradient(135deg, var(--primary), #16213e);
+    color: white;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .city-panel-header h2 { font-size: 20px; font-weight: 800; }
+  .city-panel-header .period-badge {
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  /* METRICS GRID */
+  .metrics-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .metrics-tab {
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .metrics-tab.active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+  }
+  .metrics-tab:hover:not(.active) { color: var(--text); }
+
+  .tab-content { display: none; padding: 24px; }
+  .tab-content.active { display: block; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .chart-card {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .chart-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-card-title .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .chart-card-unit {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .chart-card-total {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .chart-wrapper { position: relative; height: 200px; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .header { padding: 20px; }
+    .header-title h1 { font-size: 20px; }
+    .main { padding: 16px 12px; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .city-cards { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .city-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-logo">Б</div>
+    <div class="header-title">
+      <h1>BARANCHIK — Vendor External Report 3.0</h1>
+      <p>Аналітика за 8 повних тижнів по всіх локаціях мережі</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="period">08.09.2025 — 27.10.2025</div>
+    <div class="updated" id="last-updated">Оновлено: завантаження...</div>
+    <span class="badge badge-live">● Щотижневі дані</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-section">
+    <div class="section-title">Огляд мережі по містах</div>
+    <div class="city-cards" id="cityCards"></div>
+  </div>
+
+  <!-- CITY PANELS -->
+  <div class="section-title">Детальні метрики по містах</div>
+  <div id="cityPanels"></div>
+
+</div>
+
+<div class="footer">
+  Звіт генерується автоматично кожного понеділка о 13:30 з даних Databricks (таблиця <code>ng_delivery_spark.fact_vendor_weekly</code>) •
+  Дані за період 08.09.2025 — 27.10.2025 • Валюта: гривня (₴) •
+  <a href="https://github.com/marharytazhytnyk-create/partner-reports" target="_blank">GitHub репозиторій</a>
+</div>
+
+<script>
+// ============================================================
+// EMBEDDED DATA (auto-generated by generate_baranchik.py)
+// Period: 2025-09-08 to 2025-10-27 (8 complete weeks)
+// Source: ng_delivery_spark.fact_vendor_weekly
+// Exchange rate: ~48.28 UAH/EUR
+// ============================================================
+
+const WEEKS = ['08.09', '15.09', '22.09', '29.09', '06.10', '13.10', '20.10', '27.10'];
+const WEEKS_FULL = [
+  '08.09.2025','15.09.2025','22.09.2025','29.09.2025',
+  '06.10.2025','13.10.2025','20.10.2025','27.10.2025'
+];
+const RATE = 48.28; // UAH per EUR
+
+const CITIES_DATA = {
+  'Львів': {
+    color: '#e94560',
+    emoji: '🦁',
+    vendor_id: 114922,
+    metrics: {
+      delivered_orders: [13, 17, 13, 21, 9, 17, 7, 18],
+      placed_orders:    [14, 17, 13, 24, 12, 20, 8, 18],
+      gmv_uah:          [15063, 15051, 11088, 21464, 9210, 18933, 8793, 16816],
+      avg_order_uah:    [1159, 878, 846, 1019, 1025, 1109, 1250, 927],
+      acceptance_rate:  [100.0, 100.0, 100.0, 95.8, 100.0, 90.0, 87.5, 100.0],
+      bad_rating_pct:   [21.4, 0.0, 0.0, 4.2, 0.0, 0.0, 12.5, 5.6],
+      good_rating_pct:  [28.6, 23.5, 0.0, 20.8, 25.0, 20.0, 12.5, 22.2],
+      avg_rating:       [3.57, 5.0, null, 4.5, 5.0, 5.0, 4.0, 4.2],
+      late_delivery_pct:[21.4, 11.8, 15.4, 41.7, 16.7, 35.0, 37.5, 27.8],
+      prep_time_min:    [29.4, 30.8, 28.9, 30.8, 33.7, 34.7, 33.7, 35.0],
+      missing_items_pct:[7.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      failed_order_pct: [7.1, 0.0, 0.0, 12.5, 25.0, 15.0, 12.5, 0.0],
+      commission_uah:   [3273, 3078, 2207, 4767, 2150, 3995, 1821, 3402],
+      delivery_fee_uah: [777, 786, 821, 1331, 566, 856, 407, 1059],
+      provider_price_uah:[14156, 14104, 10120, 19926, 8556, 17914, 8318, 15588],
+    }
+  },
+  'Полтава': {
+    color: '#f5a623',
+    emoji: '🌻',
+    vendor_id: 114927,
+    metrics: {
+      delivered_orders: [12, 29, 11, 17, 18, 26, 25, 23],
+      placed_orders:    [13, 30, 11, 17, 20, 27, 26, 27],
+      gmv_uah:          [7945, 29299, 9854, 19517, 16777, 21342, 23593, 18526],
+      avg_order_uah:    [662, 1003, 889, 1144, 932, 819, 939, 798],
+      acceptance_rate:  [92.3, 100.0, 100.0, 100.0, 90.0, 96.3, 100.0, 92.6],
+      bad_rating_pct:   [0.0, 0.0, 0.0, 0.0, 5.0, 3.7, 7.7, 7.4],
+      good_rating_pct:  [30.8, 30.0, 27.3, 5.9, 5.0, 33.3, 19.2, 22.2],
+      avg_rating:       [5.0, 5.0, 5.0, 5.0, 4.0, 4.5, 4.4, 4.25],
+      late_delivery_pct:[23.1, 20.0, 9.1, 41.2, 25.0, 29.6, 50.0, 59.3],
+      prep_time_min:    [30.4, 32.2, 35.4, 39.7, 35.8, 35.4, 36.2, 37.4],
+      missing_items_pct:[0.0, 0.0, 0.0, 0.0, 0.0, 3.7, 0.0, 3.7],
+      failed_order_pct: [7.7, 3.3, 0.0, 0.0, 10.0, 3.7, 3.8, 14.8],
+      commission_uah:   [1598, 6077, 2013, 4051, 3419, 4352, 4622, 4129],
+      delivery_fee_uah: [582, 1610, 535, 876, 1066, 1269, 1365, 1146],
+      provider_price_uah:[7258, 27396, 9218, 18478, 15540, 19836, 22008, 17122],
+    }
+  },
+  'Черкаси': {
+    color: '#8e44ad',
+    emoji: '🌊',
+    vendor_id: 114934,
+    metrics: {
+      delivered_orders: [17, 18, 17, 14, 18, 13, 15, 9],
+      placed_orders:    [18, 18, 17, 15, 18, 13, 15, 9],
+      gmv_uah:          [11835, 14968, 15758, 15465, 15327, 9032, 18933, 9683],
+      avg_order_uah:    [696, 825, 919, 1101, 852, 692, 1255, 1068],
+      acceptance_rate:  [100.0, 100.0, 100.0, 93.3, 100.0, 100.0, 100.0, 100.0],
+      bad_rating_pct:   [5.6, 11.1, 17.6, 20.0, 5.6, 0.0, 6.7, 11.1],
+      good_rating_pct:  [27.8, 22.2, 23.5, 20.0, 33.3, 30.8, 26.7, 11.1],
+      avg_rating:       [4.33, 3.67, 3.57, 3.5, 4.43, 5.0, 4.6, 3.5],
+      late_delivery_pct:[16.7, 27.8, 23.5, 46.7, 22.2, 53.8, 20.0, 66.7],
+      prep_time_min:    [31.6, 33.9, 34.5, 31.5, 32.2, 31.3, 35.1, 31.0],
+      missing_items_pct:[5.6, 0.0, 0.0, 0.0, 0.0, 0.0, 6.7, 0.0],
+      failed_order_pct: [5.6, 0.0, 0.0, 6.7, 0.0, 0.0, 0.0, 0.0],
+      commission_uah:   [2347, 3014, 3153, 3168, 3072, 1740, 3854, 1955],
+      delivery_fee_uah: [985, 958, 1056, 786, 1091, 879, 994, 550],
+      provider_price_uah:[10672, 13810, 14456, 14448, 13948, 7946, 17620, 8954],
+    }
+  },
+  'Харків': {
+    color: '#2980b9',
+    emoji: '🏙️',
+    vendor_id: 114936,
+    metrics: {
+      delivered_orders: [26, 19, 17, 25, 32, 26, 35, 23],
+      placed_orders:    [26, 19, 17, 25, 33, 26, 35, 23],
+      gmv_uah:          [28803, 18604, 21275, 25040, 31714, 28775, 37389, 25119],
+      avg_order_uah:    [1107, 971, 1241, 998, 992, 1103, 1062, 1081],
+      acceptance_rate:  [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+      bad_rating_pct:   [0.0, 0.0, 5.9, 0.0, 0.0, 0.0, 0.0, 4.3],
+      good_rating_pct:  [23.1, 31.6, 35.3, 28.0, 30.3, 30.8, 34.3, 26.1],
+      avg_rating:       [5.0, 5.0, 4.71, 5.0, 4.9, 5.0, 5.0, 4.43],
+      late_delivery_pct:[30.8, 15.8, 29.4, 32.0, 24.2, 19.2, 45.7, 21.7],
+      prep_time_min:    [39.0, 32.4, 35.0, 34.9, 31.7, 33.0, 34.0, 32.6],
+      missing_items_pct:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      failed_order_pct: [0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0],
+      commission_uah:   [5860, 3756, 4334, 5038, 6647, 5822, 7552, 5034],
+      delivery_fee_uah: [1814, 1130, 1178, 1821, 2223, 1945, 2525, 1770],
+      provider_price_uah:[26638, 17218, 19864, 22986, 29184, 26548, 34522, 23122],
+    }
+  },
+  'Кременчук': {
+    color: '#27ae60',
+    emoji: '🌿',
+    vendor_id: 114939,
+    metrics: {
+      delivered_orders: [27, 15, 18, 11, 11, 17, 11, 12],
+      placed_orders:    [27, 15, 19, 12, 11, 17, 11, 12],
+      gmv_uah:          [23510, 10817, 16059, 9645, 9119, 11210, 9955, 9230],
+      avg_order_uah:    [871, 715, 884, 873, 830, 658, 901, 763],
+      acceptance_rate:  [100.0, 100.0, 100.0, 91.7, 100.0, 100.0, 100.0, 100.0],
+      bad_rating_pct:   [3.7, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      good_rating_pct:  [33.3, 20.0, 21.1, 8.3, 27.3, 17.6, 54.5, 16.7],
+      avg_rating:       [4.6, 5.0, 4.75, 5.0, 4.67, 5.0, 5.0, 5.0],
+      late_delivery_pct:[40.7, 40.0, 36.8, 25.0, 54.5, 41.2, 36.4, 50.0],
+      prep_time_min:    [30.5, 30.7, 32.3, 34.2, 31.9, 31.5, 38.4, 33.1],
+      missing_items_pct:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      failed_order_pct: [0.0, 0.0, 5.3, 8.3, 0.0, 0.0, 0.0, 0.0],
+      commission_uah:   [4874, 2215, 3302, 1967, 1872, 2253, 2034, 1870],
+      delivery_fee_uah: [994, 488, 635, 500, 470, 754, 504, 504],
+      provider_price_uah:[22152, 10154, 15150, 8984, 8496, 10264, 9290, 8570],
+    }
+  }
+};
+
+// Metric definitions
+const METRIC_GROUPS = {
+  'Замовлення': [
+    { key: 'delivered_orders', label: 'Доставлені замовлення', unit: 'шт.', icon: '📦', color: '#2980b9', type: 'count' },
+    { key: 'placed_orders', label: 'Розміщені замовлення', unit: 'шт.', icon: '🛒', color: '#8e44ad', type: 'count' },
+    { key: 'gmv_uah', label: 'Загальний GMV', unit: '₴', icon: '💰', color: '#27ae60', type: 'currency' },
+    { key: 'avg_order_uah', label: 'Середній чек', unit: '₴', icon: '🧾', color: '#f39c12', type: 'currency' },
+  ],
+  'Фінанси': [
+    { key: 'commission_uah', label: 'Комісія Bolt', unit: '₴', icon: '🏷️', color: '#e94560', type: 'currency' },
+    { key: 'delivery_fee_uah', label: 'Плата за доставку', unit: '₴', icon: '🛵', color: '#1abc9c', type: 'currency' },
+    { key: 'provider_price_uah', label: 'Дохід закладу', unit: '₴', icon: '🍽️', color: '#3498db', type: 'currency' },
+  ],
+  'Якість': [
+    { key: 'avg_rating', label: 'Середній рейтинг', unit: '/ 5', icon: '⭐', color: '#f39c12', type: 'rating' },
+    { key: 'good_rating_pct', label: 'Хороші оцінки', unit: '%', icon: '👍', color: '#27ae60', type: 'percent' },
+    { key: 'bad_rating_pct', label: 'Погані оцінки', unit: '%', icon: '👎', color: '#e74c3c', type: 'percent' },
+    { key: 'missing_items_pct', label: 'Відсутні товари', unit: '%', icon: '❌', color: '#e67e22', type: 'percent' },
+  ],
+  'Операційні': [
+    { key: 'acceptance_rate', label: 'Рівень прийняття', unit: '%', icon: '✅', color: '#27ae60', type: 'percent' },
+    { key: 'late_delivery_pct', label: 'Запізнення доставки', unit: '%', icon: '⏱️', color: '#e74c3c', type: 'percent' },
+    { key: 'prep_time_min', label: 'Час приготування', unit: 'хв.', icon: '🍳', color: '#8e44ad', type: 'time' },
+    { key: 'failed_order_pct', label: 'Невдалі замовлення', unit: '%', icon: '🚫', color: '#c0392b', type: 'percent' },
+  ]
+};
+
+// ============================================================
+// UI RENDERING
+// ============================================================
+
+function formatNum(val, type) {
+  if (val === null || val === undefined) return '—';
+  if (type === 'currency') return '₴' + Math.round(val).toLocaleString('uk-UA');
+  if (type === 'percent') return val.toFixed(1) + '%';
+  if (type === 'rating') return val.toFixed(2);
+  if (type === 'time') return val.toFixed(1);
+  if (type === 'count') return Math.round(val).toLocaleString('uk-UA');
+  return val;
+}
+
+function cityTotal(city, key) {
+  const vals = city.metrics[key];
+  if (!vals) return 0;
+  return vals.reduce((a, b) => a + (b || 0), 0);
+}
+
+function cityAvg(city, key) {
+  const vals = city.metrics[key].filter(v => v !== null);
+  if (!vals.length) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+// Build summary cards
+function buildCityCards() {
+  const container = document.getElementById('cityCards');
+  Object.entries(CITIES_DATA).forEach(([name, city]) => {
+    const totalOrders = cityTotal(city, 'delivered_orders');
+    const totalGmv = cityTotal(city, 'gmv_uah');
+    const avgRating = cityAvg(city, 'avg_rating');
+    const avgAcceptance = cityAvg(city, 'acceptance_rate');
+
+    const card = document.createElement('div');
+    card.className = 'city-card';
+    card.style.borderLeftColor = city.color;
+    card.innerHTML = `
+      <h3>${city.emoji} ${name}</h3>
+      <div class="city-card-stats">
+        <div class="city-stat">
+          <div class="city-stat-label">Замовлення</div>
+          <div class="city-stat-value">${totalOrders}</div>
+        </div>
+        <div class="city-stat">
+          <div class="city-stat-label">GMV</div>
+          <div class="city-stat-value">₴${(totalGmv/1000).toFixed(0)}к</div>
+        </div>
+        <div class="city-stat">
+          <div class="city-stat-label">Рейтинг</div>
+          <div class="city-stat-value ${avgRating >= 4.5 ? 'green' : avgRating < 4 ? 'red' : ''}">${avgRating.toFixed(2)}</div>
+        </div>
+        <div class="city-stat">
+          <div class="city-stat-label">Прийняття</div>
+          <div class="city-stat-value ${avgAcceptance >= 95 ? 'green' : 'red'}">${avgAcceptance.toFixed(1)}%</div>
+        </div>
+      </div>
+      <button class="city-card-btn" onclick="toggleCity('${name}', this)">
+        Переглянути метрики <span class="arrow">▼</span>
+      </button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Build city panels
+function buildCityPanels() {
+  const container = document.getElementById('cityPanels');
+  Object.entries(CITIES_DATA).forEach(([name, city]) => {
+    const section = document.createElement('div');
+    section.className = 'city-section';
+    section.id = `section-${name}`;
+
+    // Build tabs HTML
+    const tabsHtml = Object.keys(METRIC_GROUPS).map((group, i) =>
+      `<div class="metrics-tab ${i === 0 ? 'active' : ''}" onclick="switchTab('${name}','${group}',this)">${group}</div>`
+    ).join('');
+
+    // Build tab contents
+    const tabContentsHtml = Object.entries(METRIC_GROUPS).map(([group, metrics], i) => {
+      const chartsHtml = metrics.map(m => `
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">
+              <div class="chart-card-title">${m.icon} ${m.label}</div>
+            </div>
+            <div>
+              <div class="chart-card-unit">${m.unit}</div>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chart-${name}-${m.key}"></canvas>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="tab-content ${i === 0 ? 'active' : ''}" id="tab-${name}-${group}">
+          <div class="charts-grid">${chartsHtml}</div>
+        </div>
+      `;
+    }).join('');
+
+    section.innerHTML = `
+      <div class="city-panel" id="panel-${name}">
+        <div class="city-panel-header">
+          <span style="font-size:24px">${city.emoji}</span>
+          <h2>BARANCHIK ${name}</h2>
+          <span class="period-badge">08.09 — 27.10.2025</span>
+        </div>
+        <div class="metrics-tabs">${tabsHtml}</div>
+        ${tabContentsHtml}
+      </div>
+    `;
+    container.appendChild(section);
+  });
+}
+
+// Toggle city panel
+const openPanels = new Set();
+const chartInstances = {};
+
+function toggleCity(name, btn) {
+  const panel = document.getElementById(`panel-${name}`);
+  if (openPanels.has(name)) {
+    panel.classList.remove('open');
+    btn.classList.remove('open');
+    openPanels.delete(name);
+  } else {
+    panel.classList.add('open');
+    btn.classList.add('open');
+    openPanels.add(name);
+    // Render charts for all tabs
+    setTimeout(() => renderAllCharts(name), 50);
+  }
+}
+
+function switchTab(cityName, group, tabEl) {
+  // Deactivate all tabs and contents
+  const panel = document.getElementById(`panel-${cityName}`);
+  panel.querySelectorAll('.metrics-tab').forEach(t => t.classList.remove('active'));
+  panel.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.getElementById(`tab-${cityName}-${group}`).classList.add('active');
+}
+
+function renderAllCharts(cityName) {
+  const city = CITIES_DATA[cityName];
+  Object.entries(METRIC_GROUPS).forEach(([group, metrics]) => {
+    metrics.forEach(m => {
+      renderChart(cityName, city, m);
+    });
+  });
+}
+
+function renderChart(cityName, city, metric) {
+  const canvasId = `chart-${cityName}-${metric.key}`;
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  // Destroy existing
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+  }
+
+  const data = city.metrics[metric.key];
+  const ctx = canvas.getContext('2d');
+
+  const backgroundColors = data.map((v, i) => {
+    const alpha = 0.7 + (i / data.length) * 0.3;
+    return hexToRgba(metric.color, alpha);
+  });
+
+  chartInstances[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: WEEKS,
+      datasets: [{
+        label: metric.label,
+        data: data,
+        backgroundColor: backgroundColors,
+        borderColor: metric.color,
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => `Тиждень ${WEEKS_FULL[items[0].dataIndex]}`,
+            label: (item) => {
+              const val = item.raw;
+              if (val === null) return 'Немає даних';
+              return `${metric.label}: ${formatNum(val, metric.type)}`;
+            }
+          },
+          backgroundColor: 'rgba(26,26,46,0.95)',
+          titleColor: '#fff',
+          bodyColor: '#ccc',
+          borderColor: metric.color,
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10,
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: '#6c757d' }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { size: 11 },
+            color: '#6c757d',
+            callback: (val) => {
+              if (metric.type === 'currency') return '₴' + Math.round(val).toLocaleString('uk-UA');
+              if (metric.type === 'percent') return val.toFixed(0) + '%';
+              if (metric.type === 'rating') return val.toFixed(1);
+              return val;
+            }
+          },
+          beginAtZero: metric.type !== 'rating',
+          min: metric.type === 'rating' ? 1 : undefined,
+          max: metric.type === 'rating' ? 5 : undefined,
+        }
+      },
+      animation: { duration: 600, easing: 'easeInOutQuart' }
+    }
+  });
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildCityCards();
+  buildCityPanels();
+
+  // Set last updated timestamp
+  const now = new Date();
+  const formatted = now.toLocaleDateString('uk-UA', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+  document.getElementById('last-updated').textContent = `Оновлено: ${formatted}`;
+});
+</script>
+</body>
+</html>
