@@ -1,0 +1,77 @@
+name: Оновлення звіту IZI BURGER
+
+on:
+  schedule:
+    # Кожного понеділка о 10:30 UTC = 13:30 за Київським часом (UTC+3, влітку)
+    - cron: '30 10 * * 1'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Причина ручного запуску'
+        required: false
+        default: 'Ручне оновлення'
+
+jobs:
+  update-report:
+    name: Оновити HTML-звіт IZI BURGER
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout репозиторію
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Налаштування Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Генерація звіту
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: |
+          cd "Izi Burger"
+          python3 generate_izi_burger_report.py
+      
+      - name: Перевірка змін
+        id: check_changes
+        run: |
+          git diff --name-only
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit та Push
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          WEEK_DATE=$(date -d "last monday" +%d.%m.%Y 2>/dev/null || date -v-mon +%d.%m.%Y 2>/dev/null || date +%d.%m.%Y)
+          
+          git add "Izi Burger/Щотижневий звіт Izi Burger.html"
+          git commit -m "📊 Оновлення звіту IZI BURGER за тижень ${WEEK_DATE}
+
+          - Дані отримано з Databricks fact_provider_weekly
+          - Оновлено 3 локації у Харкові
+          - Автоматичне оновлення щопонеділка о 13:30"
+          
+          git push
+      
+      - name: Підсумок
+        if: always()
+        run: |
+          echo "## Результат оновлення звіту IZI BURGER" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Дата**: $(date '+%d.%m.%Y %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Файл**: \`Izi Burger/Щотижневий звіт Izi Burger.html\`" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_changes.outputs.has_changes }}" = "true" ]; then
+            echo "- **Статус**: ✅ Звіт оновлено та запушено" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Статус**: ℹ️ Змін не виявлено" >> $GITHUB_STEP_SUMMARY
+          fi
