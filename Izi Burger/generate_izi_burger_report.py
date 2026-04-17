@@ -55,11 +55,9 @@ def db_request(endpoint, method='GET', data=None):
 
 def run_spark_command(code: str) -> str:
     """Execute Python code on Databricks cluster and return output."""
-    # Create context
     ctx = db_request('/api/1.2/contexts/create', 'POST', {'clusterId': CLUSTER_ID, 'language': 'python'})
     ctx_id = ctx['id']
-    
-    # Execute command
+
     cmd = db_request('/api/1.2/commands/execute', 'POST', {
         'clusterId': CLUSTER_ID,
         'contextId': ctx_id,
@@ -67,8 +65,7 @@ def run_spark_command(code: str) -> str:
         'command': code
     })
     cmd_id = cmd['id']
-    
-    # Poll for result
+
     import time
     for _ in range(120):
         time.sleep(10)
@@ -84,30 +81,25 @@ def run_spark_command(code: str) -> str:
                 raise RuntimeError(f"Spark error: {results.get('summary', '')[:500]}")
         elif s in ('Error', 'Cancelled'):
             raise RuntimeError(f"Command {s}")
-    
+
     raise TimeoutError("Command timed out after 20 minutes")
 
 
 def fetch_data():
     """Fetch 8 weeks of data from Databricks and return structured dict."""
-    # Compute date range: last 8 complete weeks ending last Sunday
     today = datetime.date.today()
-    # Find last Monday (start of current week)
     days_since_monday = today.weekday()
     last_monday = today - datetime.timedelta(days=days_since_monday)
-    # Go back 8 weeks from last Monday
     start_date = last_monday - datetime.timedelta(weeks=8)
-    end_date = last_monday - datetime.timedelta(days=1)  # Last Sunday
-    
-    # The weekly metric timestamps correspond to the Monday of each week
+
     week_starts = [start_date + datetime.timedelta(weeks=i) for i in range(8)]
-    
+
     print(f"Fetching data for weeks: {week_starts[0]} to {week_starts[-1]}")
-    
-    pids_str = ', '.join(str(p) for p in IZI_PROVIDER_IDS)
-    start_str = week_starts[0].strftime('%Y-%m-%d')
-    end_str = (week_starts[-1] + datetime.timedelta(days=6)).strftime('%Y-%m-%d')
-    
+
+    pids_str   = ', '.join(str(p) for p in IZI_PROVIDER_IDS)
+    start_str  = week_starts[0].strftime('%Y-%m-%d')
+    end_str    = (week_starts[-1] + datetime.timedelta(days=6)).strftime('%Y-%m-%d')
+
     spark_code = f"""
 import pyspark.sql.functions as F
 import json
@@ -122,15 +114,11 @@ izi_data = df.filter(
     'provider_id', 'city_id', 'metric_timestamp_local',
     'delivered_orders_count', 'placed_orders_count',
     'failed_order_rate_value', 'total_gmv_before_discounts', 'total_gmv_after_discounts',
-    'total_provider_price_before_discounts', 'total_provider_price_after_discounts',
-    'total_delivery_price_before_discounts', 'total_delivery_price_after_discounts',
     'provider_acceptance_rate_value', 'courier_delivery_completion_rate_value',
     'bad_order_rate_value', 'bad_provider_rating_rate_value', 'courier_acceptance_rate_value',
-    'courier_minutes_per_order_value', 'basket_items_per_order_value',
-    'users_activated_count', 'provider_price_after_discounts_per_order_local_value',
-    'delivery_price_after_discounts_per_order_local_value',
-    'courier_redispatch_rate_value', 'cs_ticket_order_rate_value',
-    'customer_refunded_order_rate_value', 'total_provider_active_minutes'
+    'basket_items_per_order_value', 'users_activated_count',
+    'cs_ticket_order_rate_value', 'customer_refunded_order_rate_value',
+    'total_provider_active_minutes', 'total_provider_inactive_minutes'
 ).orderBy('provider_id', 'metric_timestamp_local')
 
 result = izi_data.collect()
@@ -150,24 +138,24 @@ for row in result:
 dbutils.fs.put('/FileStore/izi_burger_report_data.json', json.dumps(output, ensure_ascii=False), overwrite=True)
 print(f"Done: {{len(output)}} rows written")
 """
-    
+
     output = run_spark_command(spark_code)
     print(f"Spark output: {output}")
-    
-    # Download from DBFS
+
     resp = db_request('/api/2.0/dbfs/read?path=/FileStore/izi_burger_report_data.json')
     data_str = base64.b64decode(resp['data']).decode('utf-8')
     raw_rows = json.loads(data_str)
-    
-    # Structure: {pid: {date_str: {metric: value}}}
+
+    # structured[pid][date] = {metric: value}
     structured = {}
     for row in raw_rows:
-        pid = str(row['provider_id'])
+        pid  = str(row['provider_id'])
         date = row['metric_timestamp_local']
         if pid not in structured:
             structured[pid] = {}
-        structured[pid][date] = {k: v for k, v in row.items() if k not in ('provider_id', 'city_id', 'metric_timestamp_local')}
-    
+        structured[pid][date] = {k: v for k, v in row.items()
+                                 if k not in ('provider_id', 'city_id', 'metric_timestamp_local')}
+
     return structured, week_starts
 
 
@@ -180,148 +168,140 @@ def generate_html(structured, week_starts):
         f"{w.strftime('%d.%m')}–{(w + datetime.timedelta(days=6)).strftime('%d.%m')}"
         for w in week_starts
     ]
-    
+
     generated_at = datetime.datetime.now().strftime('%d.%m.%Y %H:%M')
-    
+
     def sf(val, default=0.0):
         try:
             return float(val) if val is not None else default
         except Exception:
             return default
-    
+
     def g(pid, w, key):
         return structured.get(pid, {}).get(w, {}).get(key, None)
-    
+
     def pct(pid, w, key):
         val = g(pid, w, key)
         return f'{sf(val)*100:.1f}%' if val is not None else '—'
-    
+
     def uah_fmt(val):
         if val is None:
             return '—'
         return f'{sf(val):,.0f}'.replace(',', '\u00a0') + '\u00a0₴'
-    
+
     def uah(pid, w, key):
         return uah_fmt(g(pid, w, key))
-    
+
     def num1(pid, w, key):
         val = g(pid, w, key)
         return f'{sf(val):.1f}' if val is not None else '—'
-    
+
     def num0(pid, w, key):
         val = g(pid, w, key)
         return f'{sf(val):.0f}' if val is not None else '—'
-    
+
     def get_arr(pid, key, mult=1, rnd=1):
         return [round(sf(g(pid, w, key), 0) * mult, rnd) for w in WEEKS]
-    
+
+    def avail_pct_str(pid, w):
+        active   = sf(g(pid, w, 'total_provider_active_minutes'))
+        inactive = sf(g(pid, w, 'total_provider_inactive_minutes'))
+        total = active + inactive
+        if total == 0:
+            return '—'
+        return f'{active / total * 100:.1f}%'
+
+    def avail_arr(pid):
+        result = []
+        for w in WEEKS:
+            active   = sf(g(pid, w, 'total_provider_active_minutes'))
+            inactive = sf(g(pid, w, 'total_provider_inactive_minutes'))
+            total = active + inactive
+            result.append(round(active / total * 100, 1) if total > 0 else 0)
+        return result
+
     # Build chart data
     chart_data = {}
     for pid in PROVIDERS_ORDER:
         chart_data[pid] = {
-            'delivered_orders': get_arr(pid, 'delivered_orders_count', 1, 0),
-            'placed_orders': get_arr(pid, 'placed_orders_count', 1, 0),
-            'failed_order_rate': get_arr(pid, 'failed_order_rate_value', 100, 1),
-            'gmv_before': get_arr(pid, 'total_gmv_before_discounts', 1, 0),
-            'gmv_after': get_arr(pid, 'total_gmv_after_discounts', 1, 0),
-            'provider_price_total': get_arr(pid, 'total_provider_price_after_discounts', 1, 0),
-            'delivery_price_total': get_arr(pid, 'total_delivery_price_after_discounts', 1, 0),
+            'delivered_orders':    get_arr(pid, 'delivered_orders_count', 1, 0),
+            'placed_orders':       get_arr(pid, 'placed_orders_count', 1, 0),
+            'failed_order_rate':   get_arr(pid, 'failed_order_rate_value', 100, 1),
+            'gmv_before':          get_arr(pid, 'total_gmv_before_discounts', 1, 0),
+            'gmv_after':           get_arr(pid, 'total_gmv_after_discounts', 1, 0),
             'provider_acceptance': get_arr(pid, 'provider_acceptance_rate_value', 100, 1),
-            'courier_completion': get_arr(pid, 'courier_delivery_completion_rate_value', 100, 1),
-            'bad_order_rate': get_arr(pid, 'bad_order_rate_value', 100, 1),
+            'courier_completion':  get_arr(pid, 'courier_delivery_completion_rate_value', 100, 1),
+            'courier_acceptance':  get_arr(pid, 'courier_acceptance_rate_value', 100, 1),
+            'bad_order_rate':      get_arr(pid, 'bad_order_rate_value', 100, 1),
             'bad_provider_rating': get_arr(pid, 'bad_provider_rating_rate_value', 100, 1),
-            'courier_acceptance': get_arr(pid, 'courier_acceptance_rate_value', 100, 1),
-            'courier_minutes': get_arr(pid, 'courier_minutes_per_order_value', 1, 1),
-            'basket_items': get_arr(pid, 'basket_items_per_order_value', 1, 1),
-            'users_activated': get_arr(pid, 'users_activated_count', 1, 0),
-            'avg_provider_price': get_arr(pid, 'provider_price_after_discounts_per_order_local_value', 1, 1),
-            'avg_delivery_price': get_arr(pid, 'delivery_price_after_discounts_per_order_local_value', 1, 1),
-            'courier_redispatch': get_arr(pid, 'courier_redispatch_rate_value', 100, 1),
-            'cs_ticket': get_arr(pid, 'cs_ticket_order_rate_value', 100, 1),
-            'customer_refund': get_arr(pid, 'customer_refunded_order_rate_value', 100, 1),
-            'active_minutes': get_arr(pid, 'total_provider_active_minutes', 1, 0),
+            'basket_items':        get_arr(pid, 'basket_items_per_order_value', 1, 1),
+            'users_activated':     get_arr(pid, 'users_activated_count', 1, 0),
+            'cs_ticket':           get_arr(pid, 'cs_ticket_order_rate_value', 100, 1),
+            'customer_refund':     get_arr(pid, 'customer_refunded_order_rate_value', 100, 1),
+            'availability':        avail_arr(pid),
         }
-    
+
     labels_json = json.dumps(WEEK_LABELS)
-    
+
     def build_table_rows(pid):
-        rows = []
         metrics = [
-            ('Виконані замовлення', lambda w: num0(pid, w, 'delivered_orders_count')),
-            ('Розміщені замовлення', lambda w: num0(pid, w, 'placed_orders_count')),
-            ('Відсоток невдалих замовлень', lambda w: pct(pid, w, 'failed_order_rate_value')),
-            ('GMV до знижок', lambda w: uah(pid, w, 'total_gmv_before_discounts')),
-            ('GMV після знижок', lambda w: uah(pid, w, 'total_gmv_after_discounts')),
-            ('Ціна ресторану (після знижок)', lambda w: uah(pid, w, 'total_provider_price_after_discounts')),
-            ('Ціна доставки (після знижок)', lambda w: uah(pid, w, 'total_delivery_price_after_discounts')),
-            ("Прийняття замовлень рестораном", lambda w: pct(pid, w, 'provider_acceptance_rate_value')),
-            ("Виконання доставок кур'єром", lambda w: pct(pid, w, 'courier_delivery_completion_rate_value')),
-            ('Погані замовлення', lambda w: pct(pid, w, 'bad_order_rate_value')),
-            ('Погана оцінка ресторану', lambda w: pct(pid, w, 'bad_provider_rating_rate_value')),
-            ("Прийняття замовлень кур'єром", lambda w: pct(pid, w, 'courier_acceptance_rate_value')),
-            ("Хвилин кур'єра на замовлення", lambda w: num1(pid, w, 'courier_minutes_per_order_value')),
+            ('Виконані замовлення',            lambda w: num0(pid, w, 'delivered_orders_count')),
+            ('Розміщені замовлення',           lambda w: num0(pid, w, 'placed_orders_count')),
+            ('Відсоток невдалих замовлень',    lambda w: pct(pid, w, 'failed_order_rate_value')),
+            ('Загальні продажі партнера',      lambda w: uah(pid, w, 'total_gmv_before_discounts')),
+            ('Чисті продажі',                  lambda w: uah(pid, w, 'total_gmv_after_discounts')),
+            ('Прийняття замовлень рестораном', lambda w: pct(pid, w, 'provider_acceptance_rate_value')),
+            ("Виконання доставок кур'єром",    lambda w: pct(pid, w, 'courier_delivery_completion_rate_value')),
+            ('Погані замовлення',              lambda w: pct(pid, w, 'bad_order_rate_value')),
+            ('Погана оцінка ресторану',        lambda w: pct(pid, w, 'bad_provider_rating_rate_value')),
+            ("Прийняття замовлень кур'єром",   lambda w: pct(pid, w, 'courier_acceptance_rate_value')),
             ('Позицій у кошику на замовлення', lambda w: num1(pid, w, 'basket_items_per_order_value')),
-            ('Нові активовані користувачі', lambda w: num0(pid, w, 'users_activated_count')),
-            ('Ціна ресторану за замовлення', lambda w: uah_fmt(g(pid, w, 'provider_price_after_discounts_per_order_local_value'))),
-            ('Ціна доставки за замовлення', lambda w: uah_fmt(g(pid, w, 'delivery_price_after_discounts_per_order_local_value'))),
-            ("Переналаштування кур'єра", lambda w: pct(pid, w, 'courier_redispatch_rate_value')),
-            ('Тикети підтримки (CS)', lambda w: pct(pid, w, 'cs_ticket_order_rate_value')),
-            ('Повернення коштів замовникам', lambda w: pct(pid, w, 'customer_refunded_order_rate_value')),
-            ('Активний час ресторану (хв)', lambda w: num0(pid, w, 'total_provider_active_minutes')),
+            ('Нові активовані користувачі',    lambda w: num0(pid, w, 'users_activated_count')),
+            ('% звернень до служби підтримки', lambda w: pct(pid, w, 'cs_ticket_order_rate_value')),
+            ('Повернення коштів замовникам',   lambda w: pct(pid, w, 'customer_refunded_order_rate_value')),
+            ('% доступності (Availability)',   lambda w: avail_pct_str(pid, w)),
         ]
+        rows = []
         for metric_name, fn in metrics:
             cells = ''.join(f'<td>{fn(w)}</td>' for w in WEEKS)
             rows.append(f'<tr><td class="metric-name">{metric_name}</td>{cells}</tr>')
         return '\n'.join(rows)
-    
+
     def build_charts(pid):
         cd = chart_data[pid]
-        BOLT_GREEN = '#34D186'
-        BOLT_BLUE = '#4A90E2'
+        BOLT_GREEN  = '#34D186'
+        BOLT_BLUE   = '#4A90E2'
         BOLT_ORANGE = '#FF6B35'
-        
+
         chart_defs = [
             ('orders', 'Кількість замовлень', 'Кількість', [
                 ('Виконані замовлення', 'delivered_orders', BOLT_GREEN),
                 ('Розміщені замовлення', 'placed_orders', '#A8E6CF'),
             ]),
-            ('gmv', 'GMV (₴)', '₴', [
-                ('GMV до знижок', 'gmv_before', BOLT_GREEN),
-                ('GMV після знижок', 'gmv_after', '#A8E6CF'),
-            ]),
-            ('prices', 'Дохід ресторану та вартість доставки (₴)', '₴', [
-                ('Ціна ресторану', 'provider_price_total', BOLT_GREEN),
-                ('Ціна доставки', 'delivery_price_total', BOLT_BLUE),
+            ('sales', 'Продажі (₴)', '₴', [
+                ('Загальні продажі партнера', 'gmv_before', BOLT_GREEN),
+                ('Чисті продажі', 'gmv_after', '#A8E6CF'),
             ]),
             ('acceptance', 'Прийняття замовлень (%)', '%', [
                 ('Прийняття рестораном', 'provider_acceptance', BOLT_GREEN),
-                ("Прийняття кур'єром", 'courier_acceptance', BOLT_BLUE),
+                ("Прийняття кур'єром",   'courier_acceptance',  BOLT_BLUE),
             ]),
             ('quality', 'Показники якості (%)', '%', [
-                ('Погані замовлення', 'bad_order_rate', BOLT_ORANGE),
+                ('Погані замовлення',       'bad_order_rate',      BOLT_ORANGE),
                 ('Погана оцінка ресторану', 'bad_provider_rating', '#FF9F43'),
-                ('Невдалі замовлення', 'failed_order_rate', '#EE5A24'),
-            ]),
-            ('courier', "Хвилин кур'єра на замовлення", 'хв', [
-                ("Хвилин/замовл.", 'courier_minutes', BOLT_GREEN),
+                ('Невдалі замовлення',      'failed_order_rate',   '#EE5A24'),
             ]),
             ('basket', 'Позицій у кошику', 'к-сть', [
                 ('Позицій/замовл.', 'basket_items', BOLT_GREEN),
             ]),
-            ('avg_price', 'Середня ціна на замовлення (₴)', '₴', [
-                ('Ціна ресторану/замовл.', 'avg_provider_price', BOLT_GREEN),
-                ('Ціна доставки/замовл.', 'avg_delivery_price', BOLT_BLUE),
-            ]),
             ('users', 'Нові активовані користувачі', 'к-сть', [
                 ('Нові користувачі', 'users_activated', BOLT_GREEN),
             ]),
-            ('issues', 'Тикети, повернення, переналаштування (%)', '%', [
-                ('Тикети CS', 'cs_ticket', BOLT_ORANGE),
-                ('Повернення', 'customer_refund', '#FF9F43'),
-                ("Переналаштування кур'єра", 'courier_redispatch', '#EE5A24'),
+            ('availability', '% доступності (Availability)', '%', [
+                ('% доступності', 'availability', BOLT_GREEN),
             ]),
         ]
-        
+
         html_parts = []
         for chart_id, title, ylabel, datasets in chart_defs:
             cid = f'chart_{pid}_{chart_id}'
@@ -341,29 +321,29 @@ def generate_html(structured, week_starts):
   </script>
 </div>''')
         return '\n'.join(html_parts)
-    
+
     # Build location tabs and sections
     location_navs = []
     location_sections = []
-    
+
     for i, pid in enumerate(PROVIDERS_ORDER):
-        pname = PROVIDERS[pid]['name']
+        pname    = PROVIDERS[pid]['name']
         paddress = PROVIDERS[pid]['address']
-        active = 'active' if i == 0 else ''
-        
+        active   = 'active' if i == 0 else ''
+
         location_navs.append(
             f'<button class="loc-tab {active}" data-target="loc-{pid}" onclick="showLocation(\'{pid}\')">'
             f'<span class="loc-icon">📍</span>{pname}</button>'
         )
-        
-        last_w = WEEKS[-1]
+
+        last_w    = WEEKS[-1]
         delivered = sf(g(pid, last_w, 'delivered_orders_count'), 0)
-        gmv_val = sf(g(pid, last_w, 'total_gmv_before_discounts'), 0)
-        acceptance = sf(g(pid, last_w, 'provider_acceptance_rate_value'), 0)
+        sales_val = sf(g(pid, last_w, 'total_gmv_before_discounts'), 0)
+        acceptance= sf(g(pid, last_w, 'provider_acceptance_rate_value'), 0)
         bad_order = sf(g(pid, last_w, 'bad_order_rate_value'), 0)
-        
+
         week_headers = ''.join(f'<th>{WEEK_LABELS[j]}</th>' for j in range(len(WEEKS)))
-        
+
         section_html = f'''
 <div id="loc-{pid}" class="location-section {active}">
   <div class="location-header">
@@ -374,11 +354,11 @@ def generate_html(structured, week_starts):
     <div class="summary-cards">
       <div class="summary-card">
         <div class="summary-value">{int(delivered)}</div>
-        <div class="summary-label">Замовлень (остання тижня)</div>
+        <div class="summary-label">Замовлень (останній тиждень)</div>
       </div>
       <div class="summary-card">
-        <div class="summary-value">{uah_fmt(gmv_val)}</div>
-        <div class="summary-label">GMV (остання тижня)</div>
+        <div class="summary-value">{uah_fmt(sales_val)}</div>
+        <div class="summary-label">Продажі (останній тиждень)</div>
       </div>
       <div class="summary-card highlight-green">
         <div class="summary-value">{acceptance*100:.1f}%</div>
@@ -409,11 +389,11 @@ def generate_html(structured, week_starts):
   </div>
 </div>'''
         location_sections.append(section_html)
-    
+
     period_start = week_starts[0].strftime('%d.%m.%Y')
-    period_end = (week_starts[-1] + datetime.timedelta(days=6)).strftime('%d.%m.%Y')
+    period_end   = (week_starts[-1] + datetime.timedelta(days=6)).strftime('%d.%m.%Y')
     year = datetime.datetime.now().year
-    
+
     return f'''<!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -462,13 +442,13 @@ def generate_html(structured, week_starts):
     .table-wrapper{{overflow-x:auto;border-radius:8px;border:1px solid var(--bolt-border)}}
     .metrics-table{{width:100%;border-collapse:collapse;font-size:13px}}
     .metrics-table thead th{{background:var(--bolt-dark);color:#fff;padding:10px 14px;text-align:center;font-weight:600;font-size:12px;white-space:nowrap}}
-    .metrics-table thead th.metric-col{{text-align:left;min-width:220px}}
+    .metrics-table thead th.metric-col{{text-align:left;min-width:240px}}
     .metrics-table tbody tr{{border-bottom:1px solid var(--bolt-border);transition:background .15s}}
     .metrics-table tbody tr:hover{{background:var(--bolt-light-green)}}
     .metrics-table tbody tr:nth-child(even){{background:var(--bolt-gray)}}
     .metrics-table tbody tr:nth-child(even):hover{{background:var(--bolt-light-green)}}
     .metrics-table td{{padding:10px 14px;text-align:center;color:var(--bolt-text);white-space:nowrap}}
-    .metrics-table td.metric-name{{text-align:left;font-weight:600;color:var(--bolt-dark);font-size:13px;white-space:normal;min-width:220px}}
+    .metrics-table td.metric-name{{text-align:left;font-weight:600;color:var(--bolt-dark);font-size:13px;white-space:normal;min-width:240px}}
     .charts-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px}}
     .chart-card{{background:#fff;border-radius:10px;padding:20px;border:1px solid var(--bolt-border)}}
     .chart-title{{font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bolt-border)}}
@@ -523,16 +503,16 @@ def main():
     if not DATABRICKS_TOKEN:
         print("ERROR: DATABRICKS_TOKEN environment variable not set")
         sys.exit(1)
-    
+
     print("Fetching data from Databricks...")
     structured, week_starts = fetch_data()
-    
+
     print("Generating HTML report...")
     html = generate_html(structured, week_starts)
-    
+
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
         f.write(html)
-    
+
     print(f"Report saved to: {OUTPUT_PATH} ({len(html)} bytes)")
 
 

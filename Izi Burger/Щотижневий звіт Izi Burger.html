@@ -6,417 +6,83 @@
   <title>Щотижневий звіт Izi Burger – Харків</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    :root {
-      --bolt-green: #34D186;
-      --bolt-dark: #1C1F23;
-      --bolt-light-green: #E8FAF2;
-      --bolt-mid-green: #A8E6CF;
-      --bolt-gray: #F5F6F7;
-      --bolt-text: #2C3E50;
-      --bolt-muted: #7F8C8D;
-      --bolt-border: #E0E0E0;
-      --bolt-white: #FFFFFF;
-      --bolt-red: #E74C3C;
-      --bolt-orange: #FF6B35;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bolt-gray);
-      color: var(--bolt-text);
-      min-height: 100vh;
-    }
-
-    /* Header */
-    .site-header {
-      background: var(--bolt-dark);
-      padding: 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      align-items: stretch;
-    }
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 0;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .bolt-logo {
-      width: 36px;
-      height: 36px;
-      background: var(--bolt-green);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 18px;
-      color: var(--bolt-dark);
-    }
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-    }
-    .brand-main {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--bolt-white);
-      line-height: 1.2;
-    }
-    .brand-sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
-    }
-    .header-divider {
-      width: 1px;
-      background: rgba(255,255,255,0.1);
-      margin: 12px 20px;
-    }
-    .header-title-block {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      flex: 1;
-    }
-    .header-report-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--bolt-white);
-    }
-    .header-report-sub {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 2px;
-    }
-    .header-badge {
-      display: flex;
-      align-items: center;
-      padding: 6px 14px;
-      background: rgba(52, 209, 134, 0.15);
-      border: 1px solid rgba(52, 209, 134, 0.3);
-      border-radius: 20px;
-      color: var(--bolt-green);
-      font-size: 12px;
-      font-weight: 600;
-      gap: 6px;
-      align-self: center;
-    }
-    .header-badge .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--bolt-green);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* Navigation Tabs */
-    .location-nav-wrapper {
-      background: var(--bolt-white);
-      border-bottom: 2px solid var(--bolt-border);
-      position: sticky;
-      top: 69px;
-      z-index: 90;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .location-nav {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      gap: 4px;
-      overflow-x: auto;
-    }
-    .loc-tab {
-      padding: 16px 24px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--bolt-muted);
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-      position: relative;
-      bottom: -2px;
-    }
-    .loc-tab:hover {
-      color: var(--bolt-dark);
-      background: var(--bolt-gray);
-    }
-    .loc-tab.active {
-      color: var(--bolt-green);
-      border-bottom-color: var(--bolt-green);
-    }
-    .loc-icon {
-      font-size: 14px;
-    }
-
-    /* Main content */
-    .main-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    /* Location sections */
-    .location-section { display: none; }
-    .location-section.active { display: block; }
-
-    .location-header {
-      background: var(--bolt-white);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: flex;
-      align-items: flex-start;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .location-title-block {
-      flex: 1;
-      min-width: 200px;
-    }
-    .location-name {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--bolt-dark);
-      margin-bottom: 6px;
-    }
-    .location-address {
-      font-size: 13px;
-      color: var(--bolt-muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* Summary cards */
-    .summary-cards {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .summary-card {
-      background: var(--bolt-gray);
-      border-radius: 10px;
-      padding: 14px 18px;
-      min-width: 140px;
-      text-align: center;
-      border: 1px solid var(--bolt-border);
-    }
-    .summary-card.highlight-green {
-      background: var(--bolt-light-green);
-      border-color: var(--bolt-mid-green);
-    }
-    .summary-card.highlight-red {
-      background: #FEF0EE;
-      border-color: #FADBD8;
-    }
-    .summary-value {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--bolt-dark);
-      margin-bottom: 4px;
-    }
-    .summary-label {
-      font-size: 11px;
-      color: var(--bolt-muted);
-      line-height: 1.3;
-    }
-
-    /* Section blocks */
-    .section-block {
-      background: var(--bolt-white);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--bolt-dark);
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--bolt-light-green);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Metrics table */
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid var(--bolt-border);
-    }
-    .metrics-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    .metrics-table thead th {
-      background: var(--bolt-dark);
-      color: var(--bolt-white);
-      padding: 10px 14px;
-      text-align: center;
-      font-weight: 600;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .metrics-table thead th.metric-col {
-      text-align: left;
-      min-width: 220px;
-    }
-    .metrics-table tbody tr {
-      border-bottom: 1px solid var(--bolt-border);
-      transition: background 0.15s;
-    }
-    .metrics-table tbody tr:hover {
-      background: var(--bolt-light-green);
-    }
-    .metrics-table tbody tr:nth-child(even) {
-      background: var(--bolt-gray);
-    }
-    .metrics-table tbody tr:nth-child(even):hover {
-      background: var(--bolt-light-green);
-    }
-    .metrics-table td {
-      padding: 10px 14px;
-      text-align: center;
-      color: var(--bolt-text);
-      white-space: nowrap;
-    }
-    .metrics-table td.metric-name {
-      text-align: left;
-      font-weight: 600;
-      color: var(--bolt-dark);
-      font-size: 13px;
-      white-space: normal;
-      min-width: 220px;
-    }
-
-    /* Charts grid */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
-      gap: 20px;
-    }
-    .chart-card {
-      background: var(--bolt-white);
-      border-radius: 10px;
-      padding: 20px;
-      border: 1px solid var(--bolt-border);
-    }
-    .chart-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--bolt-dark);
-      margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--bolt-border);
-    }
-    .chart-container {
-      position: relative;
-      height: 220px;
-    }
-
-    /* Footer */
-    .site-footer {
-      background: var(--bolt-dark);
-      color: rgba(255,255,255,0.5);
-      text-align: center;
-      padding: 20px;
-      font-size: 12px;
-      margin-top: 40px;
-    }
-    .site-footer a {
-      color: var(--bolt-green);
-      text-decoration: none;
-    }
-
-    /* Period badge */
-    .period-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bolt-light-green);
-      color: #1A7A4C;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 20px;
-      margin-bottom: 20px;
-      border: 1px solid var(--bolt-mid-green);
-    }
-
-    @media (max-width: 768px) {
-      .header-inner { padding: 0 16px; }
-      .main-content { padding: 16px; }
-      .location-header { flex-direction: column; }
-      .charts-grid { grid-template-columns: 1fr; }
-      .summary-cards { justify-content: center; }
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--bolt-green:#34D186;--bolt-dark:#1C1F23;--bolt-light-green:#E8FAF2;--bolt-mid-green:#A8E6CF;--bolt-gray:#F5F6F7;--bolt-text:#2C3E50;--bolt-muted:#7F8C8D;--bolt-border:#E0E0E0;--bolt-white:#FFFFFF;--bolt-red:#E74C3C;--bolt-orange:#FF6B35}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bolt-gray);color:var(--bolt-text);min-height:100vh}
+    .site-header{background:var(--bolt-dark);position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+    .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:stretch}
+    .header-brand{display:flex;align-items:center;gap:12px;padding:16px 0;text-decoration:none;flex-shrink:0}
+    .bolt-logo{width:36px;height:36px;background:var(--bolt-green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--bolt-dark)}
+    .brand-text{display:flex;flex-direction:column}
+    .brand-main{font-size:15px;font-weight:700;color:#fff;line-height:1.2}
+    .brand-sub{font-size:11px;color:rgba(255,255,255,.5)}
+    .header-divider{width:1px;background:rgba(255,255,255,.1);margin:12px 20px}
+    .header-title-block{display:flex;flex-direction:column;justify-content:center;flex:1}
+    .header-report-title{font-size:16px;font-weight:700;color:#fff}
+    .header-report-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+    .header-badge{display:flex;align-items:center;padding:6px 14px;background:rgba(52,209,134,.15);border:1px solid rgba(52,209,134,.3);border-radius:20px;color:var(--bolt-green);font-size:12px;font-weight:600;gap:6px;align-self:center}
+    .dot{width:6px;height:6px;background:var(--bolt-green);border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .location-nav-wrapper{background:#fff;border-bottom:2px solid var(--bolt-border);position:sticky;top:69px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+    .location-nav{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;gap:4px;overflow-x:auto}
+    .loc-tab{padding:16px 24px;border:none;background:transparent;cursor:pointer;font-size:14px;font-weight:600;color:var(--bolt-muted);white-space:nowrap;display:flex;align-items:center;gap:8px;border-bottom:3px solid transparent;transition:all .2s;position:relative;bottom:-2px}
+    .loc-tab:hover{color:var(--bolt-dark);background:var(--bolt-gray)}
+    .loc-tab.active{color:var(--bolt-green);border-bottom-color:var(--bolt-green)}
+    .main-content{max-width:1400px;margin:0 auto;padding:24px}
+    .location-section{display:none}
+    .location-section.active{display:block}
+    .location-header{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap}
+    .location-title-block{flex:1;min-width:200px}
+    .location-name{font-size:22px;font-weight:800;color:var(--bolt-dark);margin-bottom:6px}
+    .location-address{font-size:13px;color:var(--bolt-muted);display:flex;align-items:center;gap:4px}
+    .summary-cards{display:flex;gap:12px;flex-wrap:wrap}
+    .summary-card{background:var(--bolt-gray);border-radius:10px;padding:14px 18px;min-width:140px;text-align:center;border:1px solid var(--bolt-border)}
+    .summary-card.highlight-green{background:var(--bolt-light-green);border-color:var(--bolt-mid-green)}
+    .summary-card.highlight-red{background:#FEF0EE;border-color:#FADBD8}
+    .summary-value{font-size:20px;font-weight:800;color:var(--bolt-dark);margin-bottom:4px}
+    .summary-label{font-size:11px;color:var(--bolt-muted);line-height:1.3}
+    .section-block{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .section-title{font-size:16px;font-weight:700;color:var(--bolt-dark);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--bolt-light-green);display:flex;align-items:center;gap:8px}
+    .table-wrapper{overflow-x:auto;border-radius:8px;border:1px solid var(--bolt-border)}
+    .metrics-table{width:100%;border-collapse:collapse;font-size:13px}
+    .metrics-table thead th{background:var(--bolt-dark);color:#fff;padding:10px 14px;text-align:center;font-weight:600;font-size:12px;white-space:nowrap}
+    .metrics-table thead th.metric-col{text-align:left;min-width:240px}
+    .metrics-table tbody tr{border-bottom:1px solid var(--bolt-border);transition:background .15s}
+    .metrics-table tbody tr:hover{background:var(--bolt-light-green)}
+    .metrics-table tbody tr:nth-child(even){background:var(--bolt-gray)}
+    .metrics-table tbody tr:nth-child(even):hover{background:var(--bolt-light-green)}
+    .metrics-table td{padding:10px 14px;text-align:center;color:var(--bolt-text);white-space:nowrap}
+    .metrics-table td.metric-name{text-align:left;font-weight:600;color:var(--bolt-dark);font-size:13px;white-space:normal;min-width:240px}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px}
+    .chart-card{background:#fff;border-radius:10px;padding:20px;border:1px solid var(--bolt-border)}
+    .chart-title{font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bolt-border)}
+    .chart-container{position:relative;height:220px}
+    .site-footer{background:var(--bolt-dark);color:rgba(255,255,255,.5);text-align:center;padding:20px;font-size:12px;margin-top:40px}
+    .site-footer a{color:var(--bolt-green);text-decoration:none}
+    .period-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bolt-light-green);color:#1A7A4C;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:20px;border:1px solid var(--bolt-mid-green)}
+    @media(max-width:768px){.header-inner{padding:0 16px}.main-content{padding:16px}.location-header{flex-direction:column}.charts-grid{grid-template-columns:1fr}.summary-cards{justify-content:center}}
   </style>
 </head>
 <body>
-
-<!-- Header -->
 <header class="site-header">
   <div class="header-inner">
     <a href="#" class="header-brand">
       <div class="bolt-logo">⚡</div>
-      <div class="brand-text">
-        <span class="brand-main">Bolt Food</span>
-        <span class="brand-sub">Partner Reports</span>
-      </div>
+      <div class="brand-text"><span class="brand-main">Bolt Food</span><span class="brand-sub">Partner Reports</span></div>
     </a>
     <div class="header-divider"></div>
     <div class="header-title-block">
       <div class="header-report-title">Щотижневий звіт IZI BURGER – Харків</div>
-      <div class="header-report-sub">Vendor External Report 3.0 · Дані за 8 тижнів · Оновлено: 17.04.2026 13:45</div>
+      <div class="header-report-sub">Vendor External Report 3.0 · 8 тижнів · Оновлено: 17.04.2026 15:13</div>
     </div>
-    <div class="header-badge">
-      <span class="dot"></span>
-      Автооновлення щопонеділка
-    </div>
+    <div class="header-badge"><span class="dot"></span>Автооновлення щопонеділка</div>
   </div>
 </header>
-
-<!-- Location Navigation -->
 <nav class="location-nav-wrapper">
-  <div class="location-nav">
-    <button class="loc-tab active" data-target="loc-139923" onclick="showLocation('139923')"><span class="loc-icon">📍</span>IZI BURGER Стадіонний проїзд</button><button class="loc-tab " data-target="loc-169006" onclick="showLocation('169006')"><span class="loc-icon">📍</span>IZI Burger пр. Ювілейний</button><button class="loc-tab " data-target="loc-184043" onclick="showLocation('184043')"><span class="loc-icon">📍</span>IZI BURGER Григорівське шосе</button>
-  </div>
+  <div class="location-nav"><button class="loc-tab active" data-target="loc-139923" onclick="showLocation('139923')"><span class="loc-icon">📍</span>IZI BURGER Стадіонний проїзд</button><button class="loc-tab " data-target="loc-169006" onclick="showLocation('169006')"><span class="loc-icon">📍</span>IZI Burger пр. Ювілейний</button><button class="loc-tab " data-target="loc-184043" onclick="showLocation('184043')"><span class="loc-icon">📍</span>IZI BURGER Григорівське шосе</button></div>
 </nav>
-
-<!-- Main Content -->
 <main class="main-content">
-  <div class="period-badge">
-    📅 Звітний період: 16.02.2026 – 12.04.2026 (8 повних тижнів)
-  </div>
-
+  <div class="period-badge">📅 Звітний період: 16.02.2026 – 12.04.2026 (8 повних тижнів)</div>
   
 <div id="loc-139923" class="location-section active">
   <div class="location-header">
@@ -427,11 +93,11 @@
     <div class="summary-cards">
       <div class="summary-card">
         <div class="summary-value">62</div>
-        <div class="summary-label">Замовлень (остання тижня)</div>
+        <div class="summary-label">Замовлень (останній тиждень)</div>
       </div>
       <div class="summary-card">
         <div class="summary-value">46 887 ₴</div>
-        <div class="summary-label">GMV (остання тижня)</div>
+        <div class="summary-label">Продажі (останній тиждень)</div>
       </div>
       <div class="summary-card highlight-green">
         <div class="summary-value">96.9%</div>
@@ -443,576 +109,113 @@
       </div>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📊 Метрики по тижнях</h3>
     <div class="table-wrapper">
       <table class="metrics-table">
-        <thead>
-          <tr>
-            <th class="metric-col">Метрика</th>
-            <th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th>
-          </tr>
-        </thead>
+        <thead><tr><th class="metric-col">Метрика</th><th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th></tr></thead>
         <tbody>
 <tr><td class="metric-name">Виконані замовлення</td><td>52</td><td>64</td><td>75</td><td>84</td><td>100</td><td>73</td><td>79</td><td>62</td></tr>
 <tr><td class="metric-name">Розміщені замовлення</td><td>57</td><td>72</td><td>77</td><td>85</td><td>102</td><td>73</td><td>81</td><td>64</td></tr>
 <tr><td class="metric-name">Відсоток невдалих замовлень</td><td>8.8%</td><td>11.1%</td><td>2.6%</td><td>1.2%</td><td>2.0%</td><td>0.0%</td><td>2.5%</td><td>3.1%</td></tr>
-<tr><td class="metric-name">GMV до знижок</td><td>37 369 ₴</td><td>50 331 ₴</td><td>60 158 ₴</td><td>69 532 ₴</td><td>78 767 ₴</td><td>52 811 ₴</td><td>60 344 ₴</td><td>46 887 ₴</td></tr>
-<tr><td class="metric-name">GMV після знижок</td><td>37 010 ₴</td><td>46 662 ₴</td><td>55 021 ₴</td><td>63 298 ₴</td><td>72 252 ₴</td><td>51 525 ₴</td><td>58 872 ₴</td><td>46 482 ₴</td></tr>
-<tr><td class="metric-name">Ціна ресторану (після знижок)</td><td>32 441 ₴</td><td>40 885 ₴</td><td>48 748 ₴</td><td>55 844 ₴</td><td>63 283 ₴</td><td>46 246 ₴</td><td>53 584 ₴</td><td>42 134 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки (після знижок)</td><td>3 193 ₴</td><td>4 025 ₴</td><td>4 329 ₴</td><td>5 368 ₴</td><td>6 421 ₴</td><td>3 577 ₴</td><td>3 410 ₴</td><td>2 935 ₴</td></tr>
+<tr><td class="metric-name">Загальні продажі партнера</td><td>37 369 ₴</td><td>50 331 ₴</td><td>60 158 ₴</td><td>69 532 ₴</td><td>78 767 ₴</td><td>52 811 ₴</td><td>60 344 ₴</td><td>46 887 ₴</td></tr>
+<tr><td class="metric-name">Чисті продажі</td><td>37 010 ₴</td><td>46 662 ₴</td><td>55 021 ₴</td><td>63 298 ₴</td><td>72 252 ₴</td><td>51 525 ₴</td><td>58 872 ₴</td><td>46 482 ₴</td></tr>
 <tr><td class="metric-name">Прийняття замовлень рестораном</td><td>91.2%</td><td>88.9%</td><td>97.4%</td><td>98.8%</td><td>98.0%</td><td>100.0%</td><td>97.5%</td><td>96.9%</td></tr>
 <tr><td class="metric-name">Виконання доставок кур'єром</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr>
 <tr><td class="metric-name">Погані замовлення</td><td>12.5%</td><td>11.4%</td><td>11.8%</td><td>4.7%</td><td>3.0%</td><td>8.2%</td><td>5.1%</td><td>8.1%</td></tr>
 <tr><td class="metric-name">Погана оцінка ресторану</td><td>0.0%</td><td>1.4%</td><td>3.9%</td><td>1.2%</td><td>0.0%</td><td>4.1%</td><td>0.0%</td><td>0.0%</td></tr>
 <tr><td class="metric-name">Прийняття замовлень кур'єром</td><td>70.8%</td><td>69.5%</td><td>76.2%</td><td>78.2%</td><td>80.8%</td><td>82.3%</td><td>83.0%</td><td>78.5%</td></tr>
-<tr><td class="metric-name">Хвилин кур'єра на замовлення</td><td>26.1</td><td>27.1</td><td>26.6</td><td>25.7</td><td>25.1</td><td>24.2</td><td>24.2</td><td>23.5</td></tr>
 <tr><td class="metric-name">Позицій у кошику на замовлення</td><td>6.8</td><td>7.3</td><td>6.5</td><td>6.7</td><td>6.1</td><td>5.8</td><td>6.0</td><td>6.0</td></tr>
-<tr><td class="metric-name">Нові користувачі (активовані)</td><td>2</td><td>5</td><td>5</td><td>4</td><td>6</td><td>3</td><td>8</td><td>3</td></tr>
-<tr><td class="metric-name">Ціна ресторану за замовлення</td><td>624 ₴</td><td>639 ₴</td><td>650 ₴</td><td>665 ₴</td><td>633 ₴</td><td>634 ₴</td><td>678 ₴</td><td>680 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки за замовлення</td><td>61 ₴</td><td>63 ₴</td><td>58 ₴</td><td>64 ₴</td><td>64 ₴</td><td>49 ₴</td><td>43 ₴</td><td>47 ₴</td></tr>
-<tr><td class="metric-name">Переналаштування кур'єра</td><td>0.0%</td><td>4.5%</td><td>3.9%</td><td>2.3%</td><td>3.0%</td><td>7.6%</td><td>0.0%</td><td>3.2%</td></tr>
-<tr><td class="metric-name">Тикети підтримки (CS)</td><td>0.0%</td><td>0.0%</td><td>2.6%</td><td>0.0%</td><td>1.0%</td><td>5.5%</td><td>1.2%</td><td>0.0%</td></tr>
+<tr><td class="metric-name">Нові активовані користувачі</td><td>2</td><td>5</td><td>5</td><td>4</td><td>6</td><td>3</td><td>8</td><td>3</td></tr>
+<tr><td class="metric-name">% звернень до служби підтримки</td><td>0.0%</td><td>0.0%</td><td>2.6%</td><td>0.0%</td><td>1.0%</td><td>5.5%</td><td>1.2%</td><td>0.0%</td></tr>
 <tr><td class="metric-name">Повернення коштів замовникам</td><td>0.0%</td><td>0.0%</td><td>2.6%</td><td>0.0%</td><td>0.0%</td><td>1.4%</td><td>1.2%</td><td>0.0%</td></tr>
-<tr><td class="metric-name">Активний час ресторану (хв)</td><td>3451</td><td>3322</td><td>3666</td><td>3942</td><td>4223</td><td>4268</td><td>4051</td><td>4057</td></tr>
+<tr><td class="metric-name">% доступності (Availability)</td><td>80.9%</td><td>77.8%</td><td>85.9%</td><td>92.4%</td><td>99.0%</td><td>100.0%</td><td>95.0%</td><td>95.1%</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📈 Графіки по тижнях</h3>
     <div class="charts-grid">
 
 <div class="chart-card">
   <h4 class="chart-title">Кількість замовлень</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_orders"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_139923_orders"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_orders').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [52.0, 64.0, 75.0, 84.0, 100.0, 73.0, 79.0, 62.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [57.0, 72.0, 77.0, 85.0, 102.0, 73.0, 81.0, 64.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_orders').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[52.0, 64.0, 75.0, 84.0, 100.0, 73.0, 79.0, 62.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[57.0, 72.0, 77.0, 85.0, 102.0, 73.0, 81.0, 64.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">GMV (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_gmv"></canvas>
-  </div>
+  <h4 class="chart-title">Продажі (₴)</h4>
+  <div class="chart-container"><canvas id="chart_139923_sales"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_gmv').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "GMV \u0434\u043e \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [37369.0, 50331.0, 60158.0, 69532.0, 78767.0, 52811.0, 60344.0, 46887.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "GMV \u043f\u0456\u0441\u043b\u044f \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [37010.0, 46662.0, 55021.0, 63298.0, 72252.0, 51525.0, 58872.0, 46482.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Дохід ресторану та вартість доставки (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_prices"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_prices').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [32441.0, 40885.0, 48748.0, 55844.0, 63283.0, 46246.0, 53584.0, 42134.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
-                data: [3193.0, 4025.0, 4329.0, 5368.0, 6421.0, 3577.0, 3410.0, 2935.0],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_sales').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0417\u0430\u0433\u0430\u043b\u044c\u043d\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430",data:[37369.0, 50331.0, 60158.0, 69532.0, 78767.0, 52811.0, 60344.0, 46887.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0427\u0438\u0441\u0442\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456",data:[37010.0, 46662.0, 55021.0, 63298.0, 72252.0, 51525.0, 58872.0, 46482.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u20b4",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Прийняття замовлень (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_acceptance"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_139923_acceptance"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_acceptance').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",
-                data: [91.2, 88.9, 97.4, 98.8, 98.0, 100.0, 97.5, 96.9],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",
-                data: [70.8, 69.5, 76.2, 78.2, 80.8, 82.3, 83.0, 78.5],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_acceptance').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",data:[91.2, 88.9, 97.4, 98.8, 98.0, 100.0, 97.5, 96.9],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",data:[70.8, 69.5, 76.2, 78.2, 80.8, 82.3, 83.0, 78.5],backgroundColor:'#4A90E2',borderColor:'#4A90E2',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Показники якості (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_quality"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_139923_quality"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_quality').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [12.5, 11.4, 11.8, 4.7, 3.0, 8.2, 5.1, 8.1],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [0.0, 1.4, 3.9, 1.2, 0.0, 4.1, 0.0, 0.0],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [8.8, 11.1, 2.6, 1.2, 2.0, 0.0, 2.5, 3.1],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_quality').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[12.5, 11.4, 11.8, 4.7, 3.0, 8.2, 5.1, 8.1],backgroundColor:'#FF6B35',borderColor:'#FF6B35',borderWidth:1,borderRadius:4},
+{label:"\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",data:[0.0, 1.4, 3.9, 1.2, 0.0, 4.1, 0.0, 0.0],backgroundColor:'#FF9F43',borderColor:'#FF9F43',borderWidth:1,borderRadius:4},
+{label:"\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[8.8, 11.1, 2.6, 1.2, 2.0, 0.0, 2.5, 3.1],backgroundColor:'#EE5A24',borderColor:'#EE5A24',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Показники кур'єра</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_courier"></canvas>
-  </div>
+  <h4 class="chart-title">Позицій у кошику</h4>
+  <div class="chart-container"><canvas id="chart_139923_basket"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_courier').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0425\u0432\u0438\u043b\u0438\u043d \u043d\u0430 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [26.1, 27.1, 26.6, 25.7, 25.1, 24.2, 24.2, 23.5],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u0445\u0432", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середній кошик</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_basket"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_basket').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0437\u0438\u0446\u0456\u0439 \u0443 \u043a\u043e\u0448\u0438\u043a\u0443",
-                data: [6.8, 7.3, 6.5, 6.7, 6.1, 5.8, 6.0, 6.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середня ціна на замовлення (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_avg_price"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_avg_price').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [623.9, 638.8, 650.0, 664.8, 632.8, 633.5, 678.3, 679.6],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [61.4, 62.9, 57.7, 63.9, 64.2, 49.0, 43.2, 47.3],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_basket').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0437\u0438\u0446\u0456\u0439/\u0437\u0430\u043c\u043e\u0432\u043b.",data:[6.8, 7.3, 6.5, 6.7, 6.1, 5.8, 6.0, 6.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Нові активовані користувачі</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_users"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_139923_users"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_users').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",
-                data: [2.0, 5.0, 5.0, 4.0, 6.0, 3.0, 8.0, 3.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_users').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",data:[2.0, 5.0, 5.0, 4.0, 6.0, 3.0, 8.0, 3.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Тикети, повернення, переналаштування (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_139923_issues"></canvas>
-  </div>
+  <h4 class="chart-title">% доступності (Availability)</h4>
+  <div class="chart-container"><canvas id="chart_139923_availability"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_139923_issues').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0422\u0438\u043a\u0435\u0442\u0438 CS",
-                data: [0.0, 0.0, 2.6, 0.0, 1.0, 5.5, 1.2, 0.0],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0432\u0435\u0440\u043d\u0435\u043d\u043d\u044f",
-                data: [0.0, 0.0, 2.6, 0.0, 0.0, 1.4, 1.2, 0.0],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0435\u0440\u0435\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u043a\u0443\u0440'\u0454\u0440\u0430",
-                data: [0.0, 4.5, 3.9, 2.3, 3.0, 7.6, 0.0, 3.2],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_139923_availability').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"% \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0441\u0442\u0456",data:[80.9, 77.8, 85.9, 92.4, 99.0, 100.0, 95.0, 95.1],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
@@ -1028,11 +231,11 @@
     <div class="summary-cards">
       <div class="summary-card">
         <div class="summary-value">97</div>
-        <div class="summary-label">Замовлень (остання тижня)</div>
+        <div class="summary-label">Замовлень (останній тиждень)</div>
       </div>
       <div class="summary-card">
         <div class="summary-value">74 537 ₴</div>
-        <div class="summary-label">GMV (остання тижня)</div>
+        <div class="summary-label">Продажі (останній тиждень)</div>
       </div>
       <div class="summary-card highlight-green">
         <div class="summary-value">100.0%</div>
@@ -1044,576 +247,113 @@
       </div>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📊 Метрики по тижнях</h3>
     <div class="table-wrapper">
       <table class="metrics-table">
-        <thead>
-          <tr>
-            <th class="metric-col">Метрика</th>
-            <th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th>
-          </tr>
-        </thead>
+        <thead><tr><th class="metric-col">Метрика</th><th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th></tr></thead>
         <tbody>
 <tr><td class="metric-name">Виконані замовлення</td><td>105</td><td>111</td><td>87</td><td>84</td><td>98</td><td>87</td><td>81</td><td>97</td></tr>
 <tr><td class="metric-name">Розміщені замовлення</td><td>106</td><td>113</td><td>88</td><td>88</td><td>99</td><td>88</td><td>82</td><td>97</td></tr>
 <tr><td class="metric-name">Відсоток невдалих замовлень</td><td>0.9%</td><td>1.8%</td><td>1.1%</td><td>4.5%</td><td>1.0%</td><td>1.1%</td><td>1.2%</td><td>0.0%</td></tr>
-<tr><td class="metric-name">GMV до знижок</td><td>76 725 ₴</td><td>83 315 ₴</td><td>71 906 ₴</td><td>66 702 ₴</td><td>80 433 ₴</td><td>64 977 ₴</td><td>59 085 ₴</td><td>74 537 ₴</td></tr>
-<tr><td class="metric-name">GMV після знижок</td><td>75 728 ₴</td><td>76 662 ₴</td><td>65 076 ₴</td><td>61 680 ₴</td><td>72 691 ₴</td><td>63 977 ₴</td><td>56 614 ₴</td><td>73 175 ₴</td></tr>
-<tr><td class="metric-name">Ціна ресторану (після знижок)</td><td>65 497 ₴</td><td>66 618 ₴</td><td>57 552 ₴</td><td>54 330 ₴</td><td>64 217 ₴</td><td>57 477 ₴</td><td>51 132 ₴</td><td>65 699 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки (після знижок)</td><td>7 389 ₴</td><td>7 129 ₴</td><td>5 314 ₴</td><td>5 254 ₴</td><td>6 002 ₴</td><td>4 437 ₴</td><td>3 580 ₴</td><td>5 184 ₴</td></tr>
+<tr><td class="metric-name">Загальні продажі партнера</td><td>76 725 ₴</td><td>83 315 ₴</td><td>71 906 ₴</td><td>66 702 ₴</td><td>80 433 ₴</td><td>64 977 ₴</td><td>59 085 ₴</td><td>74 537 ₴</td></tr>
+<tr><td class="metric-name">Чисті продажі</td><td>75 728 ₴</td><td>76 662 ₴</td><td>65 076 ₴</td><td>61 680 ₴</td><td>72 691 ₴</td><td>63 977 ₴</td><td>56 614 ₴</td><td>73 175 ₴</td></tr>
 <tr><td class="metric-name">Прийняття замовлень рестораном</td><td>100.0%</td><td>98.2%</td><td>98.9%</td><td>95.5%</td><td>99.0%</td><td>98.9%</td><td>98.8%</td><td>100.0%</td></tr>
 <tr><td class="metric-name">Виконання доставок кур'єром</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr>
 <tr><td class="metric-name">Погані замовлення</td><td>12.4%</td><td>5.3%</td><td>7.0%</td><td>8.0%</td><td>7.2%</td><td>3.4%</td><td>6.1%</td><td>3.1%</td></tr>
 <tr><td class="metric-name">Погана оцінка ресторану</td><td>4.7%</td><td>2.7%</td><td>0.0%</td><td>1.1%</td><td>1.0%</td><td>0.0%</td><td>1.2%</td><td>1.0%</td></tr>
 <tr><td class="metric-name">Прийняття замовлень кур'єром</td><td>70.7%</td><td>85.5%</td><td>73.6%</td><td>79.1%</td><td>74.1%</td><td>85.2%</td><td>75.0%</td><td>79.8%</td></tr>
-<tr><td class="metric-name">Хвилин кур'єра на замовлення</td><td>24.5</td><td>24.3</td><td>23.9</td><td>23.3</td><td>23.3</td><td>22.7</td><td>23.0</td><td>21.7</td></tr>
 <tr><td class="metric-name">Позицій у кошику на замовлення</td><td>6.8</td><td>7.2</td><td>7.3</td><td>6.7</td><td>6.9</td><td>6.3</td><td>6.3</td><td>6.0</td></tr>
-<tr><td class="metric-name">Нові користувачі (активовані)</td><td>5</td><td>9</td><td>6</td><td>1</td><td>7</td><td>6</td><td>9</td><td>2</td></tr>
-<tr><td class="metric-name">Ціна ресторану за замовлення</td><td>624 ₴</td><td>600 ₴</td><td>662 ₴</td><td>647 ₴</td><td>655 ₴</td><td>661 ₴</td><td>631 ₴</td><td>677 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки за замовлення</td><td>70 ₴</td><td>64 ₴</td><td>61 ₴</td><td>63 ₴</td><td>61 ₴</td><td>51 ₴</td><td>44 ₴</td><td>53 ₴</td></tr>
-<tr><td class="metric-name">Переналаштування кур'єра</td><td>0.9%</td><td>0.9%</td><td>4.5%</td><td>3.4%</td><td>4.0%</td><td>5.4%</td><td>0.0%</td><td>2.0%</td></tr>
-<tr><td class="metric-name">Тикети підтримки (CS)</td><td>2.8%</td><td>0.9%</td><td>1.1%</td><td>0.0%</td><td>1.0%</td><td>1.1%</td><td>1.2%</td><td>2.1%</td></tr>
+<tr><td class="metric-name">Нові активовані користувачі</td><td>5</td><td>9</td><td>6</td><td>1</td><td>7</td><td>6</td><td>9</td><td>2</td></tr>
+<tr><td class="metric-name">% звернень до служби підтримки</td><td>2.8%</td><td>0.9%</td><td>1.1%</td><td>0.0%</td><td>1.0%</td><td>1.1%</td><td>1.2%</td><td>2.1%</td></tr>
 <tr><td class="metric-name">Повернення коштів замовникам</td><td>0.0%</td><td>0.0%</td><td>1.1%</td><td>0.0%</td><td>1.0%</td><td>0.0%</td><td>1.2%</td><td>1.0%</td></tr>
-<tr><td class="metric-name">Активний час ресторану (хв)</td><td>4196</td><td>4166</td><td>3916</td><td>3499</td><td>4253</td><td>4235</td><td>4254</td><td>4263</td></tr>
+<tr><td class="metric-name">% доступності (Availability)</td><td>96.1%</td><td>95.4%</td><td>91.8%</td><td>82.0%</td><td>99.7%</td><td>99.2%</td><td>99.7%</td><td>99.9%</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📈 Графіки по тижнях</h3>
     <div class="charts-grid">
 
 <div class="chart-card">
   <h4 class="chart-title">Кількість замовлень</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_orders"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_169006_orders"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_orders').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [105.0, 111.0, 87.0, 84.0, 98.0, 87.0, 81.0, 97.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [106.0, 113.0, 88.0, 88.0, 99.0, 88.0, 82.0, 97.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_orders').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[105.0, 111.0, 87.0, 84.0, 98.0, 87.0, 81.0, 97.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[106.0, 113.0, 88.0, 88.0, 99.0, 88.0, 82.0, 97.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">GMV (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_gmv"></canvas>
-  </div>
+  <h4 class="chart-title">Продажі (₴)</h4>
+  <div class="chart-container"><canvas id="chart_169006_sales"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_gmv').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "GMV \u0434\u043e \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [76725.0, 83315.0, 71906.0, 66702.0, 80433.0, 64977.0, 59085.0, 74537.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "GMV \u043f\u0456\u0441\u043b\u044f \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [75728.0, 76662.0, 65076.0, 61680.0, 72691.0, 63977.0, 56614.0, 73175.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Дохід ресторану та вартість доставки (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_prices"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_prices').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [65497.0, 66618.0, 57552.0, 54330.0, 64217.0, 57477.0, 51132.0, 65699.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
-                data: [7389.0, 7129.0, 5314.0, 5254.0, 6002.0, 4437.0, 3580.0, 5184.0],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_sales').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0417\u0430\u0433\u0430\u043b\u044c\u043d\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430",data:[76725.0, 83315.0, 71906.0, 66702.0, 80433.0, 64977.0, 59085.0, 74537.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0427\u0438\u0441\u0442\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456",data:[75728.0, 76662.0, 65076.0, 61680.0, 72691.0, 63977.0, 56614.0, 73175.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u20b4",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Прийняття замовлень (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_acceptance"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_169006_acceptance"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_acceptance').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",
-                data: [100.0, 98.2, 98.9, 95.5, 99.0, 98.9, 98.8, 100.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",
-                data: [70.7, 85.5, 73.6, 79.1, 74.1, 85.2, 75.0, 79.8],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_acceptance').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",data:[100.0, 98.2, 98.9, 95.5, 99.0, 98.9, 98.8, 100.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",data:[70.7, 85.5, 73.6, 79.1, 74.1, 85.2, 75.0, 79.8],backgroundColor:'#4A90E2',borderColor:'#4A90E2',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Показники якості (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_quality"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_169006_quality"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_quality').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [12.4, 5.3, 7.0, 8.0, 7.2, 3.4, 6.1, 3.1],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [4.7, 2.7, 0.0, 1.1, 1.0, 0.0, 1.2, 1.0],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [0.9, 1.8, 1.1, 4.5, 1.0, 1.1, 1.2, 0.0],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_quality').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[12.4, 5.3, 7.0, 8.0, 7.2, 3.4, 6.1, 3.1],backgroundColor:'#FF6B35',borderColor:'#FF6B35',borderWidth:1,borderRadius:4},
+{label:"\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",data:[4.7, 2.7, 0.0, 1.1, 1.0, 0.0, 1.2, 1.0],backgroundColor:'#FF9F43',borderColor:'#FF9F43',borderWidth:1,borderRadius:4},
+{label:"\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[0.9, 1.8, 1.1, 4.5, 1.0, 1.1, 1.2, 0.0],backgroundColor:'#EE5A24',borderColor:'#EE5A24',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Показники кур'єра</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_courier"></canvas>
-  </div>
+  <h4 class="chart-title">Позицій у кошику</h4>
+  <div class="chart-container"><canvas id="chart_169006_basket"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_courier').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0425\u0432\u0438\u043b\u0438\u043d \u043d\u0430 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [24.5, 24.3, 23.9, 23.3, 23.3, 22.7, 23.0, 21.7],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u0445\u0432", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середній кошик</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_basket"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_basket').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0437\u0438\u0446\u0456\u0439 \u0443 \u043a\u043e\u0448\u0438\u043a\u0443",
-                data: [6.8, 7.2, 7.3, 6.7, 6.9, 6.3, 6.3, 6.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середня ціна на замовлення (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_avg_price"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_avg_price').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [623.8, 600.2, 661.5, 646.8, 655.3, 660.7, 631.3, 677.3],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [70.4, 64.2, 61.1, 62.5, 61.2, 51.0, 44.2, 53.4],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_basket').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0437\u0438\u0446\u0456\u0439/\u0437\u0430\u043c\u043e\u0432\u043b.",data:[6.8, 7.2, 7.3, 6.7, 6.9, 6.3, 6.3, 6.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Нові активовані користувачі</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_users"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_169006_users"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_users').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",
-                data: [5.0, 9.0, 6.0, 1.0, 7.0, 6.0, 9.0, 2.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_users').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",data:[5.0, 9.0, 6.0, 1.0, 7.0, 6.0, 9.0, 2.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Тикети, повернення, переналаштування (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_169006_issues"></canvas>
-  </div>
+  <h4 class="chart-title">% доступності (Availability)</h4>
+  <div class="chart-container"><canvas id="chart_169006_availability"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_169006_issues').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0422\u0438\u043a\u0435\u0442\u0438 CS",
-                data: [2.8, 0.9, 1.1, 0.0, 1.0, 1.1, 1.2, 2.1],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0432\u0435\u0440\u043d\u0435\u043d\u043d\u044f",
-                data: [0.0, 0.0, 1.1, 0.0, 1.0, 0.0, 1.2, 1.0],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0435\u0440\u0435\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u043a\u0443\u0440'\u0454\u0440\u0430",
-                data: [0.9, 0.9, 4.5, 3.4, 4.0, 5.4, 0.0, 2.0],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_169006_availability').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"% \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0441\u0442\u0456",data:[96.1, 95.4, 91.8, 82.0, 99.7, 99.2, 99.7, 99.9],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
@@ -1629,11 +369,11 @@
     <div class="summary-cards">
       <div class="summary-card">
         <div class="summary-value">85</div>
-        <div class="summary-label">Замовлень (остання тижня)</div>
+        <div class="summary-label">Замовлень (останній тиждень)</div>
       </div>
       <div class="summary-card">
         <div class="summary-value">68 202 ₴</div>
-        <div class="summary-label">GMV (остання тижня)</div>
+        <div class="summary-label">Продажі (останній тиждень)</div>
       </div>
       <div class="summary-card highlight-green">
         <div class="summary-value">98.8%</div>
@@ -1645,576 +385,113 @@
       </div>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📊 Метрики по тижнях</h3>
     <div class="table-wrapper">
       <table class="metrics-table">
-        <thead>
-          <tr>
-            <th class="metric-col">Метрика</th>
-            <th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th>
-          </tr>
-        </thead>
+        <thead><tr><th class="metric-col">Метрика</th><th>16.02–22.02</th><th>23.02–01.03</th><th>02.03–08.03</th><th>09.03–15.03</th><th>16.03–22.03</th><th>23.03–29.03</th><th>30.03–05.04</th><th>06.04–12.04</th></tr></thead>
         <tbody>
 <tr><td class="metric-name">Виконані замовлення</td><td>100</td><td>106</td><td>100</td><td>90</td><td>75</td><td>74</td><td>79</td><td>85</td></tr>
 <tr><td class="metric-name">Розміщені замовлення</td><td>102</td><td>108</td><td>101</td><td>92</td><td>78</td><td>75</td><td>81</td><td>86</td></tr>
 <tr><td class="metric-name">Відсоток невдалих замовлень</td><td>2.0%</td><td>1.8%</td><td>1.0%</td><td>2.2%</td><td>3.8%</td><td>1.3%</td><td>2.5%</td><td>1.2%</td></tr>
-<tr><td class="metric-name">GMV до знижок</td><td>73 882 ₴</td><td>81 975 ₴</td><td>78 134 ₴</td><td>70 104 ₴</td><td>58 426 ₴</td><td>54 053 ₴</td><td>61 929 ₴</td><td>68 202 ₴</td></tr>
-<tr><td class="metric-name">GMV після знижок</td><td>69 196 ₴</td><td>75 064 ₴</td><td>71 089 ₴</td><td>64 836 ₴</td><td>53 454 ₴</td><td>52 724 ₴</td><td>60 406 ₴</td><td>67 178 ₴</td></tr>
-<tr><td class="metric-name">Ціна ресторану (після знижок)</td><td>62 496 ₴</td><td>65 545 ₴</td><td>62 678 ₴</td><td>56 740 ₴</td><td>47 371 ₴</td><td>47 551 ₴</td><td>54 574 ₴</td><td>60 814 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки (після знижок)</td><td>4 030 ₴</td><td>6 563 ₴</td><td>5 832 ₴</td><td>5 736 ₴</td><td>4 142 ₴</td><td>3 541 ₴</td><td>3 956 ₴</td><td>4 412 ₴</td></tr>
+<tr><td class="metric-name">Загальні продажі партнера</td><td>73 882 ₴</td><td>81 975 ₴</td><td>78 134 ₴</td><td>70 104 ₴</td><td>58 426 ₴</td><td>54 053 ₴</td><td>61 929 ₴</td><td>68 202 ₴</td></tr>
+<tr><td class="metric-name">Чисті продажі</td><td>69 196 ₴</td><td>75 064 ₴</td><td>71 089 ₴</td><td>64 836 ₴</td><td>53 454 ₴</td><td>52 724 ₴</td><td>60 406 ₴</td><td>67 178 ₴</td></tr>
 <tr><td class="metric-name">Прийняття замовлень рестораном</td><td>98.0%</td><td>98.1%</td><td>99.0%</td><td>97.8%</td><td>96.2%</td><td>98.7%</td><td>97.5%</td><td>98.8%</td></tr>
 <tr><td class="metric-name">Виконання доставок кур'єром</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr>
 <tr><td class="metric-name">Погані замовлення</td><td>9.9%</td><td>11.2%</td><td>13.1%</td><td>7.6%</td><td>15.4%</td><td>5.5%</td><td>4.9%</td><td>10.5%</td></tr>
 <tr><td class="metric-name">Погана оцінка ресторану</td><td>2.0%</td><td>0.9%</td><td>3.0%</td><td>2.2%</td><td>2.6%</td><td>1.3%</td><td>0.0%</td><td>2.3%</td></tr>
 <tr><td class="metric-name">Прийняття замовлень кур'єром</td><td>61.3%</td><td>58.2%</td><td>56.9%</td><td>58.2%</td><td>55.4%</td><td>54.5%</td><td>67.2%</td><td>61.5%</td></tr>
-<tr><td class="metric-name">Хвилин кур'єра на замовлення</td><td>24.9</td><td>28.8</td><td>26.1</td><td>25.4</td><td>24.6</td><td>24.7</td><td>25.6</td><td>24.6</td></tr>
 <tr><td class="metric-name">Позицій у кошику на замовлення</td><td>6.6</td><td>6.9</td><td>6.6</td><td>6.5</td><td>6.7</td><td>6.0</td><td>6.0</td><td>6.1</td></tr>
-<tr><td class="metric-name">Нові користувачі (активовані)</td><td>13</td><td>7</td><td>5</td><td>5</td><td>6</td><td>3</td><td>5</td><td>3</td></tr>
-<tr><td class="metric-name">Ціна ресторану за замовлення</td><td>625 ₴</td><td>618 ₴</td><td>627 ₴</td><td>630 ₴</td><td>632 ₴</td><td>643 ₴</td><td>691 ₴</td><td>715 ₴</td></tr>
-<tr><td class="metric-name">Ціна доставки за замовлення</td><td>40 ₴</td><td>62 ₴</td><td>58 ₴</td><td>64 ₴</td><td>55 ₴</td><td>48 ₴</td><td>50 ₴</td><td>52 ₴</td></tr>
-<tr><td class="metric-name">Переналаштування кур'єра</td><td>1.0%</td><td>4.5%</td><td>4.9%</td><td>2.2%</td><td>2.6%</td><td>7.7%</td><td>3.7%</td><td>3.4%</td></tr>
-<tr><td class="metric-name">Тикети підтримки (CS)</td><td>5.0%</td><td>0.9%</td><td>3.0%</td><td>2.2%</td><td>3.8%</td><td>1.3%</td><td>2.5%</td><td>1.2%</td></tr>
+<tr><td class="metric-name">Нові активовані користувачі</td><td>13</td><td>7</td><td>5</td><td>5</td><td>6</td><td>3</td><td>5</td><td>3</td></tr>
+<tr><td class="metric-name">% звернень до служби підтримки</td><td>5.0%</td><td>0.9%</td><td>3.0%</td><td>2.2%</td><td>3.8%</td><td>1.3%</td><td>2.5%</td><td>1.2%</td></tr>
 <tr><td class="metric-name">Повернення коштів замовникам</td><td>2.0%</td><td>0.0%</td><td>1.0%</td><td>2.2%</td><td>2.6%</td><td>1.3%</td><td>1.2%</td><td>0.0%</td></tr>
-<tr><td class="metric-name">Активний час ресторану (хв)</td><td>4229</td><td>4185</td><td>4281</td><td>4249</td><td>4198</td><td>4288</td><td>4297</td><td>4295</td></tr>
+<tr><td class="metric-name">% доступності (Availability)</td><td>98.4%</td><td>97.4%</td><td>99.7%</td><td>98.9%</td><td>97.7%</td><td>99.8%</td><td>100.0%</td><td>100.0%</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
   <div class="section-block">
     <h3 class="section-title">📈 Графіки по тижнях</h3>
     <div class="charts-grid">
 
 <div class="chart-card">
   <h4 class="chart-title">Кількість замовлень</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_orders"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_184043_orders"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_orders').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [100.0, 106.0, 100.0, 90.0, 75.0, 74.0, 79.0, 85.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [102.0, 108.0, 101.0, 92.0, 78.0, 75.0, 81.0, 86.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_orders').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[100.0, 106.0, 100.0, 90.0, 75.0, 74.0, 79.0, 85.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0420\u043e\u0437\u043c\u0456\u0449\u0435\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[102.0, 108.0, 101.0, 92.0, 78.0, 75.0, 81.0, 86.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">GMV (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_gmv"></canvas>
-  </div>
+  <h4 class="chart-title">Продажі (₴)</h4>
+  <div class="chart-container"><canvas id="chart_184043_sales"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_gmv').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "GMV \u0434\u043e \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [73882.0, 81975.0, 78134.0, 70104.0, 58426.0, 54053.0, 61929.0, 68202.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "GMV \u043f\u0456\u0441\u043b\u044f \u0437\u043d\u0438\u0436\u043e\u043a",
-                data: [69196.0, 75064.0, 71089.0, 64836.0, 53454.0, 52724.0, 60406.0, 67178.0],
-                backgroundColor: '#A8E6CF',
-                borderColor: '#A8E6CF',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Дохід ресторану та вартість доставки (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_prices"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_prices').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [62496.0, 65545.0, 62678.0, 56740.0, 47371.0, 47551.0, 54574.0, 60814.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
-                data: [4030.0, 6563.0, 5832.0, 5736.0, 4142.0, 3541.0, 3956.0, 4412.0],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_sales').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u0417\u0430\u0433\u0430\u043b\u044c\u043d\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430",data:[73882.0, 81975.0, 78134.0, 70104.0, 58426.0, 54053.0, 61929.0, 68202.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u0427\u0438\u0441\u0442\u0456 \u043f\u0440\u043e\u0434\u0430\u0436\u0456",data:[69196.0, 75064.0, 71089.0, 64836.0, 53454.0, 52724.0, 60406.0, 67178.0],backgroundColor:'#A8E6CF',borderColor:'#A8E6CF',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u20b4",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Прийняття замовлень (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_acceptance"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_184043_acceptance"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_acceptance').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",
-                data: [98.0, 98.1, 99.0, 97.8, 96.2, 98.7, 97.5, 98.8],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",
-                data: [61.3, 58.2, 56.9, 58.2, 55.4, 54.5, 67.2, 61.5],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_acceptance').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u043e\u043c",data:[98.0, 98.1, 99.0, 97.8, 96.2, 98.7, 97.5, 98.8],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4},
+{label:"\u041f\u0440\u0438\u0439\u043d\u044f\u0442\u0442\u044f \u043a\u0443\u0440'\u0454\u0440\u043e\u043c",data:[61.3, 58.2, 56.9, 58.2, 55.4, 54.5, 67.2, 61.5],backgroundColor:'#4A90E2',borderColor:'#4A90E2',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Показники якості (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_quality"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_184043_quality"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_quality').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [9.9, 11.2, 13.1, 7.6, 15.4, 5.5, 4.9, 10.5],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",
-                data: [2.0, 0.9, 3.0, 2.2, 2.6, 1.3, 0.0, 2.3],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [2.0, 1.8, 1.0, 2.2, 3.8, 1.3, 2.5, 1.2],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_quality').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0433\u0430\u043d\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[9.9, 11.2, 13.1, 7.6, 15.4, 5.5, 4.9, 10.5],backgroundColor:'#FF6B35',borderColor:'#FF6B35',borderWidth:1,borderRadius:4},
+{label:"\u041f\u043e\u0433\u0430\u043d\u0430 \u043e\u0446\u0456\u043d\u043a\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443",data:[2.0, 0.9, 3.0, 2.2, 2.6, 1.3, 0.0, 2.3],backgroundColor:'#FF9F43',borderColor:'#FF9F43',borderWidth:1,borderRadius:4},
+{label:"\u041d\u0435\u0432\u0434\u0430\u043b\u0456 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",data:[2.0, 1.8, 1.0, 2.2, 3.8, 1.3, 2.5, 1.2],backgroundColor:'#EE5A24',borderColor:'#EE5A24',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Показники кур'єра</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_courier"></canvas>
-  </div>
+  <h4 class="chart-title">Позицій у кошику</h4>
+  <div class="chart-container"><canvas id="chart_184043_basket"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_courier').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0425\u0432\u0438\u043b\u0438\u043d \u043d\u0430 \u0437\u0430\u043c\u043e\u0432\u043b\u0435\u043d\u043d\u044f",
-                data: [24.9, 28.8, 26.1, 25.4, 24.6, 24.7, 25.6, 24.6],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u0445\u0432", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середній кошик</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_basket"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_basket').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041f\u043e\u0437\u0438\u0446\u0456\u0439 \u0443 \u043a\u043e\u0448\u0438\u043a\u0443",
-                data: [6.6, 6.9, 6.6, 6.5, 6.7, 6.0, 6.0, 6.1],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
-  })();
-  </script>
-</div>
-
-<div class="chart-card">
-  <h4 class="chart-title">Середня ціна на замовлення (₴)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_avg_price"></canvas>
-  </div>
-  <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_avg_price').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0426\u0456\u043d\u0430 \u0440\u0435\u0441\u0442\u043e\u0440\u0430\u043d\u0443/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [625.0, 618.4, 626.8, 630.4, 631.6, 642.6, 690.8, 715.5],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u0426\u0456\u043d\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438/\u0437\u0430\u043c\u043e\u0432\u043b.",
-                data: [40.3, 61.9, 58.3, 63.7, 55.2, 47.9, 50.1, 51.9],
-                backgroundColor: '#4A90E2',
-                borderColor: '#4A90E2',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u20b4", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_basket').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041f\u043e\u0437\u0438\u0446\u0456\u0439/\u0437\u0430\u043c\u043e\u0432\u043b.",data:[6.6, 6.9, 6.6, 6.5, 6.7, 6.0, 6.0, 6.1],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
   <h4 class="chart-title">Нові активовані користувачі</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_users"></canvas>
-  </div>
+  <div class="chart-container"><canvas id="chart_184043_users"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_users').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",
-                data: [13.0, 7.0, 5.0, 5.0, 6.0, 3.0, 5.0, 3.0],
-                backgroundColor: '#34D186',
-                borderColor: '#34D186',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "\u043a-\u0441\u0442\u044c", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_users').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"\u041d\u043e\u0432\u0456 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0456",data:[13.0, 7.0, 5.0, 5.0, 6.0, 3.0, 5.0, 3.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"\u043a-\u0441\u0442\u044c",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
 
 <div class="chart-card">
-  <h4 class="chart-title">Тикети, повернення, переналаштування (%)</h4>
-  <div class="chart-container">
-    <canvas id="chart_184043_issues"></canvas>
-  </div>
+  <h4 class="chart-title">% доступності (Availability)</h4>
+  <div class="chart-container"><canvas id="chart_184043_availability"></canvas></div>
   <script>
-  (function() {
-    var ctx = document.getElementById('chart_184043_issues').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],
-        datasets: [{
-                label: "\u0422\u0438\u043a\u0435\u0442\u0438 CS",
-                data: [5.0, 0.9, 3.0, 2.2, 3.8, 1.3, 2.5, 1.2],
-                backgroundColor: '#FF6B35',
-                borderColor: '#FF6B35',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u043e\u0432\u0435\u0440\u043d\u0435\u043d\u043d\u044f",
-                data: [2.0, 0.0, 1.0, 2.2, 2.6, 1.3, 1.2, 0.0],
-                backgroundColor: '#FF9F43',
-                borderColor: '#FF9F43',
-                borderWidth: 1,
-                borderRadius: 4
-            },
-{
-                label: "\u041f\u0435\u0440\u0435\u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u043a\u0443\u0440'\u0454\u0440\u0430",
-                data: [1.0, 4.5, 4.9, 2.2, 2.6, 7.7, 3.7, 3.4],
-                backgroundColor: '#EE5A24',
-                borderColor: '#EE5A24',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: { position: 'top', labels: { font: { size: 11 }, color: '#1C1F23' } },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 }, color: '#666' }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { font: { size: 10 }, color: '#666' },
-            title: { display: true, text: "%", font: { size: 10 }, color: '#666' }
-          }
-        }
-      }
-    });
+  (function(){
+    var ctx=document.getElementById('chart_184043_availability').getContext('2d');
+    new Chart(ctx,{type:'bar',data:{labels:["16.02\u201322.02", "23.02\u201301.03", "02.03\u201308.03", "09.03\u201315.03", "16.03\u201322.03", "23.03\u201329.03", "30.03\u201305.04", "06.04\u201312.04"],datasets:[{label:"% \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0441\u0442\u0456",data:[98.4, 97.4, 99.7, 98.9, 97.7, 99.8, 100.0, 100.0],backgroundColor:'#34D186',borderColor:'#34D186',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},color:'#1C1F23'}},tooltip:{mode:'index',intersect:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10},color:'#666'}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},color:'#666'},title:{display:true,text:"%",font:{size:10},color:'#666'}}}}})};
   })();
   </script>
 </div>
@@ -2222,21 +499,17 @@
   </div>
 </div>
 </main>
-
-<!-- Footer -->
 <footer class="site-footer">
-  <p>© 2026 Bolt Food · Щотижневий звіт IZI BURGER (Харків) · Дані: Databricks <code>main.ng_delivery.fact_provider_weekly</code></p>
-  <p style="margin-top:6px;">Автоматично оновлюється кожного понеділка о 13:30 за Київським часом</p>
+  <p>© 2026 Bolt Food · Щотижневий звіт IZI BURGER (Харків) · Джерело: Databricks <code>main.ng_delivery.fact_provider_weekly</code></p>
+  <p style="margin-top:6px">Автоматично оновлюється кожного понеділка о 13:30 за київським часом</p>
 </footer>
-
 <script>
-function showLocation(pid) {
-  document.querySelectorAll('.location-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.loc-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('loc-' + pid).classList.add('active');
-  document.querySelector('[data-target="loc-' + pid + '"]').classList.add('active');
+function showLocation(pid){
+  document.querySelectorAll('.location-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.loc-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('loc-'+pid).classList.add('active');
+  document.querySelector('[data-target="loc-'+pid+'"]').classList.add('active');
 }
 </script>
-
 </body>
 </html>
