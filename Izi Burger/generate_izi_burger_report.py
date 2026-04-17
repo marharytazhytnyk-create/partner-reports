@@ -113,7 +113,8 @@ izi_data = df.filter(
 ).select(
     'provider_id', 'city_id', 'metric_timestamp_local',
     'delivered_orders_count', 'placed_orders_count',
-    'failed_order_rate_value', 'total_gmv_before_discounts', 'total_gmv_after_discounts',
+    'failed_order_rate_value',
+    'total_provider_price_before_discounts', 'total_provider_price_after_discounts',
     'provider_acceptance_rate_value', 'courier_delivery_completion_rate_value',
     'bad_order_rate_value', 'bad_provider_rating_rate_value', 'courier_acceptance_rate_value',
     'basket_items_per_order_value', 'users_activated_count',
@@ -227,8 +228,8 @@ def generate_html(structured, week_starts):
             'delivered_orders':    get_arr(pid, 'delivered_orders_count', 1, 0),
             'placed_orders':       get_arr(pid, 'placed_orders_count', 1, 0),
             'failed_order_rate':   get_arr(pid, 'failed_order_rate_value', 100, 1),
-            'gmv_before':          get_arr(pid, 'total_gmv_before_discounts', 1, 0),
-            'gmv_after':           get_arr(pid, 'total_gmv_after_discounts', 1, 0),
+            'gmv_before':          get_arr(pid, 'total_provider_price_before_discounts', 1, 0),
+            'gmv_after':           get_arr(pid, 'total_provider_price_after_discounts', 1, 0),
             'provider_acceptance': get_arr(pid, 'provider_acceptance_rate_value', 100, 1),
             'courier_completion':  get_arr(pid, 'courier_delivery_completion_rate_value', 100, 1),
             'courier_acceptance':  get_arr(pid, 'courier_acceptance_rate_value', 100, 1),
@@ -248,8 +249,8 @@ def generate_html(structured, week_starts):
             ('Виконані замовлення',            lambda w: num0(pid, w, 'delivered_orders_count')),
             ('Розміщені замовлення',           lambda w: num0(pid, w, 'placed_orders_count')),
             ('Відсоток невдалих замовлень',    lambda w: pct(pid, w, 'failed_order_rate_value')),
-            ('Загальні продажі партнера',      lambda w: uah(pid, w, 'total_gmv_before_discounts')),
-            ('Чисті продажі',                  lambda w: uah(pid, w, 'total_gmv_after_discounts')),
+            ('Загальні продажі партнера',      lambda w: uah(pid, w, 'total_provider_price_before_discounts')),
+            ('Чисті продажі',                  lambda w: uah(pid, w, 'total_provider_price_after_discounts')),
             ('Прийняття замовлень рестораном', lambda w: pct(pid, w, 'provider_acceptance_rate_value')),
             ("Виконання доставок кур'єром",    lambda w: pct(pid, w, 'courier_delivery_completion_rate_value')),
             ('Погані замовлення',              lambda w: pct(pid, w, 'bad_order_rate_value')),
@@ -338,7 +339,7 @@ def generate_html(structured, week_starts):
 
         last_w    = WEEKS[-1]
         delivered = sf(g(pid, last_w, 'delivered_orders_count'), 0)
-        sales_val = sf(g(pid, last_w, 'total_gmv_before_discounts'), 0)
+        sales_val = sf(g(pid, last_w, 'total_provider_price_before_discounts'), 0)
         acceptance= sf(g(pid, last_w, 'provider_acceptance_rate_value'), 0)
         bad_order = sf(g(pid, last_w, 'bad_order_rate_value'), 0)
 
