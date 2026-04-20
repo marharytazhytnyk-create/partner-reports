@@ -35,8 +35,8 @@ VENDOR_IDS = {
 UAH_PER_EUR = 45.5   # Актуальний курс 2026 UAH/EUR
 
 # 8 тижнів до 12.04.2026 (починаючи з 2026-02-16)
-REPORT_START = "2026-02-16"
-REPORT_END   = "2026-04-12"
+REPORT_START = "2026-02-23"
+REPORT_END   = "2026-04-19"
 
 SCRIPT_DIR  = Path(__file__).parent
 OUTPUT_HTML = SCRIPT_DIR / "index.html"
