@@ -35,8 +35,20 @@ VENDOR_IDS = {
 UAH_PER_EUR = 45.5   # Актуальний курс 2026 UAH/EUR
 
 # 8 тижнів до 12.04.2026 (починаючи з 2026-02-16)
-REPORT_START = "2026-02-23"
-REPORT_END   = "2026-04-19"
+# Динамічний розрахунок: 8 повних тижнів, що закінчилися минулої неділі.
+# Якщо скрипт запускається в понеділок, то:
+#   - минулий тиждень: Пн(today-7) .. Нд(today-1)
+#   - 8 тижнів тому:   Пн(today-7-7*7) = Пн(today-56)
+def _calc_report_dates():
+    today = datetime.date.today()
+    # Знаходимо попередній понеділок (якщо сьогодні пн — це сьогодні)
+    days_since_monday = today.weekday()          # 0=Пн … 6=Нд
+    last_monday = today - datetime.timedelta(days=days_since_monday)
+    last_sunday  = last_monday - datetime.timedelta(days=1)   # неділя ПЕРЕД поточним тижнем
+    start_monday = last_sunday - datetime.timedelta(days=7 * 8 - 1)  # 8 тижнів назад (Пн)
+    return str(start_monday), str(last_sunday)
+
+REPORT_START, REPORT_END = _calc_report_dates()
 
 SCRIPT_DIR  = Path(__file__).parent
 OUTPUT_HTML = SCRIPT_DIR / "index.html"
