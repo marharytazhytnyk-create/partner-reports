@@ -38,6 +38,7 @@ OUTPUT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Щоти
 
 def db_request(endpoint, method='GET', data=None):
     """Make a Databricks REST API request."""
+    import re as _re
     url = f"{DATABRICKS_HOST}{endpoint}"
     headers = {
         'Authorization': f'Bearer {DATABRICKS_TOKEN}',
@@ -47,7 +48,10 @@ def db_request(endpoint, method='GET', data=None):
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode('utf-8'))
+            raw = resp.read()
+            # Strip ANSI escape codes that Databricks embeds in error messages
+            clean = _re.sub(rb'\x1b\[[0-9;]*[mGKHF]', b'', raw)
+            return json.loads(clean.decode('utf-8', errors='replace'))
     except urllib.error.HTTPError as e:
         print(f"HTTP {e.code}: {e.read().decode()[:500]}")
         raise
@@ -108,8 +112,9 @@ izi_prov_ids = [{pids_str}]
 df = spark.read.format('delta').load('s3://bolt-delta-lake/ng_delivery/tables/fact_provider_weekly')
 izi_data = df.filter(
     F.col('provider_id').isin(izi_prov_ids) &
-    (F.col('metric_timestamp_local') >= '{start_str}') &
-    (F.col('metric_timestamp_local') <= '{end_str}')
+    (F.col('city_id') == 491) &
+    (F.col('metric_timestamp_local').cast('string').substr(1,10) >= '{start_str}') &
+    (F.col('metric_timestamp_local').cast('string').substr(1,10) <= '{end_str}')
 ).select(
     'provider_id', 'city_id', 'metric_timestamp_local',
     'delivered_orders_count', 'placed_orders_count',
@@ -208,18 +213,16 @@ def generate_html(structured, week_starts):
         active   = sf(g(pid, w, 'total_provider_active_minutes'))
         inactive = sf(g(pid, w, 'total_provider_inactive_minutes'))
         total = active + inactive
-        if total == 0:
-            return '—'
-        return f'{active / total * 100:.1f}%'
+        return f'{active / total * 100:.1f}%' if total > 0 else '—'
 
     def avail_arr(pid):
-        result = []
+        out = []
         for w in WEEKS:
             active   = sf(g(pid, w, 'total_provider_active_minutes'))
             inactive = sf(g(pid, w, 'total_provider_inactive_minutes'))
             total = active + inactive
-            result.append(round(active / total * 100, 1) if total > 0 else 0)
-        return result
+            out.append(round(active / total * 100, 1) if total > 0 else 0)
+        return out
 
     # Build chart data
     chart_data = {}
