@@ -151,58 +151,63 @@ def fetch_data() -> pd.DataFrame:
 
 
 def fetch_provider_summary() -> pd.DataFrame:
-    """Fetch aggregated (4-week total) provider summary."""
+    """Fetch brand-level aggregated summary (4-week total), active providers only."""
     start_date, end_date = get_last_4_full_weeks()
     ctx = _create_context()
 
+    # Aggregate at brand + city level so each row = one brand in one city.
+    # Rates are weighted by delivered_orders_count so multi-location brands
+    # get a meaningful average instead of a simple unweighted AVG.
     sql = f"""
     SELECT
-        p.provider_id,
-        p.provider_name,
         p.brand_name,
-        p.group_name,
         p.city_name,
-        p.zone_name,
-        p.business_segment_v2,
-        p.business_subsegment_v2,
-        p.delivery_vertical,
-        p.provider_status,
-        p.account_manager_name,
-        p.is_top_brand,
-        p.provider_rating,
-        SUM(f.delivered_orders_count) AS delivered_orders,
-        SUM(f.failed_orders_count) AS failed_orders,
-        SUM(f.placed_orders_count) AS placed_orders,
-        SUM(f.total_gmv_before_discounts_eur) AS gmv_eur,
-        SUM(f.total_contribution_profit_eur) AS contribution_profit_eur,
-        CASE WHEN SUM(f.total_gmv_before_discounts_eur) > 0
-             THEN SUM(f.total_contribution_profit_eur) / SUM(f.total_gmv_before_discounts_eur) * 100
-             ELSE NULL END AS cp_l2_margin_pct,
-        AVG(f.bad_order_rate_value) AS bad_order_rate,
-        AVG(f.failed_order_rate_value) AS failed_order_rate,
-        AVG(f.provider_acceptance_rate_value) AS acceptance_rate,
-        AVG(f.late_delivery_order_rate_value) AS late_delivery_rate,
-        AVG(f.provider_active_rate_value) AS active_rate,
-        COUNT(DISTINCT DATE_TRUNC('week', f.metric_timestamp_local)) AS active_weeks
+        MIN(p.group_name)           AS group_name,
+        MIN(p.business_segment_v2)  AS business_segment_v2,
+        MIN(p.business_subsegment_v2) AS business_subsegment_v2,
+        MIN(p.delivery_vertical)    AS delivery_vertical,
+        MAX(CAST(p.is_top_brand AS INT)) AS is_top_brand,
+        COUNT(DISTINCT p.provider_id) AS locations_count,
+        SUM(f.delivered_orders_count)            AS delivered_orders,
+        SUM(f.failed_orders_count)               AS failed_orders,
+        SUM(f.placed_orders_count)               AS placed_orders,
+        SUM(f.total_gmv_before_discounts_eur)    AS gmv_eur,
+        SUM(f.total_contribution_profit_eur)     AS contribution_profit_eur,
+        CASE
+            WHEN SUM(f.total_gmv_before_discounts_eur) > 0
+            THEN SUM(f.total_contribution_profit_eur)
+                 / SUM(f.total_gmv_before_discounts_eur) * 100
+            ELSE NULL
+        END AS cp_l2_margin_pct,
+        -- Weighted rates: weight = delivered_orders_count per row
+        SUM(f.bad_order_rate_value      * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) AS bad_order_rate,
+        SUM(f.failed_order_rate_value   * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) AS failed_order_rate,
+        SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) AS acceptance_rate,
+        SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) AS late_delivery_rate,
+        SUM(f.provider_active_rate_value     * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) AS active_rate
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
         ON p.provider_id = f.provider_id
     WHERE
         p.account_manager_name = '{ACCOUNT_MANAGER}'
-        AND p.country_code = '{COUNTRY_CODE}'
+        AND p.country_code      = '{COUNTRY_CODE}'
+        AND p.provider_status   = 'active'
         AND CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
     GROUP BY
-        p.provider_id, p.provider_name, p.brand_name, p.group_name,
-        p.city_name, p.zone_name, p.business_segment_v2, p.business_subsegment_v2,
-        p.delivery_vertical, p.provider_status, p.account_manager_name,
-        p.is_top_brand, p.provider_rating
+        p.brand_name,
+        p.city_name
     ORDER BY p.city_name, gmv_eur DESC
     """
 
-    print("Running provider summary query...")
+    print("Running brand-level summary query...")
     result = _exec_sql(ctx, sql, timeout=300)
     df = _to_df(result)
-    print(f"Fetched {len(df):,} provider summaries")
+    print(f"Fetched {len(df):,} brand-city rows")
     return df
 
 
@@ -242,8 +247,11 @@ def fmt_pct(val):
 
 
 def is_problematic(row) -> list:
-    """Returns list of problems for a provider."""
+    """Returns list of problems for a brand (brand-level aggregated metrics)."""
     problems = []
+    orders = safe_float(row.get("delivered_orders"))
+    locs = max(int(safe_float(row.get("locations_count"), 1)), 1)
+
     if safe_float(row.get("failed_order_rate")) > 0.05:
         problems.append(f"Висока частота невдалих замовлень: {fmt_pct(safe_float(row.get('failed_order_rate'))*100)}")
     if safe_float(row.get("bad_order_rate")) > 0.10:
@@ -254,8 +262,9 @@ def is_problematic(row) -> list:
         problems.append(f"Низький рівень прийняття замовлень: {fmt_pct(safe_float(row.get('acceptance_rate'))*100)}")
     if safe_float(row.get("cp_l2_margin_pct")) < -5:
         problems.append(f"Від'ємна маржа CP L2: {fmt_pct(safe_float(row.get('cp_l2_margin_pct')))}")
-    if safe_float(row.get("delivered_orders")) < 50:
-        problems.append(f"Мала кількість замовлень за 4 тижні: {fmt_num(row.get('delivered_orders'))}")
+    # Per-location threshold: < 50 orders per location over 4 weeks
+    if orders < (50 * locs):
+        problems.append(f"Мала кількість замовлень: {fmt_num(orders)} (≈{fmt_num(orders/locs)}/лок.)")
     return problems
 
 
@@ -728,29 +737,31 @@ def build_problems_box(problem_providers: list) -> str:
         return ""
     rows_html = ""
     for item in problem_providers[:20]:
-        name = str(item["brand_name"] or item["provider_name"] or "—")
+        name = str(item.get("brand_name") or "—")
         probs = item["problems"]
         tags = "".join(f'<span class="problem-tag">{p}</span>' for p in probs)
         orders = fmt_num(item.get("delivered_orders"))
         gmv = fmt_eur(item.get("gmv_eur"))
+        locs = int(safe_float(item.get("locations_count"), 1))
+        locs_txt = f"{locs} лок." if locs > 1 else ""
         rows_html += f"""
         <div class="problem-row">
           <div class="problem-row-header">
             <span class="problem-name">⚠️ {name}</span>
-            <span style="font-size:11px;color:var(--muted)">({orders} зам. | {gmv})</span>
+            <span style="font-size:11px;color:var(--muted)">({orders} зам. | {gmv}{' | ' + locs_txt if locs_txt else ''})</span>
           </div>
           <div class="problem-tags">{tags}</div>
         </div>"""
     return f"""
     <div class="problems-box">
-      <h3>🚨 Заклади з проблемами ({len(problem_providers)})</h3>
+      <h3>🚨 Бренди з проблемами ({len(problem_providers)})</h3>
       {rows_html}
     </div>"""
 
 
 def build_provider_table(providers: pd.DataFrame, city_id: str) -> str:
     if providers.empty:
-        return '<div class="no-data">Немає даних по закладах</div>'
+        return '<div class="no-data">Немає даних по брендах</div>'
 
     table_id = f"tbl_{city_id}"
     rows_html = ""
@@ -759,25 +770,22 @@ def build_provider_table(providers: pd.DataFrame, city_id: str) -> str:
         gmv = safe_float(row.get("gmv_eur"))
         cp = safe_float(row.get("contribution_profit_eur"))
         cp_margin = safe_float(row.get("cp_l2_margin_pct"))
+        locs = int(safe_float(row.get("locations_count"), 1))
         problems = is_problematic(row)
         problem_icon = '<span class="badge-problem"></span>' if problems else ""
-        status = str(row.get("provider_status") or "")
-        status_badge = (
-            '<span class="badge-status-active">Активний</span>' if "active" in status.lower()
-            else '<span class="badge-status-inactive">Неактивний</span>'
-        )
-        top_badge = '<span class="badge-top">TOP</span>' if str(row.get("is_top_brand")) in ["true", "True", "1", True] else ""
+        top_val = str(row.get("is_top_brand"))
+        top_badge = '<span class="badge-top">TOP</span>' if top_val in ["1", "1.0", "True", "true"] else ""
         cp_class = "positive" if cp_margin > 0 else "negative" if cp_margin < -1 else "neutral"
         failed_rate = safe_float(row.get("failed_order_rate"))
         failed_class = "negative" if failed_rate > 0.05 else ""
         row_class = "problem-highlight" if problems else ""
+        locs_badge = f'<span style="font-size:10px;background:#E3F2FD;color:#1565C0;border-radius:6px;padding:1px 5px;margin-left:4px">{locs} лок.</span>' if locs > 1 else ""
 
         rows_html += f"""
         <tr class="{row_class}">
-          <td>{problem_icon}{str(row.get('brand_name') or row.get('provider_name') or '—')} {top_badge}</td>
-          <td>{str(row.get('zone_name') or '—')}</td>
+          <td>{problem_icon}{str(row.get('brand_name') or '—')} {top_badge}{locs_badge}</td>
           <td>{str(row.get('business_segment_v2') or '—')}</td>
-          <td class="center">{status_badge}</td>
+          <td class="num" data-val="{locs}">{locs}</td>
           <td class="num" data-val="{orders}">{fmt_num(orders)}</td>
           <td class="num" data-val="{gmv}">{fmt_eur(gmv)}</td>
           <td class="num" data-val="{cp}">{fmt_eur(cp)}</td>
@@ -788,22 +796,25 @@ def build_provider_table(providers: pd.DataFrame, city_id: str) -> str:
         </tr>"""
 
     search_id = f"search_{city_id}"
-    sort_js = "".join(
-        f"let sort_{table_id}_{i}=false;" for i in range(11)
-    )
+    num_cols = 10
+    sort_js = "".join(f"let sort_{table_id}_{i}=false;" for i in range(num_cols))
     header_cols = [
-        ("Бренд / Заклад", 0), ("Зона", 1), ("Сегмент", 2), ("Статус", 3),
-        ("Замовлення", 4), ("GMV, €", 5), ("Contribution Profit, €", 6),
-        ("CP L2 Маржа", 7), ("Failed Rate", 8), ("Bad Order Rate", 9), ("Acceptance Rate", 10),
+        ("Бренд", 0), ("Сегмент", 1), ("Локацій", 2),
+        ("Замовлення", 3), ("GMV, €", 4), ("Contribution Profit, €", 5),
+        ("CP L2 Маржа", 6), ("Failed Rate", 7), ("Bad Order Rate", 8), ("Acceptance Rate", 9),
     ]
     th_html = ""
     for label, idx in header_cols:
-        th_html += f'<th onclick="sort_{table_id}_{idx}=!sort_{table_id}_{idx};sortTable(\'{table_id}\',{idx},sort_{table_id}_{idx})" class="">  {label} <span class="sort-icon">⇅</span></th>'
+        th_html += (
+            f'<th onclick="sort_{table_id}_{idx}=!sort_{table_id}_{idx};'
+            f'sortTable(\'{table_id}\',{idx},sort_{table_id}_{idx})">'
+            f'{label} <span class="sort-icon">⇅</span></th>'
+        )
 
     return f"""
     <div class="table-wrap">
       <div class="table-header">
-        <h3>📋 Всі заклади</h3>
+        <h3>📋 Всі бренди</h3>
         <input class="table-search" id="{search_id}" type="text" placeholder="🔍 Пошук..."
                oninput="filterTable(this, '{table_id}')">
       </div>
@@ -830,7 +841,10 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     cities = sorted(df["city_name"].dropna().unique().tolist())
-    total_providers = df["provider_id"].nunique()
+    # Total unique brands across all cities
+    total_brands = df["brand_name"].nunique()
+    # Total locations = sum of locations_count
+    total_locations = int(df["locations_count"].fillna(1).sum()) if "locations_count" in df.columns else total_brands
 
     city_tabs_html = ""
     city_sections_html = ""
@@ -838,9 +852,13 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
     for city in cities:
         cid = city_slug(city)
         city_df = df[df["city_name"] == city].copy()
-        providers_count = city_df["provider_id"].nunique()
+        brands_count = len(city_df)
+        locs_count = int(city_df["locations_count"].fillna(1).sum()) if "locations_count" in city_df.columns else brands_count
 
-        city_tabs_html += f'<div class="city-tab" id="tab-{cid}" onclick="showCity(\'{cid}\')">{city} <span style="font-size:11px;color:var(--muted)">({providers_count})</span></div>'
+        city_tabs_html += (
+            f'<div class="city-tab" id="tab-{cid}" onclick="showCity(\'{cid}\')">'
+            f'{city} <span style="font-size:11px;color:var(--muted)">({brands_count})</span></div>'
+        )
 
         # Totals for the city
         total_orders = city_df["delivered_orders"].sum()
@@ -851,9 +869,9 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
         stats_html = f"""
         <div class="stats-row">
           <div class="stat-box">
-            <div class="stat-label">Закладів</div>
-            <div class="stat-value">{providers_count}</div>
-            <div class="stat-sub">у портфоліо</div>
+            <div class="stat-label">Брендів</div>
+            <div class="stat-value">{brands_count}</div>
+            <div class="stat-sub">{locs_count} активних локацій</div>
           </div>
           <div class="stat-box">
             <div class="stat-label">Замовлення (4 тижні)</div>
@@ -886,14 +904,14 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
         problem_list.sort(key=lambda x: len(x["problems"]), reverse=True)
         problems_html = build_problems_box(problem_list)
 
-        # Provider table
+        # Brand table
         table_html = build_provider_table(city_df.sort_values("gmv_eur", ascending=False), cid)
 
         city_sections_html += f"""
         <div class="city-section" id="city-{cid}">
           <div class="section-title">
             🏙️ {city}
-            <span class="badge">{providers_count} закладів</span>
+            <span class="badge">{brands_count} брендів · {locs_count} локацій</span>
           </div>
           <div class="section-sub">Період аналізу: {start_date} — {end_date} · Account Manager: Marharyta Zhytnyk</div>
           <div class="period-info">📅 Останні 4 повні тижні: {start_date} — {end_date}</div>
@@ -915,7 +933,7 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
         report_date=REPORT_DATE,
         period_start=start_date,
         period_end=end_date,
-        total_providers=total_providers,
+        total_providers=f"{total_brands} брендів / {total_locations} локацій",
         city_tabs=city_tabs_html,
         city_sections=city_sections_html,
     )
