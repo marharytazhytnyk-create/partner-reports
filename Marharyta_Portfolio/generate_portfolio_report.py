@@ -26,14 +26,17 @@ OUTPUT_FILE = "Marharyta_Portfolio.html"
 
 # ─── DATE HELPERS ──────────────────────────────────────────────────────────────
 
-def get_last_4_full_weeks():
-    """Return start and end dates for the last 4 full calendar weeks (Mon–Sun)."""
+def get_last_n_full_weeks(n: int = 4):
+    """Return start and end dates for the last N full calendar weeks (Mon–Sun)."""
     today = date.today()
-    # Last full week ends on the most recent Sunday
     days_since_sunday = today.weekday() + 1  # Mon=0 → days since last Sun
     last_sunday = today - timedelta(days=days_since_sunday)
-    last_monday = last_sunday - timedelta(days=27)  # 4 weeks back
-    return last_monday.isoformat(), last_sunday.isoformat()
+    start_monday = last_sunday - timedelta(days=(n * 7) - 1)
+    return start_monday.isoformat(), last_sunday.isoformat()
+
+
+def get_last_4_full_weeks():
+    return get_last_n_full_weeks(4)
 
 
 # ─── DATABRICKS CLUSTER API ───────────────────────────────────────────────────
@@ -211,6 +214,55 @@ def fetch_provider_summary() -> pd.DataFrame:
     return df
 
 
+def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
+    """Fetch week-by-week brand metrics for the last N full weeks (for trend charts)."""
+    start_date, end_date = get_last_n_full_weeks(n_weeks)
+    ctx = _create_context()
+
+    sql = f"""
+    SELECT
+        p.brand_name,
+        p.city_name,
+        DATE_FORMAT(DATE_TRUNC('week', f.metric_timestamp_local), 'yyyy-MM-dd') AS week_start,
+        SUM(f.delivered_orders_count)         AS delivered_orders,
+        SUM(f.total_gmv_before_discounts_eur) AS gmv_eur,
+        SUM(f.total_contribution_profit_eur)  AS contribution_profit_eur,
+        CASE
+            WHEN SUM(f.total_gmv_before_discounts_eur) > 0
+            THEN ROUND(SUM(f.total_contribution_profit_eur)
+                 / SUM(f.total_gmv_before_discounts_eur) * 100, 2)
+            ELSE NULL
+        END AS cp_l2_margin_pct,
+        ROUND(SUM(f.failed_order_rate_value   * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS failed_order_rate_pct,
+        ROUND(SUM(f.bad_order_rate_value      * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS bad_order_rate_pct,
+        ROUND(SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
+        ROUND(SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct
+    FROM ng_delivery_spark.dim_provider_v2 p
+    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+        ON p.provider_id = f.provider_id
+    WHERE
+        p.account_manager_name = '{ACCOUNT_MANAGER}'
+        AND p.country_code      = '{COUNTRY_CODE}'
+        AND p.provider_status   = 'active'
+        AND CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
+    GROUP BY
+        p.brand_name,
+        p.city_name,
+        DATE_TRUNC('week', f.metric_timestamp_local)
+    ORDER BY p.brand_name, p.city_name, week_start
+    """
+
+    print(f"Running weekly trends query ({n_weeks} weeks)...")
+    result = _exec_sql(ctx, sql, timeout=300)
+    df = _to_df(result)
+    print(f"Fetched {len(df):,} weekly trend rows")
+    return df
+
+
 # ─── HELPER FUNCTIONS ──────────────────────────────────────────────────────────
 
 def safe_float(val, default=0.0):
@@ -276,6 +328,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Портфоліо Marharyta Zhytnyk — Bolt Food</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
   :root {{
     --bolt-green: #1DC462;
@@ -628,6 +681,93 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }}
 
   .no-data {{ text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }}
+
+  /* ── DYNAMICS TAB ── */
+  .dynamics-wrap {{ padding: 24px 28px; display: none; }}
+  .dynamics-wrap.active {{ display: block; }}
+
+  .dyn-controls {{
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+  }}
+  .dyn-controls label {{ font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }}
+  .dyn-select {{
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    min-width: 180px;
+    cursor: pointer;
+    background: #fff;
+  }}
+  .dyn-select:focus {{ border-color: var(--bolt-green); }}
+  .dyn-search {{
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    width: 240px;
+  }}
+  .dyn-search:focus {{ border-color: var(--bolt-green); }}
+  .dyn-brand-info {{
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bolt-light-green);
+    border-radius: 8px;
+    padding: 6px 14px;
+  }}
+  .dyn-brand-info strong {{ color: var(--bolt-mid-green); }}
+
+  .charts-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }}
+  @media (max-width: 900px) {{ .charts-grid {{ grid-template-columns: 1fr; }} }}
+
+  .chart-card {{
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+  }}
+  .chart-card h4 {{
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }}
+  .chart-card canvas {{ max-height: 220px; }}
+
+  .dyn-placeholder {{
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 15px;
+  }}
+  .dyn-placeholder .icon {{ font-size: 48px; display: block; margin-bottom: 12px; }}
+
+  .city-tab-dynamics {{
+    border-left: 2px solid var(--border);
+    margin-left: 8px;
+    color: var(--bolt-mid-green) !important;
+  }}
+  .city-tab-dynamics.active {{
+    border-bottom-color: var(--bolt-mid-green) !important;
+  }}
 </style>
 </head>
 <body>
@@ -648,10 +788,55 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <!-- CITY TABS -->
 <div class="city-nav" id="cityNav">
 {city_tabs}
+  <div class="city-tab city-tab-dynamics" id="tab-dynamics" onclick="showDynamics()">📊 Динаміка</div>
 </div>
 
-<div class="content">
+<div class="content" id="mainContent">
 {city_sections}
+</div>
+
+<!-- DYNAMICS PANEL -->
+<div class="dynamics-wrap" id="dynamicsPanel">
+  <div class="dyn-controls">
+    <div>
+      <label>Місто</label><br>
+      <select class="dyn-select" id="dynCityFilter" onchange="updateBrandList()">
+        <option value="">— Всі міста —</option>
+        {dyn_city_options}
+      </select>
+    </div>
+    <div>
+      <label>Бренд</label><br>
+      <input class="dyn-search" id="dynBrandSearch" type="text" placeholder="🔍 Пошук бренду..." oninput="updateBrandList()">
+    </div>
+    <div>
+      <label>&nbsp;</label><br>
+      <select class="dyn-select" id="dynBrandSelect" onchange="renderCharts()" size="1" style="min-width:260px;">
+        <option value="">— Оберіть бренд —</option>
+      </select>
+    </div>
+    <div class="dyn-brand-info" id="dynBrandInfo">
+      Оберіть бренд для перегляду динаміки
+    </div>
+  </div>
+
+  <div id="dynPlaceholder" class="dyn-placeholder">
+    <span class="icon">📊</span>
+    Оберіть бренд у фільтрі вище — відобразяться гістограми по тижнях
+  </div>
+
+  <div id="dynCharts" style="display:none">
+    <div class="charts-grid">
+      <div class="chart-card"><h4>📦 Замовлення (доставлені)</h4><canvas id="chartOrders"></canvas></div>
+      <div class="chart-card"><h4>💰 GMV (€, до знижок)</h4><canvas id="chartGmv"></canvas></div>
+      <div class="chart-card"><h4>📈 Contribution Profit (€)</h4><canvas id="chartCp"></canvas></div>
+      <div class="chart-card"><h4>📉 CP L2 Маржа (%)</h4><canvas id="chartCpMargin"></canvas></div>
+      <div class="chart-card"><h4>❌ Failed Order Rate (%)</h4><canvas id="chartFailed"></canvas></div>
+      <div class="chart-card"><h4>😞 Bad Order Rate (%)</h4><canvas id="chartBad"></canvas></div>
+      <div class="chart-card"><h4>✅ Acceptance Rate (%)</h4><canvas id="chartAcceptance"></canvas></div>
+      <div class="chart-card"><h4>⏰ Late Delivery Rate (%)</h4><canvas id="chartLate"></canvas></div>
+    </div>
+  </div>
 </div>
 
 <div class="footer">
@@ -659,15 +844,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <script>
-// City navigation
+// ── Embedded trend data ───────────────────────────────────────────────────────
+const TRENDS = {trends_json};
+
+// ── City navigation ───────────────────────────────────────────────────────────
 function showCity(cityId) {{
   document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.city-section').forEach(s => s.classList.remove('active'));
   document.getElementById('tab-' + cityId).classList.add('active');
   document.getElementById('city-' + cityId).classList.add('active');
+  document.getElementById('mainContent').style.display = '';
+  document.getElementById('dynamicsPanel').classList.remove('active');
 }}
 
-// Table search
+function showDynamics() {{
+  document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.city-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-dynamics').classList.add('active');
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('dynamicsPanel').classList.add('active');
+  updateBrandList();
+}}
+
+// ── Table search ──────────────────────────────────────────────────────────────
 function filterTable(inputEl, tableId) {{
   const q = inputEl.value.toLowerCase();
   document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {{
@@ -675,7 +874,7 @@ function filterTable(inputEl, tableId) {{
   }});
 }}
 
-// Table sort
+// ── Table sort ────────────────────────────────────────────────────────────────
 function sortTable(tableId, col, asc) {{
   const tbody = document.querySelector('#' + tableId + ' tbody');
   const rows = Array.from(tbody.querySelectorAll('tr'));
@@ -690,15 +889,185 @@ function sortTable(tableId, col, asc) {{
   rows.forEach(r => tbody.appendChild(r));
 }}
 
-// Initialize first city on load
+// ── Dynamics: brand list ──────────────────────────────────────────────────────
+function updateBrandList() {{
+  const cityFilter = document.getElementById('dynCityFilter').value;
+  const searchQ    = document.getElementById('dynBrandSearch').value.toLowerCase();
+  const select     = document.getElementById('dynBrandSelect');
+  const prevVal    = select.value;
+
+  const keys = Object.keys(TRENDS).filter(k => {{
+    const [brand, city] = k.split('|||');
+    const cityOk   = !cityFilter || city === cityFilter;
+    const searchOk = !searchQ   || brand.toLowerCase().includes(searchQ);
+    return cityOk && searchOk;
+  }});
+
+  keys.sort((a, b) => a.split('|||')[0].localeCompare(b.split('|||')[0], 'uk'));
+
+  select.innerHTML = '<option value="">— Оберіть бренд —</option>';
+  keys.forEach(k => {{
+    const [brand, city] = k.split('|||');
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = `${{brand}} (${{city}})`;
+    select.appendChild(opt);
+  }});
+
+  if (prevVal && keys.includes(prevVal)) {{
+    select.value = prevVal;
+  }}
+  renderCharts();
+}}
+
+// ── Chart instances ───────────────────────────────────────────────────────────
+const chartInstances = {{}};
+
+function makeOrUpdate(id, labels, data, color, yLabel, isFill) {{
+  const ctx = document.getElementById(id).getContext('2d');
+  if (chartInstances[id]) {{
+    chartInstances[id].destroy();
+  }}
+  const borderColor = color;
+  const bgColor = color + '33';
+
+  chartInstances[id] = new Chart(ctx, {{
+    type: 'bar',
+    data: {{
+      labels,
+      datasets: [{{
+        label: yLabel,
+        data,
+        backgroundColor: data.map(v => {{
+          if (v === null) return '#e0e0e033';
+          // Red tones for "bad" metrics when value is high
+          return bgColor;
+        }}),
+        borderColor,
+        borderWidth: 2,
+        borderRadius: 4,
+      }}]
+    }},
+    options: {{
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {{
+        legend: {{ display: false }},
+        tooltip: {{
+          callbacks: {{
+            label: ctx => `${{yLabel}}: ${{ctx.parsed.y !== null ? ctx.parsed.y.toLocaleString('uk-UA') : '—'}}`
+          }}
+        }}
+      }},
+      scales: {{
+        x: {{
+          ticks: {{ font: {{ size: 10 }}, maxRotation: 45 }},
+          grid: {{ display: false }}
+        }},
+        y: {{
+          beginAtZero: false,
+          ticks: {{ font: {{ size: 10 }} }},
+          grid: {{ color: '#f0f0f0' }}
+        }}
+      }}
+    }}
+  }});
+}}
+
+function fmtWeek(w) {{
+  // "2026-03-23" → "23 бер"
+  const months = ['', 'січ', 'лют', 'бер', 'кві', 'тра', 'чер',
+                  'лип', 'сер', 'вер', 'жов', 'лис', 'гру'];
+  const [, m, d] = w.split('-');
+  return `${{parseInt(d)}} ${{months[parseInt(m)]}}`;
+}}
+
+function renderCharts() {{
+  const key = document.getElementById('dynBrandSelect').value;
+  const placeholder = document.getElementById('dynPlaceholder');
+  const chartsDiv   = document.getElementById('dynCharts');
+  const infoDiv     = document.getElementById('dynBrandInfo');
+
+  if (!key || !TRENDS[key]) {{
+    placeholder.style.display = '';
+    chartsDiv.style.display   = 'none';
+    infoDiv.innerHTML = 'Оберіть бренд для перегляду динаміки';
+    return;
+  }}
+
+  placeholder.style.display = 'none';
+  chartsDiv.style.display   = '';
+
+  const d = TRENDS[key];
+  const labels = d.weeks.map(fmtWeek);
+
+  infoDiv.innerHTML = `<strong>${{d.brand}}</strong> · ${{d.city}} · ${{d.weeks.length}} тижнів даних`;
+
+  const GREEN  = '#1DC462';
+  const BLUE   = '#1976D2';
+  const PURPLE = '#7B1FA2';
+  const TEAL   = '#00897B';
+  const RED    = '#E53935';
+  const ORANGE = '#FB8C00';
+  const INDIGO = '#3949AB';
+  const AMBER  = '#F9A825';
+
+  makeOrUpdate('chartOrders',    labels, d.delivered_orders,        GREEN,  'Замовлення', false);
+  makeOrUpdate('chartGmv',       labels, d.gmv_eur,                 BLUE,   'GMV, €', false);
+  makeOrUpdate('chartCp',        labels, d.contribution_profit_eur, TEAL,   'CP, €', false);
+  makeOrUpdate('chartCpMargin',  labels, d.cp_l2_margin_pct,        PURPLE, 'CP L2 Маржа, %', false);
+  makeOrUpdate('chartFailed',    labels, d.failed_order_rate_pct,   RED,    'Failed Rate, %', false);
+  makeOrUpdate('chartBad',       labels, d.bad_order_rate_pct,      ORANGE, 'Bad Order Rate, %', false);
+  makeOrUpdate('chartAcceptance',labels, d.acceptance_rate_pct,     INDIGO, 'Acceptance Rate, %', false);
+  makeOrUpdate('chartLate',      labels, d.late_delivery_rate_pct,  AMBER,  'Late Delivery, %', false);
+}}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {{
-  const firstTab = document.querySelector('.city-tab');
+  const firstTab = document.querySelector('.city-tab:not(.city-tab-dynamics)');
   if (firstTab) firstTab.click();
 }});
 </script>
 </body>
 </html>
 """
+
+
+def build_trends_json(df_trends: pd.DataFrame) -> str:
+    """Convert weekly trends DataFrame into a JSON string for embedding in HTML."""
+    import math
+    data = {}
+    for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
+                "cp_l2_margin_pct", "failed_order_rate_pct",
+                "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct"]:
+        if col in df_trends.columns:
+            df_trends[col] = pd.to_numeric(df_trends[col], errors="coerce")
+
+    for (brand, city), grp in df_trends.groupby(["brand_name", "city_name"], sort=False):
+        key = f"{brand}|||{city}"
+        grp = grp.sort_values("week_start")
+
+        def clean(val):
+            try:
+                v = float(val)
+                return None if math.isnan(v) or math.isinf(v) else round(v, 2)
+            except (TypeError, ValueError):
+                return None
+
+        data[key] = {
+            "brand": brand,
+            "city": city,
+            "weeks": grp["week_start"].tolist(),
+            "delivered_orders":        [clean(v) for v in grp["delivered_orders"]],
+            "gmv_eur":                 [clean(v) for v in grp["gmv_eur"]],
+            "contribution_profit_eur": [clean(v) for v in grp["contribution_profit_eur"]],
+            "cp_l2_margin_pct":        [clean(v) for v in grp["cp_l2_margin_pct"]],
+            "failed_order_rate_pct":   [clean(v) for v in grp["failed_order_rate_pct"]],
+            "bad_order_rate_pct":      [clean(v) for v in grp["bad_order_rate_pct"]],
+            "acceptance_rate_pct":     [clean(v) for v in grp["acceptance_rate_pct"]],
+            "late_delivery_rate_pct":  [clean(v) for v in grp["late_delivery_rate_pct"]],
+        }
+    return json.dumps(data, ensure_ascii=False)
 
 
 def city_slug(name: str) -> str:
@@ -828,7 +1197,7 @@ def build_provider_table(providers: pd.DataFrame, city_id: str) -> str:
     <script>{sort_js}</script>"""
 
 
-def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
+def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_date: str) -> str:
     """Build full HTML report from DataFrame."""
     if df.empty:
         return "<html><body><h1>Немає даних</h1></body></html>"
@@ -929,6 +1298,15 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
           {table_html}
         </div>"""
 
+    # Build city options for dynamics dropdown
+    all_cities = sorted(df["city_name"].dropna().unique().tolist())
+    dyn_city_options = "\n".join(
+        f'        <option value="{c}">{c}</option>' for c in all_cities
+    )
+
+    # Build trends JSON
+    trends_json_str = build_trends_json(df_trends)
+
     html = HTML_TEMPLATE.format(
         report_date=REPORT_DATE,
         period_start=start_date,
@@ -936,6 +1314,8 @@ def build_html(df: pd.DataFrame, start_date: str, end_date: str) -> str:
         total_providers=f"{total_brands} брендів / {total_locations} локацій",
         city_tabs=city_tabs_html,
         city_sections=city_sections_html,
+        dyn_city_options=dyn_city_options,
+        trends_json=trends_json_str,
     )
     return html
 
@@ -954,13 +1334,19 @@ def main():
     try:
         df = fetch_provider_summary()
     except Exception as exc:
-        print(f"ERROR fetching data: {exc}")
+        print(f"ERROR fetching summary data: {exc}")
         sys.exit(1)
+
+    try:
+        df_trends = fetch_weekly_trends(n_weeks=12)
+    except Exception as exc:
+        print(f"WARNING: Could not fetch weekly trends: {exc}")
+        df_trends = pd.DataFrame()
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(base_dir, OUTPUT_FILE)
 
-    html = build_html(df, start_date, end_date)
+    html = build_html(df, df_trends, start_date, end_date)
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
