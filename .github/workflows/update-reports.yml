@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: '0 10 * * *'      # 13:00 EEST (UTC+3) every day — existing daily reports
     - cron: '30 10 * * 1'     # 13:30 EEST (UTC+3) every Monday — Шавуха Team report
+    - cron: '0 11 * * 1'      # 14:00 EEST (UTC+3) every Monday — Marharyta Portfolio report
   workflow_dispatch:            # manual trigger (runs all jobs)
 
 permissions:
@@ -127,4 +128,40 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "той самий баранчик/"
           git diff --staged --quiet || git commit -m "🐑 BARANCHIK report — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
+
+  # ── MARHARYTA PORTFOLIO weekly report (every Monday 14:00 EEST) ──────────────
+  generate-marharyta-portfolio:
+    name: Marharyta Portfolio — Weekly Report
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '0 11 * * 1'
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests pandas
+
+      - name: Generate Marharyta Portfolio report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python Marharyta_Portfolio/generate_portfolio_report.py
+
+      - name: Commit and push Marharyta Portfolio report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Marharyta_Portfolio/"
+          git diff --staged --quiet || git commit -m "📊 Marharyta Portfolio report — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
