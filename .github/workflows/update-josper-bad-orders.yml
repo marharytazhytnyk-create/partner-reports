@@ -35,8 +35,11 @@ jobs:
       - name: Generate report
         env:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-          JOSPER_WEEK_START: ${{ github.event.inputs.week_start }}
-        run: python "Josper Bad Orders/generate_josper_bad_orders_report.py"
+        run: |
+          if [ -n "${{ github.event.inputs.week_start }}" ]; then
+            export JOSPER_WEEK_START="${{ github.event.inputs.week_start }}"
+          fi
+          python "Josper Bad Orders/generate_josper_bad_orders_report.py"
 
       - name: Commit and push
         run: |
