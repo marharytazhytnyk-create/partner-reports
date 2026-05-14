@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Josper Svintuz — погані замовлення, 04.05.2026–10.05.2026</title>
+  <style>
+    :root {
+      --bg:#0f1419; --card:#1a2332; --border:#2d3a4f; --text:#e8eef7;
+      --muted:#8b9cb3; --accent:#4fd1c5; --fail:#f56565; --warn:#ed8936; --ok:#48bb78;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5; padding: 2rem 1.25rem 3rem;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 1.35rem; font-weight: 700; color: var(--accent); margin-bottom: .35rem; }
+    .meta { color: var(--muted); font-size: .85rem; margin-bottom: 1.75rem; }
+    .kpi-row { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:2rem; }
+    .kpi {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1rem 1.25rem; min-width: 140px;
+    }
+    .kpi .n { font-size: 1.75rem; font-weight: 800; }
+    .kpi .l { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing:.04em; }
+    h2 {
+      font-size: 1.05rem; margin: 2rem 0 .75rem; color: var(--text);
+      border-left: 4px solid var(--fail); padding-left: .65rem;
+    }
+    h2.sec-deliv { border-left-color: var(--warn); }
+    .hint { font-size: .8rem; color: var(--muted); margin-bottom: 1rem; }
+    .table-wrap {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      overflow: auto;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th {
+      text-align: left; padding: .65rem .85rem; background: #243044; color: var(--muted);
+      font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: .55rem .85rem; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(79,209,197,.06); }
+    .mono { font-family: ui-monospace, monospace; font-size: .78rem; }
+    .reason { max-width: 420px; }
+    .tag {
+      display:inline-block; padding: 2px 8px; border-radius: 6px; font-weight: 700;
+      font-size: .75rem;
+    }
+    .tag-fail { background: rgba(245,101,101,.2); color: var(--fail); }
+    .tag-warn { background: rgba(237,137,54,.2); color: var(--warn); }
+    .muted { color: var(--muted); text-align: center; padding: 1.25rem !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Josper Svintuz — погані замовлення, 04.05.2026–10.05.2026</h1>
+    <div class="meta">Запоріжжя · vendor_id 145072 · згенеровано: 2026-05-14 10:21 UTC</div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="n">11</div><div class="l">Не доставлено</div></div>
+      <div class="kpi"><div class="n">3</div><div class="l">Доставлено, оцінка ≤2</div></div>
+    </div>
+
+    <h2>Не доставлені замовлення (failed / rejected)</h2>
+    <p class="hint">
+      Причина сформована з фінального статусу, останнього переходу в журналі станів
+      та полів <code>fact_order_delivery</code> (відмови кур’єра, тікет клієнта).
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th><th>Локація</th><th>Статус</th><th>З етапу</th><th>На етап</th>
+            <th>Причина / пояснення</th><th>Час замовлення</th>
+          </tr>
+        </thead>
+        <tbody><tr><td class='mono'>304194960</td><td>Josper Svintuz Чарівна вулиця</td><td><span class='tag tag-fail'>failed</span></td><td>waiting_delivery</td><td>failed</td><td class='reason'>Не доставлено (failed): зрив після передачі кур&#x27;єру (етап доставки); є тікет скасування з боку клієнта в даних факту.</td><td class='mono'>2026-05-04 06:13:57</td></tr><tr><td class='mono'>304203178</td><td>Josper Svintuz вулиця Чарівна, 74</td><td><span class='tag tag-fail'>failed</span></td><td>waiting_delivery</td><td>failed</td><td class='reason'>Не доставлено (failed): зрив після передачі кур&#x27;єру (етап доставки); відмови кур&#x27;єра під час пошуку: 2; є тікет скасування з боку клієнта в даних факту.</td><td class='mono'>2026-05-04 08:11:42</td></tr><tr><td class='mono'>304251880</td><td>Josper Svintuz Дніпровське шосе</td><td><span class='tag tag-fail'>failed</span></td><td>waiting_acceptance</td><td>failed</td><td class='reason'>Не доставлено (failed): не вдалося після прийняття / на старті обробки.</td><td class='mono'>2026-05-04 11:45:09</td></tr><tr><td class='mono'>304298541</td><td>Josper Svintuz вулиця Володимира Українця</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-04 15:31:17</td></tr><tr><td class='mono'>304318176</td><td>Josper Svintuz Запорізька вулиця</td><td><span class='tag tag-fail'>failed</span></td><td>waiting_acceptance</td><td>failed</td><td class='reason'>Не доставлено (failed): не вдалося після прийняття / на старті обробки.</td><td class='mono'>2026-05-04 16:44:37</td></tr><tr><td class='mono'>304599529</td><td>Josper Svintuz вулиця Деповська</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-06 10:06:16</td></tr><tr><td class='mono'>304852344</td><td>Josper Svintuz Запорізька вулиця</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-07 13:45:57</td></tr><tr><td class='mono'>304972138</td><td>Josper Svintuz вулиця Павлокічкаська</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-08 06:20:52</td></tr><tr><td class='mono'>305525825</td><td>Josper Svintuz проспект Соборний</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-10 12:23:47</td></tr><tr><td class='mono'>305593674</td><td>Josper Svintuz вулиця Деповська</td><td><span class='tag tag-fail'>failed</span></td><td>waiting_preparation</td><td>failed</td><td class='reason'>Не доставлено (failed): зрив під час приготування.</td><td class='mono'>2026-05-10 16:12:04</td></tr><tr><td class='mono'>305598989</td><td>Josper Svintuz вулиця Деповська</td><td><span class='tag tag-fail'>rejected</span></td><td>waiting_acceptance</td><td>rejected</td><td class='reason'>Не доставлено: замовлення відхилено рестораном на етапі прийняття (стан до відхилення: waiting_acceptance).</td><td class='mono'>2026-05-10 16:26:47</td></tr></tbody>
+      </table>
+    </div>
+
+    <h2 class="sec-deliv">Доставлено, але клієнт незадоволений (оцінка ≤2)</h2>
+    <p class="hint">Лише замовлення зі статусом <code>delivered</code>; коментар з опитування, якщо є.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th><th>Локація</th><th>Зірки</th><th>Коментар</th>
+            <th>Час замовлення</th><th>Час оцінки</th>
+          </tr>
+        </thead>
+        <tbody><tr><td class='mono'>304274001</td><td>Josper Svintuz вулиця Чарівна, 74</td><td><span class='tag tag-warn'>1</span></td><td>—</td><td class='mono'>2026-05-04 13:37:25</td><td class='mono'>2026-05-04 14:50:42</td></tr><tr><td class='mono'>304566957</td><td>Josper Svintuz вулиця Професора Толока</td><td><span class='tag tag-warn'>1</span></td><td>—</td><td class='mono'>2026-05-06 07:35:48</td><td class='mono'>2026-05-06 09:55:17</td></tr><tr><td class='mono'>305337821</td><td>Josper Svintuz Прибережна автомагістраль</td><td><span class='tag tag-warn'>1</span></td><td>—</td><td class='mono'>2026-05-09 15:14:55</td><td class='mono'>2026-05-09 15:46:56</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

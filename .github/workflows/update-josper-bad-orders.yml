@@ -1,0 +1,51 @@
+name: Josper Bad Orders — weekly report
+
+on:
+  schedule:
+    # Понеділок 10:05 UTC = 13:05 за Києвом (UTC+3) — після 13:00
+    - cron: '5 10 * * 1'
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: 'Понеділок тижня YYYY-MM-DD (необовʼязково; інакше — останній завершений тиждень)'
+        required: false
+        default: ''
+
+jobs:
+  generate-josper-bad-orders:
+    name: Josper Svintuz — bad orders HTML
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Generate report
+        env:
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          JOSPER_WEEK_START: ${{ github.event.inputs.week_start }}
+        run: python "Josper Bad Orders/generate_josper_bad_orders_report.py"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Josper Bad Orders/"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Josper Bad Orders — auto-update $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
