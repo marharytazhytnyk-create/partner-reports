@@ -383,18 +383,44 @@ def _js_arr(months: list[dict], key: str) -> str:
     return "[" + ", ".join(str(m[key]) for m in months) + "]"
 
 
-def _chart_block(cid: str, title: str, unit: str, key: str, months: list[dict], opts: str = "{}") -> str:
+def _fmt_chart_value(val: float, opts: dict) -> str:
+    if opts.get("pct"):
+        return f"{val:.2f}%"
+    if opts.get("dec"):
+        if isinstance(val, float) and val != int(val):
+            return f"{val:,.2f}".replace(",", "\u202f")
+        return f"{val:,.0f}".replace(",", "\u202f")
+    if abs(val) >= 1000:
+        return f"{val:,.0f}".replace(",", "\u202f")
+    return f"{val:.2f}" if isinstance(val, float) and val != int(val) else str(int(val))
+
+
+def _chart_block(
+    cid: str, title: str, unit: str, key: str, months: list[dict], opts_str: str = "{}"
+) -> str:
+    opts = json.loads(opts_str) if opts_str else {}
+    vals = [float(m[key]) for m in months]
+    max_v = max(vals) if vals and max(vals) > 0 else 1.0
+
+    cols_html = ""
+    for i, m in enumerate(months):
+        h_pct = max(4, round(vals[i] / max_v * 100))
+        cls = f"m{i + 1}"
+        cols_html += f"""
+        <div class="hist-col">
+          <div class="hist-val">{_fmt_chart_value(vals[i], opts)}</div>
+          <div class="hist-bar {cls}" style="height:{h_pct}%"></div>
+          <div class="hist-lbl">{m['label']}</div>
+        </div>"""
+
     return f"""
     <div class="chart-card">
       <h3>{title}</h3>
       <p class="unit">{unit}</p>
+      <div class="hist-chart">{cols_html}
+      </div>
       <div class="chart-wrap"><canvas id="{cid}"></canvas></div>
-    </div>
-    <script>
-    (function(){{
-      makeBar("{cid}", {_js_arr(months, key)}, {opts});
-    }})();
-    </script>"""
+    </div>"""
 
 
 def _insight_html(insights: list[dict]) -> str:
@@ -458,11 +484,52 @@ def generate_html(data: dict) -> str:
     ]
 
     charts_html = ""
+    chart_inits: list[tuple[str, str, str]] = []
     for section_title, chart_defs in sections:
         charts_html += f'<div class="section-title">{section_title}</div><div class="charts-grid">'
         for cid, title, unit, key, opts in chart_defs:
             charts_html += _chart_block(cid, title, unit, key, months, opts)
+            chart_inits.append((cid, _js_arr(months, key), opts))
         charts_html += "</div>"
+
+    metrics_table_rows = ""
+    all_metrics = [
+        ("Gross Sales (UAH)", "gross", {}),
+        ("Net Sales (UAH)", "net", {}),
+        ("Delivered Orders", "orders", {}),
+        ("AOV (UAH)", "aov", {"dec": True}),
+        ("Availability Rate (%)", "avail", {"pct": True}),
+        ("Acceptance Rate (%)", "accept", {"pct": True}),
+        ("Orders with Refunds (%)", "refunds", {"pct": True}),
+        ("Average Delivery Time (хв)", "del_time", {"dec": True}),
+        ("Merchant Acceptance Time (хв)", "acc_time", {"dec": True}),
+        ("Preparation Time (хв)", "prep_time", {"dec": True}),
+        ("Courier Wait Time (хв)", "wait_time", {"dec": True}),
+        ("Courier to Merchant (хв)", "c2m_time", {"dec": True}),
+        ("Courier to Eater (хв)", "c2e_time", {"dec": True}),
+        ("Active Users", "active_users", {}),
+        ("Order Frequency", "freq", {"dec": True}),
+        ("New Users", "new_users", {}),
+        ("Sessions with Impressions", "sessions", {}),
+        ("Impression → Menu (%)", "imp_menu", {"pct": True}),
+        ("Menu → Product Added (%)", "menu_prod", {"pct": True}),
+        ("Average Rating (0–5)", "rating", {"dec": True}),
+        ("Total Discounts (UAH)", "discounts", {}),
+        ("Campaigns Spend Bolt (UAH)", "camp_bolt", {}),
+        ("Campaigns Spend Merchant (UAH)", "camp_merch", {}),
+    ]
+    for label, key, opts in all_metrics:
+        cells = "".join(
+            f'<td class="num">{_fmt_chart_value(float(m[key]), opts)}</td>'
+            for m in months
+        )
+        metrics_table_rows += f"<tr><td class='metric-name'>{label}</td>{cells}</tr>"
+
+    month_headers = "".join(f"<th class='num'>{m['label']}</th>" for m in months)
+
+    chart_init_js = ",\n    ".join(
+        f'{{id:"{cid}", data:{data}, opts:{opts}}}' for cid, data, opts in chart_inits
+    )
 
     items_rows = ""
     for it in items:
@@ -496,7 +563,6 @@ def generate_html(data: dict) -> str:
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MAVRA PIZZA — MBR · {period}</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <style>
     :root {{
       --green:#34D186; --green-dark:#1aad6a; --green-darker:#0d8a52;
@@ -526,7 +592,14 @@ def generate_html(data: dict) -> str:
     .chart-card{{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .chart-card h3{{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}}
     .chart-card .unit{{font-size:10px;color:var(--gray-400);margin-bottom:12px}}
-    .chart-wrap{{height:220px;position:relative}}
+    .hist-chart{{display:flex;align-items:flex-end;justify-content:center;gap:40px;height:200px;padding:8px 0 4px;margin-bottom:8px}}
+    .hist-col{{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;width:100px}}
+    .hist-bar{{width:52px;border-radius:8px 8px 0 0;min-height:8px}}
+    .hist-bar.m1{{background:var(--green-darker)}} .hist-bar.m2{{background:var(--green)}}
+    .hist-val{{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px;text-align:center}}
+    .hist-lbl{{font-size:10px;color:var(--gray-400);margin-top:8px;text-align:center;max-width:96px;line-height:1.3}}
+    .chart-wrap{{height:0;overflow:hidden;position:absolute;pointer-events:none;opacity:0}}
+    .metric-name{{font-weight:600}}
     .insights-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}}
     .insight-card{{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .insight-card.positive{{border-left-color:var(--positive)}}
@@ -576,6 +649,14 @@ def generate_html(data: dict) -> str:
 
   {charts_html}
 
+  <div class="section-title">Зведена таблиця всіх метрик</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Метрика</th>{month_headers}</tr></thead>
+      <tbody>{metrics_table_rows}</tbody>
+    </table>
+  </div>
+
   <div class="section-title">ТОП-10 позицій меню (Order Item Report)</div>
   <p style="font-size:12px;color:var(--gray-400);margin:-8px 0 14px">За весь період звіту · найчастіше замовлювані страви</p>
   <div class="table-wrap">
@@ -607,56 +688,66 @@ def generate_html(data: dict) -> str:
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script>
-const MONTH_LABELS = {labels_js};
-const COLORS = {colors_js};
-const BORDERS = {borders_js};
+(function() {{
+  const CHARTS = [
+    {chart_init_js}
+  ];
+  const MONTH_LABELS = {labels_js};
+  const COLORS = {colors_js};
+  const BORDERS = {borders_js};
 
-function makeBar(id, data, opts) {{
-  const el = document.getElementById(id);
-  if (!el) return;
-  new Chart(el, {{
-    type: 'bar',
-    data: {{
-      labels: MONTH_LABELS,
-      datasets: [{{
-        data,
-        backgroundColor: COLORS,
-        borderColor: BORDERS,
-        borderWidth: 1.5,
-        borderRadius: 6,
-      }}]
-    }},
-    options: {{
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {{
-        legend: {{ display: false }},
-        tooltip: {{
-          callbacks: {{
-            label: (c) => {{
-              const v = c.parsed.y;
-              if (opts.pct) return ' ' + v.toFixed(2) + '%';
-              if (opts.dec) return ' ' + v.toFixed(2);
-              return ' ' + v.toLocaleString('uk-UA');
-            }}
-          }}
-        }}
+  function makeBar(id, data, opts) {{
+    if (typeof Chart === 'undefined') return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const wrap = el.closest('.chart-card');
+    if (wrap) {{
+      const hist = wrap.querySelector('.hist-chart');
+      if (hist) hist.style.display = 'none';
+      const cw = wrap.querySelector('.chart-wrap');
+      if (cw) {{ cw.style.height = '220px'; cw.style.position = 'relative'; cw.style.opacity = '1'; cw.style.overflow = 'visible'; }}
+    }}
+    new Chart(el, {{
+      type: 'bar',
+      data: {{
+        labels: MONTH_LABELS,
+        datasets: [{{
+          data,
+          backgroundColor: COLORS,
+          borderColor: BORDERS,
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }}]
       }},
-      scales: {{
-        x: {{ grid: {{ display: false }} }},
-        y: {{
-          beginAtZero: opts.ymin === undefined,
-          min: opts.ymin,
-          max: opts.ymax,
-          ticks: {{
-            callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA')
+      options: {{
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {{ legend: {{ display: false }} }},
+        scales: {{
+          x: {{ grid: {{ display: false }} }},
+          y: {{
+            beginAtZero: opts.ymin === undefined,
+            min: opts.ymin,
+            max: opts.ymax,
+            ticks: {{ callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA') }}
           }}
         }}
       }}
-    }}
-  }});
-}}
+    }});
+  }}
+
+  function initAll() {{
+    CHARTS.forEach((c) => makeBar(c.id, c.data, c.opts || {{}}));
+  }}
+
+  if (document.readyState === 'loading') {{
+    document.addEventListener('DOMContentLoaded', initAll);
+  }} else {{
+    initAll();
+  }}
+}})();
 </script>
 </body>
 </html>"""

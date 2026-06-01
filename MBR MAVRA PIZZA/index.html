@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MAVRA PIZZA — MBR · квітень 2026 — травень 2026</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --green:#34D186; --green-dark:#1aad6a; --green-darker:#0d8a52;
@@ -34,7 +33,14 @@
     .chart-card{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
     .chart-card h3{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}
     .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:12px}
-    .chart-wrap{height:220px;position:relative}
+    .hist-chart{display:flex;align-items:flex-end;justify-content:center;gap:40px;height:200px;padding:8px 0 4px;margin-bottom:8px}
+    .hist-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;width:100px}
+    .hist-bar{width:52px;border-radius:8px 8px 0 0;min-height:8px}
+    .hist-bar.m1{background:var(--green-darker)} .hist-bar.m2{background:var(--green)}
+    .hist-val{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px;text-align:center}
+    .hist-lbl{font-size:10px;color:var(--gray-400);margin-top:8px;text-align:center;max-width:96px;line-height:1.3}
+    .chart-wrap{height:0;overflow:hidden;position:absolute;pointer-events:none;opacity:0}
+    .metric-name{font-weight:600}
     .insights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
     .insight-card{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);box-shadow:0 1px 4px rgba(0,0,0,.06)}
     .insight-card.positive{border-left-color:var(--positive)}
@@ -68,7 +74,7 @@
   <div class="header-meta">
     <div>Період: <strong>квітень 2026 — травень 2026</strong></div>
     <div>Локацій: <strong>9 точок</strong></div>
-    <div>Оновлено: <strong>01.06.2026 18:30</strong></div>
+    <div>Оновлено: <strong>01.06.2026 18:35</strong></div>
   </div>
 </header>
 
@@ -96,233 +102,402 @@
     <div class="chart-card">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="unit">UAH до знижок</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">320 506</div>
+          <div class="hist-bar m1" style="height:80%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">399 105</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-gross"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-gross", [320506.0, 399105.0], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Net Sales (чистий прибуток)</h3>
       <p class="unit">UAH після знижок</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">260 232</div>
+          <div class="hist-bar m1" style="height:79%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">330 984</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-net"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-net", [260232.0, 330984.0], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Delivered Orders</h3>
       <p class="unit">доставлені замовлення</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">513</div>
+          <div class="hist-bar m1" style="height:84%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">612</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-orders"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-orders", [513, 612], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>AOV (середній чек)</h3>
       <p class="unit">UAH / замовлення</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">625</div>
+          <div class="hist-bar m1" style="height:96%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">652</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-aov"></canvas></div>
-    </div>
-    <script>
-    (function(){
-      makeBar("c-aov", [625.0, 652.0], {"dec":true});
-    })();
-    </script></div><div class="section-title">2. Операційні показники</div><div class="charts-grid">
+    </div></div><div class="section-title">2. Операційні показники</div><div class="charts-grid">
     <div class="chart-card">
       <h3>Availability Rate</h3>
       <p class="unit">доступність на платформі · %</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">90.16%</div>
+          <div class="hist-bar m1" style="height:94%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">95.45%</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-avail"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-avail", [90.16, 95.45], {"pct":true,"ymin":80,"ymax":101});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Acceptance Rate</h3>
       <p class="unit">прийняті замовлення · %</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">98.62%</div>
+          <div class="hist-bar m1" style="height:100%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">98.28%</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-accept"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-accept", [98.62, 98.28], {"pct":true,"ymin":90,"ymax":101});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Orders with Refunds</h3>
       <p class="unit">компенсації клієнту · %</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">2.40%</div>
+          <div class="hist-bar m1" style="height:100%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">1.36%</div>
+          <div class="hist-bar m2" style="height:57%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-refunds"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-refunds", [2.4, 1.36], {"pct":true,"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Average Delivery Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">46.60</div>
+          <div class="hist-bar m1" style="height:96%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">48.70</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-del"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-del", [46.6, 48.7], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Avg. Merchant Acceptance Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">1.70</div>
+          <div class="hist-bar m1" style="height:100%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">1.10</div>
+          <div class="hist-bar m2" style="height:65%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-acc-t"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-acc-t", [1.7, 1.1], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Avg. Preparation Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">25.80</div>
+          <div class="hist-bar m1" style="height:95%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">27.20</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-prep"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-prep", [25.8, 27.2], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Avg. Courier Wait Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">2.10</div>
+          <div class="hist-bar m1" style="height:81%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">2.60</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-wait"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-wait", [2.1, 2.6], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Avg. Courier to Merchant Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">11.60</div>
+          <div class="hist-bar m1" style="height:97%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">11.90</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-c2m"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-c2m", [11.6, 11.9], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Avg. Courier to Eater Time</h3>
       <p class="unit">хвилини</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">9.30</div>
+          <div class="hist-bar m1" style="height:100%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">8.70</div>
+          <div class="hist-bar m2" style="height:94%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-c2e"></canvas></div>
-    </div>
-    <script>
-    (function(){
-      makeBar("c-c2e", [9.3, 8.7], {"dec":true});
-    })();
-    </script></div><div class="section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card">
       <h3>Active Users</h3>
       <p class="unit">унікальні замовники</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">472</div>
+          <div class="hist-bar m1" style="height:86%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">552</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-active"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-active", [472, 552], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Order Frequency</h3>
       <p class="unit">замовлень / користувач</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">1.09</div>
+          <div class="hist-bar m1" style="height:98%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">1.11</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-freq"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-freq", [1.09, 1.11], {"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>New Users</h3>
       <p class="unit">нові клієнти бренду</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">318</div>
+          <div class="hist-bar m1" style="height:100%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">307</div>
+          <div class="hist-bar m2" style="height:97%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-new"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-new", [318, 307], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Sessions with Impressions</h3>
       <p class="unit">перегляди закладу</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">16 403</div>
+          <div class="hist-bar m1" style="height:91%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">18 026</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-sess"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-sess", [16403, 18026], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Impression → Menu Viewed</h3>
       <p class="unit">конверсія · %</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">10.71%</div>
+          <div class="hist-bar m1" style="height:94%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">11.39%</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-imp"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-imp", [10.71, 11.39], {"pct":true,"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Menu Viewed → Product Added</h3>
       <p class="unit">конверсія · %</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">40.35%</div>
+          <div class="hist-bar m1" style="height:92%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">44.01%</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-menu"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-menu", [40.35, 44.01], {"pct":true,"dec":true});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Average Merchant Rating</h3>
       <p class="unit">оцінка 0–5</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">4.62</div>
+          <div class="hist-bar m1" style="height:97%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">4.78</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-rating"></canvas></div>
-    </div>
-    <script>
-    (function(){
-      makeBar("c-rating", [4.62, 4.78], {"dec":true,"ymin":0,"ymax":5.5});
-    })();
-    </script></div><div class="section-title">4. Знижки</div><div class="charts-grid">
+    </div></div><div class="section-title">4. Знижки</div><div class="charts-grid">
     <div class="chart-card">
       <h3>Total Discounts for Users</h3>
       <p class="unit">UAH</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">60 275</div>
+          <div class="hist-bar m1" style="height:88%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">68 121</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-disc"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-disc", [60275.0, 68121.0], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Campaigns Spend by Bolt</h3>
       <p class="unit">UAH</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">60 275</div>
+          <div class="hist-bar m1" style="height:88%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">68 121</div>
+          <div class="hist-bar m2" style="height:100%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-bolt"></canvas></div>
     </div>
-    <script>
-    (function(){
-      makeBar("c-bolt", [60275.0, 68121.0], {});
-    })();
-    </script>
     <div class="chart-card">
       <h3>Campaigns Spend by Merchant</h3>
       <p class="unit">UAH</p>
+      <div class="hist-chart">
+        <div class="hist-col">
+          <div class="hist-val">0</div>
+          <div class="hist-bar m1" style="height:4%"></div>
+          <div class="hist-lbl">квітень 2026</div>
+        </div>
+        <div class="hist-col">
+          <div class="hist-val">0</div>
+          <div class="hist-bar m2" style="height:4%"></div>
+          <div class="hist-lbl">травень 2026</div>
+        </div>
+      </div>
       <div class="chart-wrap"><canvas id="c-merch"></canvas></div>
-    </div>
-    <script>
-    (function(){
-      makeBar("c-merch", [0.0, 0.0], {});
-    })();
-    </script></div>
+    </div></div>
+
+  <div class="section-title">Зведена таблиця всіх метрик</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Метрика</th><th class='num'>квітень 2026</th><th class='num'>травень 2026</th></tr></thead>
+      <tbody><tr><td class='metric-name'>Gross Sales (UAH)</td><td class="num">320 506</td><td class="num">399 105</td></tr><tr><td class='metric-name'>Net Sales (UAH)</td><td class="num">260 232</td><td class="num">330 984</td></tr><tr><td class='metric-name'>Delivered Orders</td><td class="num">513</td><td class="num">612</td></tr><tr><td class='metric-name'>AOV (UAH)</td><td class="num">625</td><td class="num">652</td></tr><tr><td class='metric-name'>Availability Rate (%)</td><td class="num">90.16%</td><td class="num">95.45%</td></tr><tr><td class='metric-name'>Acceptance Rate (%)</td><td class="num">98.62%</td><td class="num">98.28%</td></tr><tr><td class='metric-name'>Orders with Refunds (%)</td><td class="num">2.40%</td><td class="num">1.36%</td></tr><tr><td class='metric-name'>Average Delivery Time (хв)</td><td class="num">46.60</td><td class="num">48.70</td></tr><tr><td class='metric-name'>Merchant Acceptance Time (хв)</td><td class="num">1.70</td><td class="num">1.10</td></tr><tr><td class='metric-name'>Preparation Time (хв)</td><td class="num">25.80</td><td class="num">27.20</td></tr><tr><td class='metric-name'>Courier Wait Time (хв)</td><td class="num">2.10</td><td class="num">2.60</td></tr><tr><td class='metric-name'>Courier to Merchant (хв)</td><td class="num">11.60</td><td class="num">11.90</td></tr><tr><td class='metric-name'>Courier to Eater (хв)</td><td class="num">9.30</td><td class="num">8.70</td></tr><tr><td class='metric-name'>Active Users</td><td class="num">472</td><td class="num">552</td></tr><tr><td class='metric-name'>Order Frequency</td><td class="num">1.09</td><td class="num">1.11</td></tr><tr><td class='metric-name'>New Users</td><td class="num">318</td><td class="num">307</td></tr><tr><td class='metric-name'>Sessions with Impressions</td><td class="num">16 403</td><td class="num">18 026</td></tr><tr><td class='metric-name'>Impression → Menu (%)</td><td class="num">10.71%</td><td class="num">11.39%</td></tr><tr><td class='metric-name'>Menu → Product Added (%)</td><td class="num">40.35%</td><td class="num">44.01%</td></tr><tr><td class='metric-name'>Average Rating (0–5)</td><td class="num">4.62</td><td class="num">4.78</td></tr><tr><td class='metric-name'>Total Discounts (UAH)</td><td class="num">60 275</td><td class="num">68 121</td></tr><tr><td class='metric-name'>Campaigns Spend Bolt (UAH)</td><td class="num">60 275</td><td class="num">68 121</td></tr><tr><td class='metric-name'>Campaigns Spend Merchant (UAH)</td><td class="num">0</td><td class="num">0</td></tr></tbody>
+    </table>
+  </div>
 
   <div class="section-title">ТОП-10 позицій меню (Order Item Report)</div>
   <p style="font-size:12px;color:var(--gray-400);margin:-8px 0 14px">За весь період звіту · найчастіше замовлювані страви</p>
@@ -474,56 +649,88 @@
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <script>
-const MONTH_LABELS = ["квітень 2026", "травень 2026"];
-const COLORS = ["#0d8a52", "#34D186"];
-const BORDERS = ["#066637", "#2ab872"];
+(function() {
+  const CHARTS = [
+    {id:"c-gross", data:[320506.0, 399105.0], opts:{}},
+    {id:"c-net", data:[260232.0, 330984.0], opts:{}},
+    {id:"c-orders", data:[513, 612], opts:{}},
+    {id:"c-aov", data:[625.0, 652.0], opts:{"dec":true}},
+    {id:"c-avail", data:[90.16, 95.45], opts:{"pct":true,"ymin":80,"ymax":101}},
+    {id:"c-accept", data:[98.62, 98.28], opts:{"pct":true,"ymin":90,"ymax":101}},
+    {id:"c-refunds", data:[2.4, 1.36], opts:{"pct":true,"dec":true}},
+    {id:"c-del", data:[46.6, 48.7], opts:{"dec":true}},
+    {id:"c-acc-t", data:[1.7, 1.1], opts:{"dec":true}},
+    {id:"c-prep", data:[25.8, 27.2], opts:{"dec":true}},
+    {id:"c-wait", data:[2.1, 2.6], opts:{"dec":true}},
+    {id:"c-c2m", data:[11.6, 11.9], opts:{"dec":true}},
+    {id:"c-c2e", data:[9.3, 8.7], opts:{"dec":true}},
+    {id:"c-active", data:[472, 552], opts:{}},
+    {id:"c-freq", data:[1.09, 1.11], opts:{"dec":true}},
+    {id:"c-new", data:[318, 307], opts:{}},
+    {id:"c-sess", data:[16403, 18026], opts:{}},
+    {id:"c-imp", data:[10.71, 11.39], opts:{"pct":true,"dec":true}},
+    {id:"c-menu", data:[40.35, 44.01], opts:{"pct":true,"dec":true}},
+    {id:"c-rating", data:[4.62, 4.78], opts:{"dec":true,"ymin":0,"ymax":5.5}},
+    {id:"c-disc", data:[60275.0, 68121.0], opts:{}},
+    {id:"c-bolt", data:[60275.0, 68121.0], opts:{}},
+    {id:"c-merch", data:[0.0, 0.0], opts:{}}
+  ];
+  const MONTH_LABELS = ["квітень 2026", "травень 2026"];
+  const COLORS = ["#0d8a52", "#34D186"];
+  const BORDERS = ["#066637", "#2ab872"];
 
-function makeBar(id, data, opts) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  new Chart(el, {
-    type: 'bar',
-    data: {
-      labels: MONTH_LABELS,
-      datasets: [{
-        data,
-        backgroundColor: COLORS,
-        borderColor: BORDERS,
-        borderWidth: 1.5,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (c) => {
-              const v = c.parsed.y;
-              if (opts.pct) return ' ' + v.toFixed(2) + '%';
-              if (opts.dec) return ' ' + v.toFixed(2);
-              return ' ' + v.toLocaleString('uk-UA');
-            }
-          }
-        }
+  function makeBar(id, data, opts) {
+    if (typeof Chart === 'undefined') return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    const wrap = el.closest('.chart-card');
+    if (wrap) {
+      const hist = wrap.querySelector('.hist-chart');
+      if (hist) hist.style.display = 'none';
+      const cw = wrap.querySelector('.chart-wrap');
+      if (cw) { cw.style.height = '220px'; cw.style.position = 'relative'; cw.style.opacity = '1'; cw.style.overflow = 'visible'; }
+    }
+    new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: MONTH_LABELS,
+        datasets: [{
+          data,
+          backgroundColor: COLORS,
+          borderColor: BORDERS,
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }]
       },
-      scales: {
-        x: { grid: { display: false } },
-        y: {
-          beginAtZero: opts.ymin === undefined,
-          min: opts.ymin,
-          max: opts.ymax,
-          ticks: {
-            callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA')
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            beginAtZero: opts.ymin === undefined,
+            min: opts.ymin,
+            max: opts.ymax,
+            ticks: { callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA') }
           }
         }
       }
-    }
-  });
-}
+    });
+  }
+
+  function initAll() {
+    CHARTS.forEach((c) => makeBar(c.id, c.data, c.opts || {}));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+})();
 </script>
 </body>
 </html>
