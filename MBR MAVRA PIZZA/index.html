@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MAVRA PIZZA — MBR · квітень 2026 — травень 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green:#34D186; --green-dark:#1aad6a; --green-darker:#0d8a52;
+      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5; --white:#fff;
+      --positive:#1aad6a; --warning:#e67e22; --info:#2980b9;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}
+    .header{background:var(--black);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}
+    .header-logo{display:flex;align-items:center;gap:14px}
+    .bolt-logo{width:44px;height:44px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .header-title h1{font-size:22px;font-weight:700;color:#fff}
+    .header-title p{font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-top:4px}
+    .header-meta{text-align:right;color:var(--gray-400);font-size:12px;line-height:1.9}
+    .header-meta strong{color:var(--green)}
+    .container{max-width:1280px;margin:0 auto;padding:32px 40px}
+    .period-bar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .period-bar .label{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)}
+    .month-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .m1{background:var(--green-darker)} .m2{background:var(--green)}
+    .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 18px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:8px}
+    .kpi-card{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}
+    .kpi-value{font-size:22px;font-weight:700}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:20px;margin-bottom:12px}
+    .chart-card{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .chart-card h3{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}
+    .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:12px}
+    .chart-wrap{height:220px;position:relative}
+    .insights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
+    .insight-card{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .insight-card.positive{border-left-color:var(--positive)}
+    .insight-card.warning{border-left-color:var(--warning)}
+    .insight-card.info{border-left-color:var(--info)}
+    .insight-title{font-weight:700;font-size:14px;margin-bottom:8px}
+    .insight-card p{font-size:13px;color:var(--gray-700)}
+    .table-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}
+    table{width:100%;border-collapse:collapse}
+    th{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;padding:12px 16px;text-align:left}
+    th.num, td.num{text-align:right}
+    td{padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px}
+    td.rank{color:var(--green-darker);font-weight:700;width:48px}
+    tr:hover td{background:#e6faf2}
+    .footer{background:var(--black);color:var(--gray-400);font-size:11px;padding:22px 40px;text-align:center}
+    .footer span{color:var(--green)}
+    @media(max-width:700px){.container{padding:20px 16px}.charts-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-logo">
+    <div class="bolt-logo">
+      <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13V2Z" fill="#0d0d0d"/></svg>
+    </div>
+    <div class="header-title">
+      <h1>MAVRA PIZZA · Запоріжжя</h1>
+      <p>Bolt Food · Щомісячний звіт (MBR)</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>Період: <strong>квітень 2026 — травень 2026</strong></div>
+    <div>Локацій: <strong>9 точок</strong></div>
+    <div>Оновлено: <strong>01.06.2026 18:30</strong></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="period-bar">
+    <span class="label">Порівняння місяців:</span>
+    <span class="month-chip m1">квітень 2026</span>
+<span class="month-chip m2">травень 2026</span>
+
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Валюта: UAH · 9 локацій Запоріжжя</span>
+  </div>
+
+  <div class="section-title">Ключові показники — травень 2026</div>
+  
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Gross Sales</div><div class="kpi-value">399 105 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div><div class="kpi-value">612</div></div>
+      <div class="kpi-card"><div class="kpi-label">AOV</div><div class="kpi-value">652 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Рейтинг</div><div class="kpi-value">4.78</div></div>
+      <div class="kpi-card"><div class="kpi-label">Доступність</div><div class="kpi-value">95.5%</div></div>
+      <div class="kpi-card"><div class="kpi-label">Активні клієнти</div><div class="kpi-value">552</div></div>
+    </div>
+
+  <div class="section-title">1. Продажі</div><div class="charts-grid">
+    <div class="chart-card">
+      <h3>Gross Sales (загальні продажі)</h3>
+      <p class="unit">UAH до знижок</p>
+      <div class="chart-wrap"><canvas id="c-gross"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-gross", [320506.0, 399105.0], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Net Sales (чистий прибуток)</h3>
+      <p class="unit">UAH після знижок</p>
+      <div class="chart-wrap"><canvas id="c-net"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-net", [260232.0, 330984.0], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Delivered Orders</h3>
+      <p class="unit">доставлені замовлення</p>
+      <div class="chart-wrap"><canvas id="c-orders"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-orders", [513, 612], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>AOV (середній чек)</h3>
+      <p class="unit">UAH / замовлення</p>
+      <div class="chart-wrap"><canvas id="c-aov"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-aov", [625.0, 652.0], {"dec":true});
+    })();
+    </script></div><div class="section-title">2. Операційні показники</div><div class="charts-grid">
+    <div class="chart-card">
+      <h3>Availability Rate</h3>
+      <p class="unit">доступність на платформі · %</p>
+      <div class="chart-wrap"><canvas id="c-avail"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-avail", [90.16, 95.45], {"pct":true,"ymin":80,"ymax":101});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Acceptance Rate</h3>
+      <p class="unit">прийняті замовлення · %</p>
+      <div class="chart-wrap"><canvas id="c-accept"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-accept", [98.62, 98.28], {"pct":true,"ymin":90,"ymax":101});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Orders with Refunds</h3>
+      <p class="unit">компенсації клієнту · %</p>
+      <div class="chart-wrap"><canvas id="c-refunds"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-refunds", [2.4, 1.36], {"pct":true,"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Average Delivery Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-del"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-del", [46.6, 48.7], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Avg. Merchant Acceptance Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-acc-t"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-acc-t", [1.7, 1.1], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Avg. Preparation Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-prep"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-prep", [25.8, 27.2], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Avg. Courier Wait Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-wait"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-wait", [2.1, 2.6], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Avg. Courier to Merchant Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-c2m"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-c2m", [11.6, 11.9], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Avg. Courier to Eater Time</h3>
+      <p class="unit">хвилини</p>
+      <div class="chart-wrap"><canvas id="c-c2e"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-c2e", [9.3, 8.7], {"dec":true});
+    })();
+    </script></div><div class="section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
+    <div class="chart-card">
+      <h3>Active Users</h3>
+      <p class="unit">унікальні замовники</p>
+      <div class="chart-wrap"><canvas id="c-active"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-active", [472, 552], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Order Frequency</h3>
+      <p class="unit">замовлень / користувач</p>
+      <div class="chart-wrap"><canvas id="c-freq"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-freq", [1.09, 1.11], {"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>New Users</h3>
+      <p class="unit">нові клієнти бренду</p>
+      <div class="chart-wrap"><canvas id="c-new"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-new", [318, 307], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Sessions with Impressions</h3>
+      <p class="unit">перегляди закладу</p>
+      <div class="chart-wrap"><canvas id="c-sess"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-sess", [16403, 18026], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Impression → Menu Viewed</h3>
+      <p class="unit">конверсія · %</p>
+      <div class="chart-wrap"><canvas id="c-imp"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-imp", [10.71, 11.39], {"pct":true,"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Menu Viewed → Product Added</h3>
+      <p class="unit">конверсія · %</p>
+      <div class="chart-wrap"><canvas id="c-menu"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-menu", [40.35, 44.01], {"pct":true,"dec":true});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Average Merchant Rating</h3>
+      <p class="unit">оцінка 0–5</p>
+      <div class="chart-wrap"><canvas id="c-rating"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-rating", [4.62, 4.78], {"dec":true,"ymin":0,"ymax":5.5});
+    })();
+    </script></div><div class="section-title">4. Знижки</div><div class="charts-grid">
+    <div class="chart-card">
+      <h3>Total Discounts for Users</h3>
+      <p class="unit">UAH</p>
+      <div class="chart-wrap"><canvas id="c-disc"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-disc", [60275.0, 68121.0], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Campaigns Spend by Bolt</h3>
+      <p class="unit">UAH</p>
+      <div class="chart-wrap"><canvas id="c-bolt"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-bolt", [60275.0, 68121.0], {});
+    })();
+    </script>
+    <div class="chart-card">
+      <h3>Campaigns Spend by Merchant</h3>
+      <p class="unit">UAH</p>
+      <div class="chart-wrap"><canvas id="c-merch"></canvas></div>
+    </div>
+    <script>
+    (function(){
+      makeBar("c-merch", [0.0, 0.0], {});
+    })();
+    </script></div>
+
+  <div class="section-title">ТОП-10 позицій меню (Order Item Report)</div>
+  <p style="font-size:12px;color:var(--gray-400);margin:-8px 0 14px">За весь період звіту · найчастіше замовлювані страви</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Назва позиції</th>
+          <th class="num">Кількість</th>
+          <th class="num">Сума продажів</th>
+          <th class="num">Сер. ціна</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rank">1</td>
+          <td><strong>Hawaiian Pizza 30 cm</strong></td>
+          <td class="num">212</td>
+          <td class="num">50 690.0 ₴</td>
+          <td class="num">220 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td><strong>French Fries</strong></td>
+          <td class="num">167</td>
+          <td class="num">16 410.0 ₴</td>
+          <td class="num">95 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td><strong>Salami Pizza</strong></td>
+          <td class="num">136</td>
+          <td class="num">31 605.0 ₴</td>
+          <td class="num">205 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td><strong>Cheese Chicken Pizza</strong></td>
+          <td class="num">134</td>
+          <td class="num">35 085.0 ₴</td>
+          <td class="num">240 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">5</td>
+          <td><strong>Pepperoni Pizza 30cm</strong></td>
+          <td class="num">118</td>
+          <td class="num">28 990.0 ₴</td>
+          <td class="num">225 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">6</td>
+          <td><strong>Coca-Cola</strong></td>
+          <td class="num">95</td>
+          <td class="num">4 275.0 ₴</td>
+          <td class="num">45 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">7</td>
+          <td><strong>Medallion Pizza</strong></td>
+          <td class="num">95</td>
+          <td class="num">32 459.0 ₴</td>
+          <td class="num">319 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">8</td>
+          <td><strong>Cheesy Temptation Pizza</strong></td>
+          <td class="num">94</td>
+          <td class="num">22 975.0 ₴</td>
+          <td class="num">215 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">9</td>
+          <td><strong>Hetman Pizza</strong></td>
+          <td class="num">90</td>
+          <td class="num">25 045.0 ₴</td>
+          <td class="num">258 ₴</td>
+        </tr>
+        <tr>
+          <td class="rank">10</td>
+          <td><strong>Julienne Pizza</strong></td>
+          <td class="num">86</td>
+          <td class="num">18 685.0 ₴</td>
+          <td class="num">200 ₴</td>
+        </tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Висновки та рекомендації для партнера</div>
+  <p style="font-size:13px;color:var(--gray-700);margin-bottom:16px">
+    Короткий аналіз динаміки між квітень 2026 та травень 2026.
+    Зосередьтесь на пунктах з ⚠️ — там найбільший потенціал для покращення.
+  </p>
+  <div class="insights-grid">
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Продажі зростають</div>
+          <p>Загальний оборот зріс на 25% (квітень 2026 → травень 2026). Доставлених замовлень стало на 19% більше — це хороший сигнал попиту.</p>
+        </div>
+
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Середній чек підвищився</div>
+          <p>Клієнти замовляють на більше: середній чек 625 → 652 ₴ (+4%).</p>
+        </div>
+
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Заклад частіше онлайн</div>
+          <p>Доступність на платформі зросла з 90.2% до 95.5%. Клієнти частіше бачать вас у застосунку.</p>
+        </div>
+
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Менше компенсацій клієнтам</div>
+          <p>Частка замовлень з поверненнями знизилась з 2.4% до 1.4%.</p>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-title">⚠️ Доставка займає більше часу</div>
+          <p>Середній час доставки збільшився: 46.6 → 48.7 хв. Зверніть увагу на швидкість приготування ({a['prep_time']} → {b['prep_time']} хв) та видачу курʼєру.</p>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-title">⚠️ Час приготування зростає</div>
+          <p>Середній час приготування: 25.8 → 27.2 хв. На пікових годинах варто додати людей на кухню або спростити меню.</p>
+        </div>
+
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Клієнти задоволені якістю</div>
+          <p>Середній рейтинг зріс з 4.62 до 4.78 з 5 — продовжуйте тримати якість страв.</p>
+        </div>
+
+        <div class="insight-card warning">
+          <div class="insight-title">⚠️ Мало переходів у меню</div>
+          <p>Лише 11.4% переглядів закладу переходять у меню. Оновіть обкладинку, фото страв і акційні позиції на головній сторінці профілю.</p>
+        </div>
+
+        <div class="insight-card positive">
+          <div class="insight-title">✅ Більше постійних клієнтів</div>
+          <p>Активних користувачів: 472 → 552.</p>
+        </div>
+
+        <div class="insight-card info">
+          <div class="insight-title">ℹ️ Зростають знижки від Bolt</div>
+          <p>Витрати на знижки для клієнтів зросли на 13%. Зараз кампанії фінансує Bolt — слідкуйте, щоб знижки не знижували маржу без зростання замовлень.</p>
+        </div></div>
+</div>
+
+<footer class="footer">
+  <span>Bolt Food</span> · MBR MAVRA PIZZA · Запоріжжя ·
+  Дані: Databricks · Автооновлення: 1-го числа кожного місяця о 15:00 (Київ) ·
+  <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
+</footer>
+
+<script>
+const MONTH_LABELS = ["квітень 2026", "травень 2026"];
+const COLORS = ["#0d8a52", "#34D186"];
+const BORDERS = ["#066637", "#2ab872"];
+
+function makeBar(id, data, opts) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, {
+    type: 'bar',
+    data: {
+      labels: MONTH_LABELS,
+      datasets: [{
+        data,
+        backgroundColor: COLORS,
+        borderColor: BORDERS,
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const v = c.parsed.y;
+              if (opts.pct) return ' ' + v.toFixed(2) + '%';
+              if (opts.dec) return ' ' + v.toFixed(2);
+              return ' ' + v.toLocaleString('uk-UA');
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          beginAtZero: opts.ymin === undefined,
+          min: opts.ymin,
+          max: opts.ymax,
+          ticks: {
+            callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA')
+          }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

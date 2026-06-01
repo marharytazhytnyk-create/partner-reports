@@ -1,0 +1,43 @@
+name: Update MAVRA PIZZA MBR
+
+on:
+  schedule:
+    # 15:00 Kyiv (EEST, UTC+3) on the 1st of each month
+    - cron: '0 12 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-mavra-mbr:
+    name: MBR MAVRA PIZZA — Monthly Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate MBR report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python "MBR MAVRA PIZZA/generate_mavra_mbr.py"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "MBR MAVRA PIZZA/"
+          git diff --staged --quiet || git commit -m "🍕 MAVRA PIZZA MBR — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
