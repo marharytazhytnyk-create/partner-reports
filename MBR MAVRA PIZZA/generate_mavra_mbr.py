@@ -696,32 +696,6 @@ def generate_html(data: dict) -> str:
             )
         charts_html += "</div>"
 
-    # Таблиця по локаціях
-    loc_table_head = "".join(
-        f"<th class='num'>{ml}</th>" for ml in month_labels
-    )
-    loc_metrics = [
-        ("Замовлення", "orders", {}),
-        ("Gross Sales (₴)", "gross", {}),
-        ("AOV (₴)", "aov", {}),
-        ("Доступність (%)", "avail", {"pct": True}),
-        ("Прийняття (%)", "accept", {"pct": True}),
-        ("Повернення (%)", "refunds", {"pct": True}),
-        ("Рейтинг", "rating", {"dec": True}),
-    ]
-    loc_table_rows = ""
-    for loc in locations:
-        for label, key, opts in loc_metrics:
-            cells = "".join(
-                f"<td class='num'>{_fmt_chart_value(float(m.get(key, 0)), opts)}</td>"
-                for m in loc["months"]
-            )
-            pname = loc["short_name"]
-            loc_table_rows += (
-                f"<tr><td class='metric-name'>{pname}</td>"
-                f"<td class='sub-metric'>{label}</td>{cells}</tr>"
-            )
-
     metrics_table_rows = ""
     brand_metrics = [
         ("Gross Sales (UAH)", "gross", {}),
@@ -850,7 +824,6 @@ def generate_html(data: dict) -> str:
     th{{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;padding:12px 16px;text-align:left}}
     th.num,td.num{{text-align:right}}
     td{{padding:8px 16px;border-bottom:1px solid #f0f0f0;font-size:12px}}
-    td.sub-metric{{color:var(--gray-400);font-size:11px}}
     td.rank{{color:var(--green-darker);font-weight:700}}
     .metric-name{{font-weight:600;white-space:nowrap}}
     tr:hover td{{background:#e6faf2}}
@@ -898,16 +871,6 @@ def generate_html(data: dict) -> str:
   {_problem_locations_html(problems)}
 
   {charts_html}
-
-  <div class="section-title">Таблиця метрик по локаціях</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr><th>Локація</th><th>Метрика</th>{loc_table_head}</tr>
-      </thead>
-      <tbody>{loc_table_rows}</tbody>
-    </table>
-  </div>
 
   <div class="section-title">ТОП-10 позицій меню</div>
   <p class="section-hint">За весь період · Order Item Report</p>
