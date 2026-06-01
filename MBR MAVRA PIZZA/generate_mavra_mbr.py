@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-MBR (Monthly Business Review) — MAVRA PIZZA, Запоріжжя.
-Дані з Databricks, звіт HTML українською, автооновлення 1-го числа о 15:00 (Київ).
+MBR (Monthly Business Review) — партнерські звіти Bolt Food.
+Дані з Databricks, HTML українською, автооновлення 1-го числа о 15:00 (Київ).
 """
 
 from __future__ import annotations
@@ -21,13 +21,64 @@ DATABRICKS_HOST = os.getenv("DATABRICKS_HOST", "https://bolt-incentives.cloud.da
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
 CLUSTER_ID = os.getenv("DATABRICKS_CLUSTER_ID", "0221-081903-9ag4bh69")
 
-CITY_UK = "Запоріжжя"
 SCRIPT_DIR = Path(__file__).parent
-OUTPUT_FILE = SCRIPT_DIR / "index.html"
 
-PROVIDER_IDS = [
-    138974, 194965, 194972, 194976, 194977,
-    194981, 194982, 194984, 194985,
+# slug → output filename, заголовок, місто, provider_ids, префікси для скорочення назв локацій
+REPORT_CONFIGS: list[dict] = [
+    {
+        "slug": "mavra-pizza-zap",
+        "output": "index.html",
+        "header_title": "MAVRA PIZZA",
+        "city_uk": "Запоріжжя",
+        "provider_ids": [
+            138974, 194965, 194972, 194976, 194977,
+            194981, 194982, 194984, 194985,
+        ],
+        "name_strip": [r"Mavra\s+[Pp]izza", r"MAVRA\s+PIZZA"],
+    },
+    {
+        "slug": "mavra-pizza-kr",
+        "output": "MBR Mavra Pizza — Kryvyi Rih.html",
+        "header_title": "MAVRA PIZZA",
+        "city_uk": "Кривий Ріг",
+        "provider_ids": [139520, 139521, 139522],
+        "name_strip": [r"Mavra\s+[Pp]izza", r"MAVRA\s+PIZZA"],
+    },
+    {
+        "slug": "mavra-azia-zap",
+        "output": "MBR Mavra Azia — Zaporizhzhia.html",
+        "header_title": "MAVRA AZIA",
+        "city_uk": "Запоріжжя",
+        "provider_ids": [195164, 195169, 195171, 195174],
+        "name_strip": [r"Mavra\s+Azia", r"MAVRA\s+AZIA"],
+    },
+    {
+        "slug": "josper-zap",
+        "output": "MBR Josper Svintuz — Zaporizhzhia.html",
+        "header_title": "JOSPER SVINTUZ",
+        "city_uk": "Запоріжжя",
+        "provider_ids": [
+            195006, 195007, 195012, 195015, 195019, 195020,
+            195021, 195024, 195025, 197892, 197899, 197909,
+        ],
+        "name_strip": [r"Josper\s+Svintuz", r"JOSPER\s+SVINTUZ"],
+    },
+    {
+        "slug": "josper-kr",
+        "output": "MBR Josper Svintuz — Kryvyi Rih.html",
+        "header_title": "JOSPER SVINTUZ",
+        "city_uk": "Кривий Ріг",
+        "provider_ids": [195000],
+        "name_strip": [r"Josper\s+Svintuz", r"JOSPER\s+SVINTUZ"],
+    },
+    {
+        "slug": "josper-vin",
+        "output": "MBR Josper Svintuz — Vinnytsia.html",
+        "header_title": "JOSPER SVINTUZ",
+        "city_uk": "Вінниця",
+        "provider_ids": [194993],
+        "name_strip": [r"Josper\s+Svintuz", r"JOSPER\s+SVINTUZ"],
+    },
 ]
 
 UK_MONTHS = [
@@ -93,9 +144,10 @@ def month_range_sql(year: int, month: int) -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
-def short_location_name(full_name: str) -> str:
-    n = re.sub(r"(?i)^mavra\s+pizza\s*", "", full_name.strip())
-    n = re.sub(r"(?i)^mavra\s+", "", n)
+def short_location_name(full_name: str, name_strip: list[str] | None = None) -> str:
+    n = full_name.strip()
+    for pattern in name_strip or []:
+        n = re.sub(rf"(?i)^{pattern}\s*", "", n)
     return n.strip() or full_name
 
 
@@ -239,9 +291,9 @@ def _parse_location_row(row: list) -> dict:
 
 # ─── DATA FETCH ────────────────────────────────────────────────────────────────
 
-def fetch_metrics(months_range: list[tuple[int, int]]) -> dict:
-    pids_sql = ", ".join(str(p) for p in PROVIDER_IDS)
-    pids_str = ", ".join(f"'{p}'" for p in PROVIDER_IDS)
+def fetch_metrics(months_range: list[tuple[int, int]], provider_ids: list[int], name_strip: list[str]) -> dict:
+    pids_sql = ", ".join(str(p) for p in provider_ids)
+    pids_str = ", ".join(f"'{p}'" for p in provider_ids)
 
     y0, m0 = months_range[0]
     y1, m1 = months_range[-1]
@@ -281,6 +333,8 @@ def fetch_metrics(months_range: list[tuple[int, int]]) -> dict:
           AND metric_timestamp_partition < '{global_end}'
         GROUP BY 1 ORDER BY 1
         """
+        if not provider_ids:
+            raise ValueError("provider_ids is empty")
         main_rows = run_query(ctx, main_sql)
 
         users_sql = f"""
@@ -360,7 +414,7 @@ def fetch_metrics(months_range: list[tuple[int, int]]) -> dict:
             by_pid[pid] = {
                 "provider_id": pid,
                 "name": row[1],
-                "short_name": short_location_name(str(row[1])),
+                "short_name": short_location_name(str(row[1]), name_strip),
                 "by_month": {},
             }
         by_pid[pid]["by_month"][rec["month_key"]] = rec
@@ -590,8 +644,9 @@ def _metric_opts(key: str) -> dict:
 
 def _location_grouped_chart(
     cid: str, title: str, unit: str, key: str,
-    locations: list[dict], month_labels: list[str],
+    locations: list[dict], month_labels: list[str], slug: str = "",
 ) -> str:
+    cid = f"{slug}-{cid}" if slug else cid
     opts = _metric_opts(key)
     all_vals = [
         float(loc["months"][i].get(key, 0))
@@ -670,13 +725,23 @@ def _insight_html(insights: list[dict]) -> str:
     )
 
 
-def generate_html(data: dict) -> str:
+def generate_html(data: dict, cfg: dict) -> str:
     months = data["months"]
     locations = data["locations"]
     month_labels = data["month_labels"]
     items = data["top_items"]
     period = data["period_label"]
     gen = data["generated_at"]
+    header_title = cfg["header_title"]
+    city_uk = cfg["city_uk"]
+    slug = cfg["slug"]
+    n_locations = len(locations)
+    if n_locations == 1:
+        loc_word = "точка"
+    elif 2 <= n_locations <= 4:
+        loc_word = "точки"
+    else:
+        loc_word = "точок"
 
     problems = analyze_problem_locations(locations)
     problem_names = {p["name"] for p in problems}
@@ -692,7 +757,7 @@ def generate_html(data: dict) -> str:
         charts_html += '<div class="charts-grid loc-charts-grid">'
         for cid, title, unit, key in chart_defs:
             charts_html += _location_grouped_chart(
-                cid, title, unit, key, locations, month_labels
+                cid, title, unit, key, locations, month_labels, slug
             )
         charts_html += "</div>"
 
@@ -737,7 +802,7 @@ def generate_html(data: dict) -> str:
       <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
         <div class="kpi-value">{last.get('orders',0)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Локацій</div>
-        <div class="kpi-value">9</div></div>
+        <div class="kpi-value">{n_locations}</div></div>
       <div class="kpi-card"><div class="kpi-label">Точок під увагою</div>
         <div class="kpi-value">{len(problems)}</div></div>
     </div>""".replace(",", "\u202f")
@@ -747,7 +812,7 @@ def generate_html(data: dict) -> str:
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>MAVRA PIZZA — MBR · {period}</title>
+  <title>{header_title} — MBR · {city_uk} · {period}</title>
   <style>
     :root {{
       --green:#34D186; --green-darker:#0d8a52;
@@ -839,13 +904,13 @@ def generate_html(data: dict) -> str:
       <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13V2Z" fill="#0d0d0d"/></svg>
     </div>
     <div class="header-title">
-      <h1>MAVRA PIZZA · {CITY_UK}</h1>
+      <h1>{header_title} · {city_uk}</h1>
       <p>Bolt Food · Щомісячний звіт (MBR)</p>
     </div>
   </div>
   <div class="header-meta">
     <div>Період: <strong>{period}</strong></div>
-    <div>Локацій: <strong>9 точок</strong></div>
+    <div>Локацій: <strong>{n_locations} {loc_word}</strong></div>
     <div>Оновлено: <strong>{gen}</strong></div>
   </div>
 </header>
@@ -889,11 +954,31 @@ def generate_html(data: dict) -> str:
 </div>
 
 <footer class="footer">
-  <span>Bolt Food</span> · MBR MAVRA PIZZA · Автооновлення: 1-го числа о 15:00 (Київ) ·
+  <span>Bolt Food</span> · MBR {header_title} · {city_uk} · Автооновлення: 1-го числа о 15:00 (Київ) ·
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
 </footer>
 </body>
 </html>"""
+
+
+def generate_reports_index() -> None:
+    """Сторінка-навігація по всіх MBR у папці."""
+    links = "".join(
+        f'<li><a href="{c["output"]}">{c["header_title"]} · {c["city_uk"]}</a></li>'
+        for c in REPORT_CONFIGS
+    )
+    html = f"""<!DOCTYPE html>
+<html lang="uk"><head><meta charset="UTF-8"/>
+<title>MBR — навігація</title>
+<style>
+  body{{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px}}
+  h1{{font-size:1.4rem}} ul{{line-height:2}} a{{color:#0d8a52;font-weight:600}}
+</style></head><body>
+<h1>Щомісячні звіти (MBR)</h1>
+<p>Оновлення: 1-го числа кожного місяця о 15:00 (Київ)</p>
+<ul>{links}</ul>
+</body></html>"""
+    (SCRIPT_DIR / "reports.html").write_text(html, encoding="utf-8")
 
 
 def main() -> None:
@@ -902,15 +987,24 @@ def main() -> None:
         sys.exit(1)
 
     months_range = last_n_full_months(2)
-    print(f"MAVRA PIZZA MBR — {month_label(*months_range[0])} — {month_label(*months_range[-1])}")
+    period = f"{month_label(*months_range[0])} — {month_label(*months_range[-1])}"
+    print(f"MBR batch — {period}\n")
 
-    data = fetch_metrics(months_range)
-    problems = analyze_problem_locations(data["locations"])
-    print(f"  Локацій: {len(data['locations'])}, проблемних: {len(problems)}")
+    for cfg in REPORT_CONFIGS:
+        title = f"{cfg['header_title']} · {cfg['city_uk']}"
+        print(f"▶ {title} ({len(cfg['provider_ids'])} локацій)…")
+        try:
+            data = fetch_metrics(months_range, cfg["provider_ids"], cfg["name_strip"])
+            problems = analyze_problem_locations(data["locations"])
+            print(f"  проблемних точок: {len(problems)}")
+            out = SCRIPT_DIR / cfg["output"]
+            out.write_text(generate_html(data, cfg), encoding="utf-8")
+            print(f"  → {out.name}")
+        except Exception as e:
+            print(f"  ПОМИЛКА: {e}", file=sys.stderr)
 
-    html = generate_html(data)
-    OUTPUT_FILE.write_text(html, encoding="utf-8")
-    print(f"Звіт збережено → {OUTPUT_FILE}")
+    generate_reports_index()
+    print(f"\nНавігація → reports.html")
 
 
 if __name__ == "__main__":

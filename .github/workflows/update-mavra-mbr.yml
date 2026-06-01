@@ -1,4 +1,4 @@
-name: Update MAVRA PIZZA MBR
+name: Update MBR Reports (MAVRA / JOSPER)
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   generate-mavra-mbr:
-    name: MBR MAVRA PIZZA — Monthly Report
+    name: MBR Reports — Monthly Batch
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Generate MBR report
+      - name: Generate all MBR reports
         env:
           DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
@@ -39,5 +39,5 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "MBR MAVRA PIZZA/"
-          git diff --staged --quiet || git commit -m "🍕 MAVRA PIZZA MBR — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git diff --staged --quiet || git commit -m "📊 MBR reports batch — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push

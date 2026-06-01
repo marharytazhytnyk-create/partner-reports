@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MAVRA PIZZA — MBR · Кривий Ріг · квітень 2026 — травень 2026</title>
+  <style>
+    :root {
+      --green:#34D186; --green-darker:#0d8a52;
+      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5;
+      --positive:#1aad6a; --warning:#e67e22; --info:#2980b9;
+      --problem-bg:#fff8f0;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}
+    .header{background:var(--black);padding:28px 40px;display:flex;align-items:center;
+      justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}
+    .header-logo{display:flex;align-items:center;gap:14px}
+    .bolt-logo{width:44px;height:44px;background:var(--green);border-radius:10px;
+      display:flex;align-items:center;justify-content:center}
+    .header-title h1{font-size:22px;font-weight:700;color:#fff}
+    .header-title p{font-size:11px;color:var(--green);text-transform:uppercase;
+      letter-spacing:1.2px;font-weight:600;margin-top:4px}
+    .header-meta{text-align:right;color:var(--gray-400);font-size:12px;line-height:1.9}
+    .header-meta strong{color:var(--green)}
+    .container{max-width:1280px;margin:0 auto;padding:32px 40px}
+    .period-bar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .month-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .m1{background:var(--green-darker)} .m2{background:var(--green)}
+    .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+      color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 10px}
+    .section-hint{font-size:12px;color:var(--gray-400);margin-bottom:14px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:8px}
+    .kpi-card{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}
+    .kpi-value{font-size:22px;font-weight:700}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:20px;margin-bottom:12px}
+    .chart-card{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .chart-card h3{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}
+    .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:8px}
+    .loc-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:12px}
+    .loc-legend .leg{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}
+    .loc-legend .leg.m1{background:var(--green-darker)}
+    .loc-legend .leg.m2{background:var(--green)}
+    .loc-chart{display:flex;flex-direction:column;gap:10px}
+    .loc-row{display:flex;align-items:flex-end;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+    .loc-row-problem{background:var(--problem-bg);border-radius:8px;padding:8px 10px;
+      border-left:3px solid var(--warning)}
+    .loc-name{width:130px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--gray-700);line-height:1.3}
+    .loc-bars{display:flex;gap:20px;flex:1;justify-content:flex-start}
+    .loc-bar-col{display:flex;flex-direction:column;align-items:center;width:56px;height:100px;justify-content:flex-end}
+    .loc-bar-val{font-size:10px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center}
+    .loc-bar-month{font-size:9px;color:var(--gray-400);margin-top:4px}
+    .hist-bar{width:40px;border-radius:6px 6px 0 0;min-height:6px}
+    .hist-bar.m1{background:var(--green-darker)} .hist-bar.m2{background:var(--green)}
+    .problem-locs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:28px}
+    .problem-loc-card{background:#fff;border-radius:12px;padding:18px 20px;
+      border:1px solid #f0c090;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .problem-loc-header h3{font-size:14px;margin-top:6px;color:var(--gray-700)}
+    .problem-badge{font-size:11px;font-weight:700;color:var(--warning)}
+    .problem-kpi-row{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--gray-400);
+      margin:10px 0;padding:8px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0}
+    .problem-kpi-row strong{color:var(--gray-700)}
+    .problem-list{margin:10px 0 0 18px;font-size:13px;color:var(--gray-700)}
+    .problem-list li{margin-bottom:6px}
+    .problem-none{background:#e6faf2;border-radius:12px;padding:20px;color:var(--positive);font-size:14px}
+    .insights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
+    .insight-card{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .insight-card.positive{border-left-color:var(--positive)}
+    .insight-card.warning{border-left-color:var(--warning)}
+    .insight-card.info{border-left-color:var(--info)}
+    .insight-title{font-weight:700;font-size:14px;margin-bottom:8px}
+    .insight-card p{font-size:13px;color:var(--gray-700)}
+    .table-wrap{background:#fff;border-radius:12px;overflow:auto;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}
+    table{width:100%;border-collapse:collapse;min-width:600px}
+    th{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;padding:12px 16px;text-align:left}
+    th.num,td.num{text-align:right}
+    td{padding:8px 16px;border-bottom:1px solid #f0f0f0;font-size:12px}
+    td.rank{color:var(--green-darker);font-weight:700}
+    .metric-name{font-weight:600;white-space:nowrap}
+    tr:hover td{background:#e6faf2}
+    .footer{background:var(--black);color:var(--gray-400);font-size:11px;padding:22px 40px;text-align:center}
+    .footer span{color:var(--green)}
+    @media(max-width:700px){.container{padding:20px 16px}.charts-grid{grid-template-columns:1fr}.loc-name{width:90px;font-size:10px}}
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-logo">
+    <div class="bolt-logo">
+      <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13V2Z" fill="#0d0d0d"/></svg>
+    </div>
+    <div class="header-title">
+      <h1>MAVRA PIZZA · Кривий Ріг</h1>
+      <p>Bolt Food · Щомісячний звіт (MBR)</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>Період: <strong>квітень 2026 — травень 2026</strong></div>
+    <div>Локацій: <strong>3 точки</strong></div>
+    <div>Оновлено: <strong>01.06.2026 19:44</strong></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="period-bar">
+    <span class="label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Порівняння:</span>
+    <span class="month-chip m1">квітень 2026</span>
+<span class="month-chip m2">травень 2026</span>
+
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Гістограми по локаціях · UAH</span>
+  </div>
+
+  <div class="section-title">Огляд мережі — травень 2026</div>
+  
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Gross Sales (мережа)</div>
+        <div class="kpi-value">162 485 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
+        <div class="kpi-value">261</div></div>
+      <div class="kpi-card"><div class="kpi-label">Локацій</div>
+        <div class="kpi-value">3</div></div>
+      <div class="kpi-card"><div class="kpi-label">Точок під увагою</div>
+        <div class="kpi-value">1</div></div>
+    </div>
+  <div class="table-wrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Метрика (вся мережа)</th><th class='num'>квітень 2026</th><th class='num'>травень 2026</th></tr></thead>
+      <tbody><tr><td class='metric-name'>Gross Sales (UAH)</td><td class="num">149 319</td><td class="num">162 485</td></tr><tr><td class='metric-name'>Delivered Orders</td><td class="num">254</td><td class="num">261</td></tr><tr><td class='metric-name'>AOV (UAH)</td><td class="num">588</td><td class="num">623</td></tr><tr><td class='metric-name'>Availability (%)</td><td class="num">90.47%</td><td class="num">96.39%</td></tr><tr><td class='metric-name'>Rating (0–5)</td><td class="num">4.60</td><td class="num">4.72</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">⚠️ Проблемні локації</div>
+  <p class="section-hint">Точки з відхиленнями у травні порівняно з квітнем або за абсолютними порогами</p>
+  <div class="problem-locs-grid">
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Mavra Pizza проспект Героїв-Підпільників</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>54</strong> → <strong>48</strong></span>
+            <span>Доступність: <strong>92.0%</strong> → <strong>97.9%</strong></span>
+            <span>Рейтинг: <strong>4.65</strong> → <strong>4.73</strong></span>
+          </div>
+          <ul class="problem-list"><li>Зменшення замовлень: 54 → 48 (-11%).</li><li>Висока частка замовлень з компенсаціями клієнту — 5.6% у травні.</li><li>Повільне прийняття замовлень партнером — 8.3 хв у травні.</li></ul>
+        </div></div>
+
+  <div class="section-title">1. Продажі</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Gross Sales (загальні продажі)</h3>
+      <p class="unit">UAH до знижок · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">72 932</div>
+              <div class="hist-bar m1" style="height:83%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">87 469</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">33 189</div>
+              <div class="hist-bar m1" style="height:38%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">25 166</div>
+              <div class="hist-bar m2" style="height:29%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">43 198</div>
+              <div class="hist-bar m1" style="height:49%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">49 851</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Delivered Orders</h3>
+      <p class="unit">доставлені замовлення · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">118</div>
+              <div class="hist-bar m1" style="height:89%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">133</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">54</div>
+              <div class="hist-bar m1" style="height:41%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">48</div>
+              <div class="hist-bar m2" style="height:36%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">82</div>
+              <div class="hist-bar m1" style="height:62%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">80</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>AOV (середній чек)</h3>
+      <p class="unit">UAH / замовлення · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">618</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">658</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">615</div>
+              <div class="hist-bar m1" style="height:93%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">524</div>
+              <div class="hist-bar m2" style="height:80%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">527</div>
+              <div class="hist-bar m1" style="height:80%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">623</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Availability Rate</h3>
+      <p class="unit">доступність · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">91.45%</div>
+              <div class="hist-bar m1" style="height:93%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.37%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">91.96%</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">97.92%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">88.00%</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.88%</div>
+              <div class="hist-bar m2" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Acceptance Rate</h3>
+      <p class="unit">прийняття · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.35%</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">97.75%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Orders with Refunds</h3>
+      <p class="unit">повернення · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1.00%</div>
+              <div class="hist-bar m1" style="height:18%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">2.15%</div>
+              <div class="hist-bar m2" style="height:38%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.19%</div>
+              <div class="hist-bar m1" style="height:74%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5.64%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1.04%</div>
+              <div class="hist-bar m1" style="height:18%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Avg. Preparation Time</h3>
+      <p class="unit">приготування · хв · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">23.20</div>
+              <div class="hist-bar m1" style="height:91%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">25.60</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">19.70</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.80</div>
+              <div class="hist-bar m2" style="height:70%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15.60</div>
+              <div class="hist-bar m1" style="height:61%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.70</div>
+              <div class="hist-bar m2" style="height:73%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Average Merchant Rating</h3>
+      <p class="unit">рейтинг 0–5 · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.96</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.75</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.65</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.73</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.20</div>
+              <div class="hist-bar m1" style="height:85%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.69</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Impression → Menu Viewed</h3>
+      <p class="unit">конверсія · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8.73%</div>
+              <div class="hist-bar m1" style="height:85%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10.32%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">6.75%</div>
+              <div class="hist-bar m1" style="height:65%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8.38%</div>
+              <div class="hist-bar m2" style="height:81%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">7.51%</div>
+              <div class="hist-bar m1" style="height:73%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10.07%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Total Discounts for Users</h3>
+      <p class="unit">UAH · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza 200-річчя Кривого Рогу">200-річчя Кривого Рогу</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18 018</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">13 587</div>
+              <div class="hist-bar m2" style="height:75%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Mavra Pizza проспект Героїв-Підпільників">проспект Героїв-Підпільників</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">7 823</div>
+              <div class="hist-bar m1" style="height:43%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">3 338</div>
+              <div class="hist-bar m2" style="height:19%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Mavra Pizza проспект Центральний">проспект Центральний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10 114</div>
+              <div class="hist-bar m1" style="height:56%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">7 478</div>
+              <div class="hist-bar m2" style="height:42%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div>
+
+  <div class="section-title">ТОП-10 позицій меню</div>
+  <p class="section-hint">За весь період · Order Item Report</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Назва</th><th class="num">Кількість</th>
+            <th class="num">Сума</th><th class="num">Сер. ціна</th></tr>
+      </thead>
+      <tbody><tr>
+          <td class="rank">1</td>
+          <td><strong>Hawaiian Pizza 30 cm</strong></td>
+          <td class="num">139</td>
+          <td class="num">31 450.0 ₴</td>
+          <td class="num">220 ₴</td>
+        </tr><tr>
+          <td class="rank">2</td>
+          <td><strong>Salami Pizza</strong></td>
+          <td class="num">136</td>
+          <td class="num">31 430.0 ₴</td>
+          <td class="num">205 ₴</td>
+        </tr><tr>
+          <td class="rank">3</td>
+          <td><strong>Meat Pizza with Dorblu Cheese</strong></td>
+          <td class="num">73</td>
+          <td class="num">18 130.0 ₴</td>
+          <td class="num">220 ₴</td>
+        </tr><tr>
+          <td class="rank">4</td>
+          <td><strong>Enticing Cheese Pizza</strong></td>
+          <td class="num">70</td>
+          <td class="num">16 690.0 ₴</td>
+          <td class="num">215 ₴</td>
+        </tr><tr>
+          <td class="rank">5</td>
+          <td><strong>Caesar Pizza</strong></td>
+          <td class="num">58</td>
+          <td class="num">15 890.0 ₴</td>
+          <td class="num">260 ₴</td>
+        </tr><tr>
+          <td class="rank">6</td>
+          <td><strong>Pepperoni Pizza 30cm</strong></td>
+          <td class="num">56</td>
+          <td class="num">14 125.0 ₴</td>
+          <td class="num">225 ₴</td>
+        </tr><tr>
+          <td class="rank">7</td>
+          <td><strong>Piginese Pizza</strong></td>
+          <td class="num">49</td>
+          <td class="num">11 680.0 ₴</td>
+          <td class="num">225 ₴</td>
+        </tr><tr>
+          <td class="rank">8</td>
+          <td><strong>Julienne Pizza</strong></td>
+          <td class="num">49</td>
+          <td class="num">9 980.0 ₴</td>
+          <td class="num">200 ₴</td>
+        </tr><tr>
+          <td class="rank">9</td>
+          <td><strong>French fries</strong></td>
+          <td class="num">49</td>
+          <td class="num">4 755.0 ₴</td>
+          <td class="num">95 ₴</td>
+        </tr><tr>
+          <td class="rank">10</td>
+          <td><strong>Hetman Pizza</strong></td>
+          <td class="num">46</td>
+          <td class="num">12 085.0 ₴</td>
+          <td class="num">255 ₴</td>
+        </tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Висновки та рекомендації</div>
+  <div class="insights-grid"><div class="insight-card positive">
+          <div class="insight-title">✅ Продажі зростають</div>
+          <p>Загальний оборот мережі зріс на 9% (квітень 2026 → травень 2026). Доставлених замовлень стало на 3% більше.</p>
+        </div>
+<div class="insight-card positive">
+          <div class="insight-title">✅ Мережа частіше онлайн</div>
+          <p>Середня доступність зросла з 90.5% до 96.4%.</p>
+        </div>
+<div class="insight-card warning">
+          <div class="insight-title">⚠️ Час приготування зростає</div>
+          <p>Середній час приготування по мережі: 19.5 → 20.7 хв. На пікових годинах варто посилити кухню на завантажених точках.</p>
+        </div>
+<div class="insight-card positive">
+          <div class="insight-title">✅ Клієнти задоволені якістю</div>
+          <p>Середній рейтинг мережі: 4.60 → 4.72 з 5.</p>
+        </div>
+<div class="insight-card warning">
+          <div class="insight-title">⚠️ Є точки, що потребують уваги</div>
+          <p>Детальний розбір нижче. Насамперед: проспект Героїв-Підпільників.</p>
+        </div></div>
+</div>
+
+<footer class="footer">
+  <span>Bolt Food</span> · MBR MAVRA PIZZA · Кривий Ріг · Автооновлення: 1-го числа о 15:00 (Київ) ·
+  <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
+</footer>
+</body>
+</html>

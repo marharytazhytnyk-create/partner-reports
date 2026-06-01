@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>JOSPER SVINTUZ — MBR · Запоріжжя · квітень 2026 — травень 2026</title>
+  <style>
+    :root {
+      --green:#34D186; --green-darker:#0d8a52;
+      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5;
+      --positive:#1aad6a; --warning:#e67e22; --info:#2980b9;
+      --problem-bg:#fff8f0;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}
+    .header{background:var(--black);padding:28px 40px;display:flex;align-items:center;
+      justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}
+    .header-logo{display:flex;align-items:center;gap:14px}
+    .bolt-logo{width:44px;height:44px;background:var(--green);border-radius:10px;
+      display:flex;align-items:center;justify-content:center}
+    .header-title h1{font-size:22px;font-weight:700;color:#fff}
+    .header-title p{font-size:11px;color:var(--green);text-transform:uppercase;
+      letter-spacing:1.2px;font-weight:600;margin-top:4px}
+    .header-meta{text-align:right;color:var(--gray-400);font-size:12px;line-height:1.9}
+    .header-meta strong{color:var(--green)}
+    .container{max-width:1280px;margin:0 auto;padding:32px 40px}
+    .period-bar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .month-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .m1{background:var(--green-darker)} .m2{background:var(--green)}
+    .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+      color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 10px}
+    .section-hint{font-size:12px;color:var(--gray-400);margin-bottom:14px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:8px}
+    .kpi-card{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}
+    .kpi-value{font-size:22px;font-weight:700}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:20px;margin-bottom:12px}
+    .chart-card{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .chart-card h3{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}
+    .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:8px}
+    .loc-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:12px}
+    .loc-legend .leg{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}
+    .loc-legend .leg.m1{background:var(--green-darker)}
+    .loc-legend .leg.m2{background:var(--green)}
+    .loc-chart{display:flex;flex-direction:column;gap:10px}
+    .loc-row{display:flex;align-items:flex-end;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+    .loc-row-problem{background:var(--problem-bg);border-radius:8px;padding:8px 10px;
+      border-left:3px solid var(--warning)}
+    .loc-name{width:130px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--gray-700);line-height:1.3}
+    .loc-bars{display:flex;gap:20px;flex:1;justify-content:flex-start}
+    .loc-bar-col{display:flex;flex-direction:column;align-items:center;width:56px;height:100px;justify-content:flex-end}
+    .loc-bar-val{font-size:10px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center}
+    .loc-bar-month{font-size:9px;color:var(--gray-400);margin-top:4px}
+    .hist-bar{width:40px;border-radius:6px 6px 0 0;min-height:6px}
+    .hist-bar.m1{background:var(--green-darker)} .hist-bar.m2{background:var(--green)}
+    .problem-locs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:28px}
+    .problem-loc-card{background:#fff;border-radius:12px;padding:18px 20px;
+      border:1px solid #f0c090;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .problem-loc-header h3{font-size:14px;margin-top:6px;color:var(--gray-700)}
+    .problem-badge{font-size:11px;font-weight:700;color:var(--warning)}
+    .problem-kpi-row{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--gray-400);
+      margin:10px 0;padding:8px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0}
+    .problem-kpi-row strong{color:var(--gray-700)}
+    .problem-list{margin:10px 0 0 18px;font-size:13px;color:var(--gray-700)}
+    .problem-list li{margin-bottom:6px}
+    .problem-none{background:#e6faf2;border-radius:12px;padding:20px;color:var(--positive);font-size:14px}
+    .insights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
+    .insight-card{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .insight-card.positive{border-left-color:var(--positive)}
+    .insight-card.warning{border-left-color:var(--warning)}
+    .insight-card.info{border-left-color:var(--info)}
+    .insight-title{font-weight:700;font-size:14px;margin-bottom:8px}
+    .insight-card p{font-size:13px;color:var(--gray-700)}
+    .table-wrap{background:#fff;border-radius:12px;overflow:auto;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}
+    table{width:100%;border-collapse:collapse;min-width:600px}
+    th{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;padding:12px 16px;text-align:left}
+    th.num,td.num{text-align:right}
+    td{padding:8px 16px;border-bottom:1px solid #f0f0f0;font-size:12px}
+    td.rank{color:var(--green-darker);font-weight:700}
+    .metric-name{font-weight:600;white-space:nowrap}
+    tr:hover td{background:#e6faf2}
+    .footer{background:var(--black);color:var(--gray-400);font-size:11px;padding:22px 40px;text-align:center}
+    .footer span{color:var(--green)}
+    @media(max-width:700px){.container{padding:20px 16px}.charts-grid{grid-template-columns:1fr}.loc-name{width:90px;font-size:10px}}
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-logo">
+    <div class="bolt-logo">
+      <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13V2Z" fill="#0d0d0d"/></svg>
+    </div>
+    <div class="header-title">
+      <h1>JOSPER SVINTUZ · Запоріжжя</h1>
+      <p>Bolt Food · Щомісячний звіт (MBR)</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div>Період: <strong>квітень 2026 — травень 2026</strong></div>
+    <div>Локацій: <strong>12 точок</strong></div>
+    <div>Оновлено: <strong>01.06.2026 19:47</strong></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="period-bar">
+    <span class="label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Порівняння:</span>
+    <span class="month-chip m1">квітень 2026</span>
+<span class="month-chip m2">травень 2026</span>
+
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Гістограми по локаціях · UAH</span>
+  </div>
+
+  <div class="section-title">Огляд мережі — травень 2026</div>
+  
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Gross Sales (мережа)</div>
+        <div class="kpi-value">436 939 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
+        <div class="kpi-value">696</div></div>
+      <div class="kpi-card"><div class="kpi-label">Локацій</div>
+        <div class="kpi-value">12</div></div>
+      <div class="kpi-card"><div class="kpi-label">Точок під увагою</div>
+        <div class="kpi-value">8</div></div>
+    </div>
+  <div class="table-wrap" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Метрика (вся мережа)</th><th class='num'>квітень 2026</th><th class='num'>травень 2026</th></tr></thead>
+      <tbody><tr><td class='metric-name'>Gross Sales (UAH)</td><td class="num">404 332</td><td class="num">436 939</td></tr><tr><td class='metric-name'>Delivered Orders</td><td class="num">660</td><td class="num">696</td></tr><tr><td class='metric-name'>AOV (UAH)</td><td class="num">613</td><td class="num">628</td></tr><tr><td class='metric-name'>Availability (%)</td><td class="num">87.31%</td><td class="num">92.80%</td></tr><tr><td class='metric-name'>Rating (0–5)</td><td class="num">4.68</td><td class="num">4.72</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">⚠️ Проблемні локації</div>
+  <p class="section-hint">Точки з відхиленнями у травні порівняно з квітнем або за абсолютними порогами</p>
+  <div class="problem-locs-grid">
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz вулиця Деповська</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>20</strong> → <strong>25</strong></span>
+            <span>Доступність: <strong>77.5%</strong> → <strong>82.4%</strong></span>
+            <span>Рейтинг: <strong>5.00</strong> → <strong>3.56</strong></span>
+          </div>
+          <ul class="problem-list"><li>Низька доступність на платформі — 82.4% у травні (клієнти часто не бачать заклад онлайн).</li><li>Не всі замовлення приймаються вчасно — 90.0% у травні.</li><li>Зростання повернень: 0.0% → 2.5%.</li><li>Низький рейтинг у травні — 3.56 з 5.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz Запорізька вулиця</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>80</strong> → <strong>70</strong></span>
+            <span>Доступність: <strong>93.8%</strong> → <strong>89.9%</strong></span>
+            <span>Рейтинг: <strong>4.47</strong> → <strong>4.28</strong></span>
+          </div>
+          <ul class="problem-list"><li>Зменшення замовлень: 80 → 70 (-12%).</li><li>Не всі замовлення приймаються вчасно — 95.0% у травні.</li><li>Зростання повернень: 1.2% → 3.8%.</li><li>Низький рейтинг у травні — 4.28 з 5.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz Чарівна вулиця</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>64</strong> → <strong>52</strong></span>
+            <span>Доступність: <strong>92.4%</strong> → <strong>87.6%</strong></span>
+            <span>Рейтинг: <strong>4.52</strong> → <strong>4.97</strong></span>
+          </div>
+          <ul class="problem-list"><li>Зменшення замовлень: 64 → 52 (-19%).</li><li>Низька доступність на платформі — 87.6% у травні (клієнти часто не бачать заклад онлайн).</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz вулиця Володимира Українця</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>17</strong> → <strong>21</strong></span>
+            <span>Доступність: <strong>59.0%</strong> → <strong>87.0%</strong></span>
+            <span>Рейтинг: <strong>5.00</strong> → <strong>5.00</strong></span>
+          </div>
+          <ul class="problem-list"><li>Низька доступність на платформі — 87.0% у травні (клієнти часто не бачать заклад онлайн).</li><li>Довгий час приготування — 33.5 хв у середньому.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz вулиця Руставі</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>9</strong> → <strong>8</strong></span>
+            <span>Доступність: <strong>96.5%</strong> → <strong>97.0%</strong></span>
+            <span>Рейтинг: <strong>4.83</strong> → <strong>5.00</strong></span>
+          </div>
+          <ul class="problem-list"><li>Дуже мало замовлень у травні — лише 8 (було 9 у квітні).</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz Космічна вулиця</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>76</strong> → <strong>86</strong></span>
+            <span>Доступність: <strong>91.0%</strong> → <strong>94.5%</strong></span>
+            <span>Рейтинг: <strong>4.88</strong> → <strong>4.95</strong></span>
+          </div>
+          <ul class="problem-list"><li>Повільне прийняття замовлень партнером — 5.8 хв у травні.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz Прибережна автомагістраль</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>104</strong> → <strong>85</strong></span>
+            <span>Доступність: <strong>90.5%</strong> → <strong>94.2%</strong></span>
+            <span>Рейтинг: <strong>4.81</strong> → <strong>4.59</strong></span>
+          </div>
+          <ul class="problem-list"><li>Зменшення замовлень: 104 → 85 (-18%).</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Josper Svintuz вулиця Чарівна, 74</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>41</strong> → <strong>53</strong></span>
+            <span>Доступність: <strong>81.3%</strong> → <strong>88.6%</strong></span>
+            <span>Рейтинг: <strong>4.88</strong> → <strong>4.80</strong></span>
+          </div>
+          <ul class="problem-list"><li>Доступність нижче 92% обидва місяці (квітень 81.3%, травень 88.6%).</li></ul>
+        </div></div>
+
+  <div class="section-title">1. Продажі</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Gross Sales (загальні продажі)</h3>
+      <p class="unit">UAH до знижок · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">29 435</div>
+              <div class="hist-bar m1" style="height:43%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">41 115</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">47 137</div>
+              <div class="hist-bar m1" style="height:69%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">39 604</div>
+              <div class="hist-bar m2" style="height:58%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">46 852</div>
+              <div class="hist-bar m1" style="height:68%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">59 390</div>
+              <div class="hist-bar m2" style="height:86%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">68 728</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">52 768</div>
+              <div class="hist-bar m2" style="height:77%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">36 696</div>
+              <div class="hist-bar m1" style="height:53%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">32 182</div>
+              <div class="hist-bar m2" style="height:47%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15 749</div>
+              <div class="hist-bar m1" style="height:23%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">12 789</div>
+              <div class="hist-bar m2" style="height:19%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15 401</div>
+              <div class="hist-bar m1" style="height:22%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16 374</div>
+              <div class="hist-bar m2" style="height:24%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">31 014</div>
+              <div class="hist-bar m1" style="height:45%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">39 915</div>
+              <div class="hist-bar m2" style="height:58%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">41 968</div>
+              <div class="hist-bar m1" style="height:61%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">56 978</div>
+              <div class="hist-bar m2" style="height:83%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4 565</div>
+              <div class="hist-bar m1" style="height:7%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4 257</div>
+              <div class="hist-bar m2" style="height:6%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">25 779</div>
+              <div class="hist-bar m1" style="height:38%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">37 155</div>
+              <div class="hist-bar m2" style="height:54%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">41 009</div>
+              <div class="hist-bar m1" style="height:60%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">44 413</div>
+              <div class="hist-bar m2" style="height:65%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Delivered Orders</h3>
+      <p class="unit">доставлені замовлення · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">49</div>
+              <div class="hist-bar m1" style="height:47%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">67</div>
+              <div class="hist-bar m2" style="height:64%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">80</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">70</div>
+              <div class="hist-bar m2" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">76</div>
+              <div class="hist-bar m1" style="height:73%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">86</div>
+              <div class="hist-bar m2" style="height:83%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">104</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">85</div>
+              <div class="hist-bar m2" style="height:82%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">64</div>
+              <div class="hist-bar m1" style="height:62%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">52</div>
+              <div class="hist-bar m2" style="height:50%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17</div>
+              <div class="hist-bar m1" style="height:16%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">21</div>
+              <div class="hist-bar m2" style="height:20%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">20</div>
+              <div class="hist-bar m1" style="height:19%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">25</div>
+              <div class="hist-bar m2" style="height:24%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">50</div>
+              <div class="hist-bar m1" style="height:48%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">64</div>
+              <div class="hist-bar m2" style="height:62%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">80</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">97</div>
+              <div class="hist-bar m2" style="height:93%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">9</div>
+              <div class="hist-bar m1" style="height:9%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8</div>
+              <div class="hist-bar m2" style="height:8%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">41</div>
+              <div class="hist-bar m1" style="height:39%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">53</div>
+              <div class="hist-bar m2" style="height:51%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">70</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">68</div>
+              <div class="hist-bar m2" style="height:65%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>AOV (середній чек)</h3>
+      <p class="unit">UAH / замовлення · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">601</div>
+              <div class="hist-bar m1" style="height:65%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">614</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">589</div>
+              <div class="hist-bar m1" style="height:64%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">566</div>
+              <div class="hist-bar m2" style="height:61%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">616</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">691</div>
+              <div class="hist-bar m2" style="height:75%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">661</div>
+              <div class="hist-bar m1" style="height:71%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">621</div>
+              <div class="hist-bar m2" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">573</div>
+              <div class="hist-bar m1" style="height:62%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">619</div>
+              <div class="hist-bar m2" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">926</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">609</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">770</div>
+              <div class="hist-bar m1" style="height:83%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">655</div>
+              <div class="hist-bar m2" style="height:71%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">620</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">624</div>
+              <div class="hist-bar m2" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">525</div>
+              <div class="hist-bar m1" style="height:57%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">587</div>
+              <div class="hist-bar m2" style="height:63%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">507</div>
+              <div class="hist-bar m1" style="height:55%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">532</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">629</div>
+              <div class="hist-bar m1" style="height:68%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">701</div>
+              <div class="hist-bar m2" style="height:76%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">586</div>
+              <div class="hist-bar m1" style="height:63%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">653</div>
+              <div class="hist-bar m2" style="height:71%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Availability Rate</h3>
+      <p class="unit">доступність · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">91.50%</div>
+              <div class="hist-bar m1" style="height:92%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">99.01%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">93.75%</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">89.94%</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">90.95%</div>
+              <div class="hist-bar m1" style="height:91%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.55%</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">90.48%</div>
+              <div class="hist-bar m1" style="height:91%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.17%</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">92.44%</div>
+              <div class="hist-bar m1" style="height:93%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">87.57%</div>
+              <div class="hist-bar m2" style="height:88%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">59.04%</div>
+              <div class="hist-bar m1" style="height:59%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">87.03%</div>
+              <div class="hist-bar m2" style="height:87%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">77.55%</div>
+              <div class="hist-bar m1" style="height:78%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">82.42%</div>
+              <div class="hist-bar m2" style="height:83%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">95.38%</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">99.74%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.31%</div>
+              <div class="hist-bar m1" style="height:95%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">99.12%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.48%</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.99%</div>
+              <div class="hist-bar m2" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">81.27%</div>
+              <div class="hist-bar m1" style="height:81%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">88.61%</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">84.61%</div>
+              <div class="hist-bar m1" style="height:85%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.50%</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Acceptance Rate</h3>
+      <p class="unit">прийняття · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">98.96%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">98.75%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.64%</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">94.99%</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">98.68%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">99.07%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">83.89%</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">97.50%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">91.67%</div>
+              <div class="hist-bar m1" style="height:92%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">90.00%</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">98.86%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">96.88%</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">88.36%</div>
+              <div class="hist-bar m1" style="height:88%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">97.61%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Orders with Refunds</h3>
+      <p class="unit">повернення · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1.25%</div>
+              <div class="hist-bar m1" style="height:27%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">3.77%</div>
+              <div class="hist-bar m2" style="height:81%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.57%</div>
+              <div class="hist-bar m1" style="height:12%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">2.07%</div>
+              <div class="hist-bar m2" style="height:44%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.93%</div>
+              <div class="hist-bar m1" style="height:20%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">2.50%</div>
+              <div class="hist-bar m2" style="height:54%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.86%</div>
+              <div class="hist-bar m2" style="height:18%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1.47%</div>
+              <div class="hist-bar m2" style="height:32%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.66%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">0.00%</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Avg. Preparation Time</h3>
+      <p class="unit">приготування · хв · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.40</div>
+              <div class="hist-bar m1" style="height:49%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.90</div>
+              <div class="hist-bar m2" style="height:50%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">24.80</div>
+              <div class="hist-bar m1" style="height:74%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">22.90</div>
+              <div class="hist-bar m2" style="height:68%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">23.90</div>
+              <div class="hist-bar m1" style="height:71%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">23</div>
+              <div class="hist-bar m2" style="height:69%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.60</div>
+              <div class="hist-bar m1" style="height:50%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.80</div>
+              <div class="hist-bar m2" style="height:53%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">19.20</div>
+              <div class="hist-bar m1" style="height:57%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.10</div>
+              <div class="hist-bar m2" style="height:48%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">29</div>
+              <div class="hist-bar m1" style="height:87%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">33.50</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.70</div>
+              <div class="hist-bar m1" style="height:53%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.60</div>
+              <div class="hist-bar m2" style="height:56%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17</div>
+              <div class="hist-bar m1" style="height:51%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.10</div>
+              <div class="hist-bar m2" style="height:51%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">19.40</div>
+              <div class="hist-bar m1" style="height:58%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.30</div>
+              <div class="hist-bar m2" style="height:55%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.70</div>
+              <div class="hist-bar m1" style="height:56%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.80</div>
+              <div class="hist-bar m2" style="height:56%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">21.10</div>
+              <div class="hist-bar m1" style="height:63%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">19.20</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.90</div>
+              <div class="hist-bar m1" style="height:50%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.60</div>
+              <div class="hist-bar m2" style="height:53%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Average Merchant Rating</h3>
+      <p class="unit">рейтинг 0–5 · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.62</div>
+              <div class="hist-bar m1" style="height:92%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.47</div>
+              <div class="hist-bar m1" style="height:89%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.28</div>
+              <div class="hist-bar m2" style="height:86%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.88</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.95</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.81</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.59</div>
+              <div class="hist-bar m2" style="height:92%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.52</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.97</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">3.56</div>
+              <div class="hist-bar m2" style="height:71%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.59</div>
+              <div class="hist-bar m1" style="height:92%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.81</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.90</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.75</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.83</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.88</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.80</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.08</div>
+              <div class="hist-bar m1" style="height:82%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4.97</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div>
+    <div class="chart-card loc-chart-card">
+      <h3>Impression → Menu Viewed</h3>
+      <p class="unit">конверсія · % · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">21.54%</div>
+              <div class="hist-bar m1" style="height:82%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">16.73%</div>
+              <div class="hist-bar m2" style="height:64%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">14.80%</div>
+              <div class="hist-bar m1" style="height:57%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10.36%</div>
+              <div class="hist-bar m2" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.98%</div>
+              <div class="hist-bar m1" style="height:69%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">14.41%</div>
+              <div class="hist-bar m2" style="height:55%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">17.19%</div>
+              <div class="hist-bar m1" style="height:66%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">12.10%</div>
+              <div class="hist-bar m2" style="height:46%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">18.01%</div>
+              <div class="hist-bar m1" style="height:69%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15.74%</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">20.17%</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">14.70%</div>
+              <div class="hist-bar m2" style="height:56%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8.30%</div>
+              <div class="hist-bar m1" style="height:32%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8.92%</div>
+              <div class="hist-bar m2" style="height:34%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">26.18%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">26.09%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">20.81%</div>
+              <div class="hist-bar m1" style="height:79%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15.82%</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">13.03%</div>
+              <div class="hist-bar m1" style="height:50%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">13.51%</div>
+              <div class="hist-bar m2" style="height:52%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">19.55%</div>
+              <div class="hist-bar m1" style="height:75%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">15.64%</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">12.79%</div>
+              <div class="hist-bar m1" style="height:49%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10.54%</div>
+              <div class="hist-bar m2" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Порівняння квітень vs травень по кожній локації</p><div class="charts-grid loc-charts-grid">
+    <div class="chart-card loc-chart-card">
+      <h3>Total Discounts for Users</h3>
+      <p class="unit">UAH · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> квітень 2026</span>
+        <span><i class="leg m2"></i> травень 2026</span>
+      </div>
+      <div class="loc-chart">
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz Дніпровське шосе">Дніпровське шосе</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4 543</div>
+              <div class="hist-bar m1" style="height:33%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">6 852</div>
+              <div class="hist-bar m2" style="height:50%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Запорізька вулиця">Запорізька вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">9 411</div>
+              <div class="hist-bar m1" style="height:69%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">6 166</div>
+              <div class="hist-bar m2" style="height:45%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Космічна вулиця">Космічна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">9 544</div>
+              <div class="hist-bar m1" style="height:70%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">10 962</div>
+              <div class="hist-bar m2" style="height:80%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Прибережна автомагістраль">Прибережна автомагістраль</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">13 711</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">9 370</div>
+              <div class="hist-bar m2" style="height:68%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz Чарівна вулиця">Чарівна вулиця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8 018</div>
+              <div class="hist-bar m1" style="height:58%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5 003</div>
+              <div class="hist-bar m2" style="height:36%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Володимира Українця">вулиця Володимира Українця</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">3 309</div>
+              <div class="hist-bar m1" style="height:24%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1 937</div>
+              <div class="hist-bar m2" style="height:14%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Деповська">вулиця Деповська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">3 005</div>
+              <div class="hist-bar m1" style="height:22%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">2 706</div>
+              <div class="hist-bar m2" style="height:20%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Павлокічкаська">вулиця Павлокічкаська</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">5 502</div>
+              <div class="hist-bar m1" style="height:40%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">6 552</div>
+              <div class="hist-bar m2" style="height:48%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz вулиця Професора Толока">вулиця Професора Толока</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8 514</div>
+              <div class="hist-bar m1" style="height:62%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">8 753</div>
+              <div class="hist-bar m2" style="height:64%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Руставі">вулиця Руставі</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">1 027</div>
+              <div class="hist-bar m1" style="height:7%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">590</div>
+              <div class="hist-bar m2" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Josper Svintuz вулиця Чарівна, 74">вулиця Чарівна, 74</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4 669</div>
+              <div class="hist-bar m1" style="height:34%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">4 709</div>
+              <div class="hist-bar m2" style="height:34%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div>
+        <div class="loc-row">
+          <div class="loc-name" title="Josper Svintuz проспект Соборний">проспект Соборний</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">7 498</div>
+              <div class="hist-bar m1" style="height:55%"></div>
+              <div class="loc-bar-month">кві</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">7 857</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div></div>
+        </div></div>
+    </div></div>
+
+  <div class="section-title">ТОП-10 позицій меню</div>
+  <p class="section-hint">За весь період · Order Item Report</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Назва</th><th class="num">Кількість</th>
+            <th class="num">Сума</th><th class="num">Сер. ціна</th></tr>
+      </thead>
+      <tbody><tr>
+          <td class="rank">1</td>
+          <td><strong>Crazy Beef Burger</strong></td>
+          <td class="num">343</td>
+          <td class="num">99 440.0 ₴</td>
+          <td class="num">285 ₴</td>
+        </tr><tr>
+          <td class="rank">2</td>
+          <td><strong>French fries</strong></td>
+          <td class="num">315</td>
+          <td class="num">27 475.0 ₴</td>
+          <td class="num">85 ₴</td>
+        </tr><tr>
+          <td class="rank">3</td>
+          <td><strong>Coca-Cola</strong></td>
+          <td class="num">257</td>
+          <td class="num">11 500.0 ₴</td>
+          <td class="num">40 ₴</td>
+        </tr><tr>
+          <td class="rank">4</td>
+          <td><strong>Classic Chicken Shawarma</strong></td>
+          <td class="num">184</td>
+          <td class="num">36 745.0 ₴</td>
+          <td class="num">195 ₴</td>
+        </tr><tr>
+          <td class="rank">5</td>
+          <td><strong>Zaporizhzhia Classic with Chicken</strong></td>
+          <td class="num">168</td>
+          <td class="num">30 065.0 ₴</td>
+          <td class="num">170 ₴</td>
+        </tr><tr>
+          <td class="rank">6</td>
+          <td><strong>Potato Dips</strong></td>
+          <td class="num">163</td>
+          <td class="num">17 535.0 ₴</td>
+          <td class="num">105 ₴</td>
+        </tr><tr>
+          <td class="rank">7</td>
+          <td><strong>Chicken Doner</strong></td>
+          <td class="num">162</td>
+          <td class="num">33 805.0 ₴</td>
+          <td class="num">200 ₴</td>
+        </tr><tr>
+          <td class="rank">8</td>
+          <td><strong>Nuggets</strong></td>
+          <td class="num">141</td>
+          <td class="num">18 100.0 ₴</td>
+          <td class="num">125 ₴</td>
+        </tr><tr>
+          <td class="rank">9</td>
+          <td><strong>Cheese Sauce</strong></td>
+          <td class="num">139</td>
+          <td class="num">2 780.0 ₴</td>
+          <td class="num">20 ₴</td>
+        </tr><tr>
+          <td class="rank">10</td>
+          <td><strong>GARLIC SAUCE</strong></td>
+          <td class="num">129</td>
+          <td class="num">2 580.0 ₴</td>
+          <td class="num">20 ₴</td>
+        </tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Висновки та рекомендації</div>
+  <div class="insights-grid"><div class="insight-card positive">
+          <div class="insight-title">✅ Продажі зростають</div>
+          <p>Загальний оборот мережі зріс на 8% (квітень 2026 → травень 2026). Доставлених замовлень стало на 5% більше.</p>
+        </div>
+<div class="insight-card positive">
+          <div class="insight-title">✅ Мережа частіше онлайн</div>
+          <p>Середня доступність зросла з 87.3% до 92.8%.</p>
+        </div>
+<div class="insight-card warning">
+          <div class="insight-title">⚠️ Є точки, що потребують уваги</div>
+          <p>Детальний розбір нижче. Насамперед: вулиця Деповська, Запорізька вулиця, Чарівна вулиця.</p>
+        </div></div>
+</div>
+
+<footer class="footer">
+  <span>Bolt Food</span> · MBR JOSPER SVINTUZ · Запоріжжя · Автооновлення: 1-го числа о 15:00 (Київ) ·
+  <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
+</footer>
+</body>
+</html>
