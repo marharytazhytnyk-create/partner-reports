@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -20,16 +21,14 @@ DATABRICKS_HOST = os.getenv("DATABRICKS_HOST", "https://bolt-incentives.cloud.da
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
 CLUSTER_ID = os.getenv("DATABRICKS_CLUSTER_ID", "0221-081903-9ag4bh69")
 
-BRAND_NAME = "MAVRA PIZZA"
 CITY_UK = "Запоріжжя"
-VENDOR_ID = 102625
+SCRIPT_DIR = Path(__file__).parent
+OUTPUT_FILE = SCRIPT_DIR / "index.html"
+
 PROVIDER_IDS = [
     138974, 194965, 194972, 194976, 194977,
     194981, 194982, 194984, 194985,
 ]
-
-SCRIPT_DIR = Path(__file__).parent
-OUTPUT_FILE = SCRIPT_DIR / "index.html"
 
 UK_MONTHS = [
     "", "січень", "лютий", "березень", "квітень", "травень", "червень",
@@ -37,18 +36,38 @@ UK_MONTHS = [
 ]
 
 MONTH_COLORS = ["#0d8a52", "#34D186"]
-MONTH_BORDERS = ["#066637", "#2ab872"]
 
 POLL_INTERVAL_S = 5
 MAX_POLL_S = 600
 
 HEADERS = {"Authorization": f"Bearer {DATABRICKS_TOKEN}", "Content-Type": "application/json"}
 
+# Ключові метрики для гістограм по локаціях (секція → список)
+LOCATION_CHART_SECTIONS: list[tuple[str, list[tuple[str, str, str, str]]]] = [
+    ("1. Продажі", [
+        ("loc-gross", "Gross Sales (загальні продажі)", "UAH до знижок", "gross"),
+        ("loc-orders", "Delivered Orders", "доставлені замовлення", "orders"),
+        ("loc-aov", "AOV (середній чек)", "UAH / замовлення", "aov"),
+    ]),
+    ("2. Операційні показники", [
+        ("loc-avail", "Availability Rate", "доступність · %", "avail"),
+        ("loc-accept", "Acceptance Rate", "прийняття · %", "accept"),
+        ("loc-refunds", "Orders with Refunds", "повернення · %", "refunds"),
+        ("loc-prep", "Avg. Preparation Time", "приготування · хв", "prep_time"),
+    ]),
+    ("3. Клієнти та їх поведінка", [
+        ("loc-rating", "Average Merchant Rating", "рейтинг 0–5", "rating"),
+        ("loc-imp", "Impression → Menu Viewed", "конверсія · %", "imp_menu"),
+    ]),
+    ("4. Знижки", [
+        ("loc-disc", "Total Discounts for Users", "UAH", "discounts"),
+    ]),
+]
+
 
 # ─── DATE HELPERS ──────────────────────────────────────────────────────────────
 
 def last_n_full_months(n: int = 2, ref: datetime.date | None = None) -> list[tuple[int, int]]:
-    """Повертає n останніх повних календарних місяців (рік, місяць), від старого до нового."""
     d = ref or datetime.date.today()
     first_current = d.replace(day=1)
     cur = first_current
@@ -64,13 +83,20 @@ def month_label(year: int, month: int) -> str:
     return f"{UK_MONTHS[month]} {year}"
 
 
+def month_key(year: int, month: int) -> str:
+    return f"{year:04d}-{month:02d}"
+
+
 def month_range_sql(year: int, month: int) -> tuple[str, str]:
     start = datetime.date(year, month, 1)
-    if month == 12:
-        end = datetime.date(year + 1, 1, 1)
-    else:
-        end = datetime.date(year, month + 1, 1)
+    end = datetime.date(year + 1, 1, 1) if month == 12 else datetime.date(year, month + 1, 1)
     return start.isoformat(), end.isoformat()
+
+
+def short_location_name(full_name: str) -> str:
+    n = re.sub(r"(?i)^mavra\s+pizza\s*", "", full_name.strip())
+    n = re.sub(r"(?i)^mavra\s+", "", n)
+    return n.strip() or full_name
 
 
 # ─── DATABRICKS ────────────────────────────────────────────────────────────────
@@ -121,49 +147,139 @@ def destroy_context(ctx_id: str) -> None:
         pass
 
 
+def _parse_month_row(row: list, month_labels: list[str]) -> dict:
+    """Парсинг одного рядка fact_provider_weekly (агрегат по місяцю)."""
+    dt_key = str(row[0])[:10]
+    y, m = int(dt_key[:4]), int(dt_key[5:7])
+    delivered = int(row[1] or 0)
+    gross = float(row[2] or 0)
+    net = float(row[3] or 0)
+    new_u = int(row[4] or 0)
+    acc_r = round(float(row[5] or 0) * 100, 2)
+    avl_r = round(float(row[6] or 0) * 100, 2)
+    refund_r = round(float(row[7] or 0) * 100, 2)
+    rating = round(float(row[8] or 0), 2)
+    del_time = round(float(row[9] or 0), 1)
+    acc_time = round(float(row[10] or 0), 1)
+    prep_time = round(float(row[11] or 0), 1)
+    wait_time = round(float(row[12] or 0), 1)
+    c2m = round(float(row[13] or 0), 1)
+    c2e = round(float(row[14] or 0), 1)
+    discounts = round(float(row[15] or 0), 0)
+    camp_bolt = round(float(row[16] or 0), 0)
+    camp_merch = round(float(row[17] or 0), 0)
+    sessions = int(row[18] or 0)
+    menu_view = int(row[19] or 0)
+    menu_prod_conv = round(float(row[20] or 0) * 100, 2)
+    imp_menu = round(menu_view / sessions * 100, 2) if sessions else 0
+    aov = round(gross / delivered, 0) if delivered else 0
+
+    return {
+        "year": y, "month": m,
+        "label": month_label(y, m),
+        "gross": round(gross, 0),
+        "net": round(net, 0),
+        "orders": delivered,
+        "aov": aov,
+        "avail": avl_r,
+        "accept": acc_r,
+        "refunds": refund_r,
+        "del_time": del_time,
+        "acc_time": acc_time,
+        "prep_time": prep_time,
+        "wait_time": wait_time,
+        "c2m_time": c2m,
+        "c2e_time": c2e,
+        "new_users": new_u,
+        "sessions": sessions,
+        "imp_menu": imp_menu,
+        "menu_prod": menu_prod_conv,
+        "rating": rating,
+        "discounts": discounts,
+        "camp_bolt": camp_bolt,
+        "camp_merch": camp_merch,
+    }
+
+
+def _parse_location_row(row: list) -> dict:
+    dt_key = str(row[2])[:10]
+    y, m = int(dt_key[:4]), int(dt_key[5:7])
+    orders = int(row[3] or 0)
+    gross = float(row[4] or 0)
+    net = float(row[5] or 0)
+    avail = round(float(row[6] or 0), 2)
+    accept = round(float(row[7] or 0), 2)
+    refunds = round(float(row[8] or 0), 2)
+    rating = round(float(row[9] or 0), 2)
+    prep = round(float(row[10] or 0), 1)
+    acc_time = round(float(row[11] or 0), 1)
+    discounts = round(float(row[12] or 0), 0)
+    sessions = int(row[13] or 0)
+    menu_viewed = int(row[14] or 0)
+    imp_menu = round(menu_viewed / sessions * 100, 2) if sessions else 0
+    aov = round(gross / orders, 0) if orders else 0
+
+    return {
+        "month_key": month_key(y, m),
+        "label": month_label(y, m),
+        "orders": orders,
+        "gross": round(gross, 0),
+        "net": round(net, 0),
+        "aov": aov,
+        "avail": avail,
+        "accept": accept,
+        "refunds": refunds,
+        "rating": rating,
+        "prep_time": prep,
+        "acc_time": acc_time,
+        "discounts": discounts,
+        "imp_menu": imp_menu,
+    }
+
+
 # ─── DATA FETCH ────────────────────────────────────────────────────────────────
 
-def fetch_metrics(months: list[tuple[int, int]]) -> dict:
+def fetch_metrics(months_range: list[tuple[int, int]]) -> dict:
     pids_sql = ", ".join(str(p) for p in PROVIDER_IDS)
     pids_str = ", ".join(f"'{p}'" for p in PROVIDER_IDS)
 
-    y0, m0 = months[0]
-    y1, m1 = months[-1]
+    y0, m0 = months_range[0]
+    y1, m1 = months_range[-1]
     global_start, _ = month_range_sql(y0, m0)
     _, global_end = month_range_sql(y1, m1)
+    mk_list = [month_key(y, m) for y, m in months_range]
 
     ctx = create_context()
     try:
         main_sql = f"""
         SELECT
             DATE_TRUNC('month', metric_timestamp_partition) AS month,
-            SUM(delivered_orders_count)                              AS delivered_orders,
-            SUM(total_gmv_before_discounts)                          AS gross_sales,
-            SUM(total_gmv_after_discounts)                           AS net_sales,
-            SUM(users_activated_vendor_count)                        AS new_users,
-            AVG(provider_acceptance_rate_value)                      AS acceptance_rate,
-            AVG(provider_active_rate_value)                          AS availability_rate,
-            AVG(customer_refunded_order_rate_value)                  AS refund_rate,
-            AVG(provider_rating_per_order_value)                     AS rating,
-            AVG(order_total_minutes_per_order_value)                 AS delivery_time,
-            AVG(provider_acceptance_minutes_per_order_value)         AS acceptance_time,
-            AVG(provider_preparation_minutes_per_order_value)        AS prep_time,
-            AVG(courier_total_wait_minutes_per_order_value)          AS courier_wait,
-            AVG(courier_to_provider_actual_minutes_per_order_value)  AS c2merchant,
-            AVG(courier_to_eater_actual_minutes_per_order_value)     AS c2eater,
-            SUM(total_campaign_discount)                             AS discounts,
-            SUM(total_campaign_spend_bolt)                           AS camp_bolt,
-            SUM(total_campaign_spend_provider)                       AS camp_merchant,
-            SUM(provider_impressions_sessions_count)                 AS sessions,
-            SUM(provider_menu_viewed_sessions_count)                 AS menu_viewed,
-            SUM(provider_product_added_sessions_count)               AS prod_added,
-            AVG(provider_product_added_from_menu_viewed_rate_value)  AS menu_prod_rate
+            SUM(delivered_orders_count) AS delivered_orders,
+            SUM(total_gmv_before_discounts) AS gross_sales,
+            SUM(total_gmv_after_discounts) AS net_sales,
+            SUM(users_activated_vendor_count) AS new_users,
+            AVG(provider_acceptance_rate_value) AS acceptance_rate,
+            AVG(provider_active_rate_value) AS availability_rate,
+            AVG(customer_refunded_order_rate_value) AS refund_rate,
+            AVG(provider_rating_per_order_value) AS rating,
+            AVG(order_total_minutes_per_order_value) AS delivery_time,
+            AVG(provider_acceptance_minutes_per_order_value) AS acceptance_time,
+            AVG(provider_preparation_minutes_per_order_value) AS prep_time,
+            AVG(courier_total_wait_minutes_per_order_value) AS courier_wait,
+            AVG(courier_to_provider_actual_minutes_per_order_value) AS c2merchant,
+            AVG(courier_to_eater_actual_minutes_per_order_value) AS c2eater,
+            SUM(total_campaign_discount) AS discounts,
+            SUM(total_campaign_spend_bolt) AS camp_bolt,
+            SUM(total_campaign_spend_provider) AS camp_merchant,
+            SUM(provider_impressions_sessions_count) AS sessions,
+            SUM(provider_menu_viewed_sessions_count) AS menu_viewed,
+            SUM(provider_product_added_sessions_count) AS prod_added,
+            AVG(provider_product_added_from_menu_viewed_rate_value) AS menu_prod_rate
         FROM ng_delivery_spark.fact_provider_weekly
         WHERE provider_id IN ({pids_sql})
           AND metric_timestamp_partition >= '{global_start}'
           AND metric_timestamp_partition < '{global_end}'
-        GROUP BY 1
-        ORDER BY 1
+        GROUP BY 1 ORDER BY 1
         """
         main_rows = run_query(ctx, main_sql)
 
@@ -171,14 +287,38 @@ def fetch_metrics(months: list[tuple[int, int]]) -> dict:
         SELECT DATE_TRUNC('month', metric_timestamp_partition) AS month,
                SUM(provider_deliveries_unique_user_count) AS active_users
         FROM ng_delivery_spark.int_provider_metrics_non_additive
-        WHERE entity_id IN ({pids_str})
-          AND timeframe_name = 'week'
+        WHERE entity_id IN ({pids_str}) AND timeframe_name = 'week'
           AND metric_timestamp_partition >= '{global_start}'
           AND metric_timestamp_partition < '{global_end}'
-        GROUP BY 1
-        ORDER BY 1
+        GROUP BY 1 ORDER BY 1
         """
         users_rows = run_query(ctx, users_sql)
+
+        loc_sql = f"""
+        SELECT
+            f.provider_id,
+            d.provider_name,
+            DATE_TRUNC('month', f.metric_timestamp_partition) AS month,
+            SUM(f.delivered_orders_count) AS orders,
+            SUM(f.total_gmv_before_discounts) AS gross,
+            SUM(f.total_gmv_after_discounts) AS net,
+            AVG(f.provider_active_rate_value) * 100 AS avail,
+            AVG(f.provider_acceptance_rate_value) * 100 AS accept,
+            AVG(f.customer_refunded_order_rate_value) * 100 AS refunds,
+            AVG(f.provider_rating_per_order_value) AS rating,
+            AVG(f.provider_preparation_minutes_per_order_value) AS prep_time,
+            AVG(f.provider_acceptance_minutes_per_order_value) AS acc_time,
+            SUM(f.total_campaign_discount) AS discounts,
+            SUM(f.provider_impressions_sessions_count) AS sessions,
+            SUM(f.provider_menu_viewed_sessions_count) AS menu_viewed
+        FROM ng_delivery_spark.fact_provider_weekly f
+        JOIN ng_delivery_spark.dim_provider_v2 d ON f.provider_id = d.provider_id
+        WHERE f.provider_id IN ({pids_sql})
+          AND f.metric_timestamp_partition >= '{global_start}'
+          AND f.metric_timestamp_partition < '{global_end}'
+        GROUP BY 1, 2, 3 ORDER BY d.provider_name, 3
+        """
+        loc_rows = run_query(ctx, loc_sql)
 
         items_sql = f"""
         SELECT TRIM(bi.name) AS item_name,
@@ -190,14 +330,10 @@ def fetch_metrics(months: list[tuple[int, int]]) -> dict:
         JOIN ng_delivery_spark.delivery_order_order doo ON ub.master_basket_id = doo.master_basket_id
         WHERE doo.provider_id IN ({pids_sql})
           AND doo.state = 'delivered'
-          AND doo.created_date >= '{global_start}'
-          AND doo.created_date < '{global_end}'
+          AND doo.created_date >= '{global_start}' AND doo.created_date < '{global_end}'
           AND bi.name IS NOT NULL AND TRIM(bi.name) != ''
-          AND bi.parent_id IS NULL
-          AND bi.type = 'dish'
-        GROUP BY TRIM(bi.name)
-        ORDER BY qty DESC
-        LIMIT 10
+          AND bi.parent_id IS NULL AND bi.type = 'dish'
+        GROUP BY TRIM(bi.name) ORDER BY qty DESC LIMIT 10
         """
         top_items = run_query(ctx, items_sql)
     finally:
@@ -205,86 +341,62 @@ def fetch_metrics(months: list[tuple[int, int]]) -> dict:
 
     active_by_month: dict[str, int] = {}
     for row in users_rows:
-        key = str(row[0])[:10]
-        active_by_month[key] = int(row[1] or 0)
+        active_by_month[str(row[0])[:10]] = int(row[1] or 0)
 
     month_data: list[dict] = []
     for row in main_rows:
-        dt_key = str(row[0])[:10]
-        y, m = int(dt_key[:4]), int(dt_key[5:7])
-        delivered = int(row[1] or 0)
-        gross = float(row[2] or 0)
-        net = float(row[3] or 0)
-        new_u = int(row[4] or 0)
-        acc_r = round(float(row[5] or 0) * 100, 2)
-        avl_r = round(float(row[6] or 0) * 100, 2)
-        refund_r = round(float(row[7] or 0) * 100, 2)
-        rating = round(float(row[8] or 0), 2)
-        del_time = round(float(row[9] or 0), 1)
-        acc_time = round(float(row[10] or 0), 1)
-        prep_time = round(float(row[11] or 0), 1)
-        wait_time = round(float(row[12] or 0), 1)
-        c2m = round(float(row[13] or 0), 1)
-        c2e = round(float(row[14] or 0), 1)
-        discounts = round(float(row[15] or 0), 0)
-        camp_bolt = round(float(row[16] or 0), 0)
-        camp_merch = round(float(row[17] or 0), 0)
-        sessions = int(row[18] or 0)
-        menu_view = int(row[19] or 0)
-        prod_add = int(row[20] or 0)
-        menu_prod_conv = round(float(row[21] or 0) * 100, 2)
-        imp_menu = round(menu_view / sessions * 100, 2) if sessions else 0
-        active_users = active_by_month.get(dt_key, delivered)
-        aov = round(gross / delivered, 0) if delivered else 0
-        freq = round(delivered / active_users, 2) if active_users else 0
+        rec = _parse_month_row(row, [])
+        dt_key = f"{rec['year']:04d}-{rec['month']:02d}-01"
+        rec["active_users"] = active_by_month.get(dt_key[:10], rec["orders"])
+        rec["freq"] = round(rec["orders"] / rec["active_users"], 2) if rec["active_users"] else 0
+        month_data.append(rec)
 
-        month_data.append({
-            "year": y, "month": m,
-            "label": month_label(y, m),
-            "gross": round(gross, 0),
-            "net": round(net, 0),
-            "orders": delivered,
-            "aov": aov,
-            "avail": avl_r,
-            "accept": acc_r,
-            "refunds": refund_r,
-            "del_time": del_time,
-            "acc_time": acc_time,
-            "prep_time": prep_time,
-            "wait_time": wait_time,
-            "c2m_time": c2m,
-            "c2e_time": c2e,
-            "active_users": active_users,
-            "freq": freq,
-            "new_users": new_u,
-            "sessions": sessions,
-            "imp_menu": imp_menu,
-            "menu_prod": menu_prod_conv,
-            "rating": rating,
-            "discounts": discounts,
-            "camp_bolt": camp_bolt,
-            "camp_merch": camp_merch,
-        })
+    # Локації
+    by_pid: dict[int, dict] = {}
+    for row in loc_rows:
+        pid = int(row[0])
+        rec = _parse_location_row(row)
+        if pid not in by_pid:
+            by_pid[pid] = {
+                "provider_id": pid,
+                "name": row[1],
+                "short_name": short_location_name(str(row[1])),
+                "by_month": {},
+            }
+        by_pid[pid]["by_month"][rec["month_key"]] = rec
 
-    items = []
-    for i, row in enumerate(top_items, 1):
-        items.append({
-            "rank": i,
-            "name": row[0],
-            "qty": int(row[1] or 0),
-            "revenue": round(float(row[2] or 0), 0),
-            "avg_price": float(row[3] or 0),
-        })
+    locations: list[dict] = []
+    for pid in sorted(by_pid.keys(), key=lambda p: by_pid[p]["name"]):
+        loc = by_pid[pid]
+        months_vals = []
+        for y, m in months_range:
+            mk = month_key(y, m)
+            months_vals.append(loc["by_month"].get(mk, {
+                "month_key": mk, "label": month_label(y, m),
+                "orders": 0, "gross": 0, "net": 0, "aov": 0,
+                "avail": 0, "accept": 0, "refunds": 0, "rating": 0,
+                "prep_time": 0, "acc_time": 0, "discounts": 0, "imp_menu": 0,
+            }))
+        loc["months"] = months_vals
+        locations.append(loc)
+
+    items = [
+        {"rank": i + 1, "name": row[0], "qty": int(row[1] or 0),
+         "revenue": round(float(row[2] or 0), 0), "avg_price": float(row[3] or 0)}
+        for i, row in enumerate(top_items)
+    ]
 
     return {
         "months": month_data,
+        "locations": locations,
+        "month_labels": [month_label(y, m) for y, m in months_range],
         "top_items": items,
-        "period_label": f"{month_label(*months[0])} — {month_label(*months[-1])}",
+        "period_label": f"{month_label(*months_range[0])} — {month_label(*months_range[-1])}",
         "generated_at": datetime.datetime.now().strftime("%d.%m.%Y %H:%M"),
     }
 
 
-# ─── INSIGHTS ──────────────────────────────────────────────────────────────────
+# ─── PROBLEM LOCATIONS ─────────────────────────────────────────────────────────
 
 def _pct_change(old: float, new: float) -> float | None:
     if old == 0:
@@ -292,9 +404,113 @@ def _pct_change(old: float, new: float) -> float | None:
     return (new - old) / old * 100
 
 
-def build_insights(months: list[dict]) -> list[dict]:
+def analyze_problem_locations(locations: list[dict]) -> list[dict]:
+    """Визначає проблемні локації та конкретні проблеми (порівняння квітень → травень)."""
+    problems: list[dict] = []
+
+    for loc in locations:
+        if len(loc["months"]) < 2:
+            continue
+        apr, may = loc["months"][0], loc["months"][1]
+        issues: list[str] = []
+        severity = 0
+
+        o_chg = _pct_change(apr["orders"], may["orders"])
+        g_chg = _pct_change(apr["gross"], may["gross"])
+
+        if may["orders"] < 15:
+            issues.append(
+                f"Дуже мало замовлень у травні — лише {may['orders']} "
+                f"(було {apr['orders']} у квітні)."
+            )
+            severity += 3
+        elif o_chg is not None and o_chg <= -20:
+            issues.append(
+                f"Різке падіння замовлень: {apr['orders']} → {may['orders']} "
+                f"({o_chg:.0f}%)."
+            )
+            severity += 2
+        elif o_chg is not None and o_chg <= -10:
+            issues.append(
+                f"Зменшення замовлень: {apr['orders']} → {may['orders']} "
+                f"({o_chg:.0f}%)."
+            )
+            severity += 1
+
+        if may["avail"] < 88:
+            issues.append(
+                f"Низька доступність на платформі — {may['avail']:.1f}% у травні "
+                f"(клієнти часто не бачать заклад онлайн)."
+            )
+            severity += 2
+        elif may["avail"] < 92 and apr["avail"] < 92:
+            issues.append(
+                f"Доступність нижче 92% обидва місяці "
+                f"(квітень {apr['avail']:.1f}%, травень {may['avail']:.1f}%)."
+            )
+            severity += 1
+
+        if may["accept"] < 97:
+            issues.append(
+                f"Не всі замовлення приймаються вчасно — {may['accept']:.1f}% у травні."
+            )
+            severity += 2
+
+        if may["refunds"] >= 4:
+            issues.append(
+                f"Висока частка замовлень з компенсаціями клієнту — {may['refunds']:.1f}% у травні."
+            )
+            severity += 2
+        elif may["refunds"] >= 2.5 and may["refunds"] > apr["refunds"] + 1:
+            issues.append(
+                f"Зростання повернень: {apr['refunds']:.1f}% → {may['refunds']:.1f}%."
+            )
+            severity += 1
+
+        if may["rating"] < 4.5:
+            issues.append(
+                f"Низький рейтинг у травні — {may['rating']:.2f} з 5."
+            )
+            severity += 2
+
+        if may["prep_time"] >= 32:
+            issues.append(
+                f"Довгий час приготування — {may['prep_time']:.1f} хв у середньому."
+            )
+            severity += 1
+
+        if may["acc_time"] >= 3:
+            issues.append(
+                f"Повільне прийняття замовлень партнером — {may['acc_time']:.1f} хв у травні."
+            )
+            severity += 2
+
+        if may["imp_menu"] < 10 and may.get("sessions", 0) > 200:
+            issues.append(
+                f"Мало переходів у меню — лише {may['imp_menu']:.1f}% переглядів."
+            )
+            severity += 1
+
+        if issues and severity >= 1:
+            problems.append({
+                "name": loc["name"],
+                "short_name": loc["short_name"],
+                "severity": severity,
+                "issues": issues,
+                "apr": apr,
+                "may": may,
+            })
+
+    problems.sort(key=lambda x: -x["severity"])
+    return problems
+
+
+# ─── INSIGHTS ──────────────────────────────────────────────────────────────────
+
+def build_insights(months: list[dict], problem_locations: list[dict]) -> list[dict]:
     if len(months) < 2:
-        return [{"type": "info", "title": "Недостатньо даних", "text": "Для порівняння потрібні щонайменше два повні місяці."}]
+        return [{"type": "info", "title": "Недостатньо даних",
+                 "text": "Для порівняння потрібні щонайменше два повні місяці."}]
 
     a, b = months[0], months[-1]
     m1, m2 = a["label"], b["label"]
@@ -303,87 +519,56 @@ def build_insights(months: list[dict]) -> list[dict]:
     def add(kind: str, title: str, text: str):
         insights.append({"type": kind, "title": title, "text": text})
 
-    # Продажі
     g_chg = _pct_change(a["gross"], b["gross"])
     o_chg = _pct_change(a["orders"], b["orders"])
     if g_chg is not None and g_chg > 5:
         add("positive", "Продажі зростають",
-            f"Загальний оборот зріс на {g_chg:.0f}% ({m1} → {m2}). "
-            f"Доставлених замовлень стало на {o_chg:.0f}% більше — це хороший сигнал попиту.")
-    elif g_chg is not None and g_chg < -5:
-        add("warning", "Продажі знизились",
-            f"Оборот упав на {abs(g_chg):.0f}%. Варто перевірити графік роботи точок і акції в застосунку.")
+            f"Загальний оборот мережі зріс на {g_chg:.0f}% ({m1} → {m2}). "
+            f"Доставлених замовлень стало на {o_chg:.0f}% більше.")
 
-    aov_chg = _pct_change(a["aov"], b["aov"])
-    if aov_chg is not None and aov_chg > 3:
-        add("positive", "Середній чек підвищився",
-            f"Клієнти замовляють на більше: середній чек {a['aov']:.0f} → {b['aov']:.0f} ₴ (+{aov_chg:.0f}%).")
-
-    # Операції
     if b["avail"] - a["avail"] >= 3:
-        add("positive", "Заклад частіше онлайн",
-            f"Доступність на платформі зросла з {a['avail']:.1f}% до {b['avail']:.1f}%. "
-            "Клієнти частіше бачать вас у застосунку.")
-    elif b["avail"] < 90:
-        add("warning", "Низька доступність",
-            f"У {m2} заклад був онлайн лише {b['avail']:.1f}% часу. "
-            "Кожна година простою — це втрачені замовлення.")
+        add("positive", "Мережа частіше онлайн",
+            f"Середня доступність зросла з {a['avail']:.1f}% до {b['avail']:.1f}%.")
 
     if b["refunds"] < a["refunds"] - 0.5:
         add("positive", "Менше компенсацій клієнтам",
-            f"Частка замовлень з поверненнями знизилась з {a['refunds']:.1f}% до {b['refunds']:.1f}%.")
-
-    if b["del_time"] > a["del_time"] + 1.5:
-        add("warning", "Доставка займає більше часу",
-            f"Середній час доставки збільшився: {a['del_time']} → {b['del_time']} хв. "
-            "Зверніть увагу на швидкість приготування ({a['prep_time']} → {b['prep_time']} хв) "
-            "та видачу курʼєру.")
+            f"Частка замовлень з поверненнями: {a['refunds']:.1f}% → {b['refunds']:.1f}%.")
 
     if b["prep_time"] > a["prep_time"] + 1:
         add("warning", "Час приготування зростає",
-            f"Середній час приготування: {a['prep_time']} → {b['prep_time']} хв. "
-            "На пікових годинах варто додати людей на кухню або спростити меню.")
+            f"Середній час приготування по мережі: {a['prep_time']} → {b['prep_time']} хв. "
+            "На пікових годинах варто посилити кухню на завантажених точках.")
 
-    if b["accept"] < 97:
-        add("warning", "Не всі замовлення приймаються вчасно",
-            f"Рівень прийняття в {m2}: {b['accept']:.1f}%. "
-            "Пропущені замовлення — прямий збиток продажів.")
-
-    # Клієнти
     if b["rating"] > a["rating"] + 0.1:
         add("positive", "Клієнти задоволені якістю",
-            f"Середній рейтинг зріс з {a['rating']:.2f} до {b['rating']:.2f} з 5 — продовжуйте тримати якість страв.")
+            f"Середній рейтинг мережі: {a['rating']:.2f} → {b['rating']:.2f} з 5.")
 
-    if b["imp_menu"] < 15:
-        add("warning", "Мало переходів у меню",
-            f"Лише {b['imp_menu']:.1f}% переглядів закладу переходять у меню. "
-            "Оновіть обкладинку, фото страв і акційні позиції на головній сторінці профілю.")
-
-    if b["active_users"] > a["active_users"]:
-        add("positive", "Більше постійних клієнтів",
-            f"Активних користувачів: {a['active_users']} → {b['active_users']}.")
-
-    # Знижки
     d_chg = _pct_change(a["discounts"], b["discounts"])
-    if d_chg is not None and d_chg > 10 and b["camp_merch"] == 0:
-        add("info", "Зростають знижки від Bolt",
-            f"Витрати на знижки для клієнтів зросли на {d_chg:.0f}%. "
-            "Зараз кампанії фінансує Bolt — слідкуйте, щоб знижки не знижували маржу без зростання замовлень.")
+    if d_chg is not None and d_chg > 5:
+        add("info", "Співфінансування знижок",
+            f"Інвестиції Bolt у знижки для клієнтів зросли на {d_chg:.0f}% "
+            f"({a['discounts']:,.0f} → {b['discounts']:,.0f} ₴). ".replace(",", "\u202f")
+            + "Bolt підтримує залучення клієнтів, проте така модель не може бути безстроковою. "
+            "Для стабільного зростання важливо, щоб партнер також долучався до промо "
+            "з власного боку — навіть невеликі кампанії допомагають утримувати лояльність "
+            "та розподіляють інвестиції справедливіше.")
+
+    if problem_locations:
+        top_names = ", ".join(p["short_name"] for p in problem_locations[:3])
+        add("warning", "Є точки, що потребують уваги",
+            f"Детальний розбір нижче. Насамперед: {top_names}.")
 
     if not insights:
         add("info", "Стабільний період",
-            "Основні показники без різких змін. Продовжуйте тримати якість та доступність на платформі.")
+            "Основні показники без різких змін. Продовжуйте тримати якість та доступність.")
 
     return insights
 
 
 # ─── HTML ──────────────────────────────────────────────────────────────────────
 
-def _js_arr(months: list[dict], key: str) -> str:
-    return "[" + ", ".join(str(m[key]) for m in months) + "]"
-
-
-def _fmt_chart_value(val: float, opts: dict) -> str:
+def _fmt_chart_value(val: float, opts: dict | None = None) -> str:
+    opts = opts or {}
     if opts.get("pct"):
         return f"{val:.2f}%"
     if opts.get("dec"):
@@ -395,130 +580,157 @@ def _fmt_chart_value(val: float, opts: dict) -> str:
     return f"{val:.2f}" if isinstance(val, float) and val != int(val) else str(int(val))
 
 
-def _chart_block(
-    cid: str, title: str, unit: str, key: str, months: list[dict], opts_str: str = "{}"
-) -> str:
-    opts = json.loads(opts_str) if opts_str else {}
-    vals = [float(m[key]) for m in months]
-    max_v = max(vals) if vals and max(vals) > 0 else 1.0
+def _metric_opts(key: str) -> dict:
+    if key in ("avail", "accept", "refunds", "imp_menu"):
+        return {"pct": True}
+    if key in ("rating", "prep_time", "acc_time", "aov"):
+        return {"dec": True}
+    return {}
 
-    cols_html = ""
-    for i, m in enumerate(months):
-        h_pct = max(4, round(vals[i] / max_v * 100))
-        cls = f"m{i + 1}"
-        cols_html += f"""
-        <div class="hist-col">
-          <div class="hist-val">{_fmt_chart_value(vals[i], opts)}</div>
-          <div class="hist-bar {cls}" style="height:{h_pct}%"></div>
-          <div class="hist-lbl">{m['label']}</div>
+
+def _location_grouped_chart(
+    cid: str, title: str, unit: str, key: str,
+    locations: list[dict], month_labels: list[str],
+) -> str:
+    opts = _metric_opts(key)
+    all_vals = [
+        float(loc["months"][i].get(key, 0))
+        for loc in locations for i in range(len(month_labels))
+    ]
+    max_v = max(all_vals) if all_vals and max(all_vals) > 0 else 1.0
+
+    rows_html = ""
+    for loc in locations:
+        bars = ""
+        for i, mlabel in enumerate(month_labels):
+            val = float(loc["months"][i].get(key, 0))
+            h_pct = max(4, round(val / max_v * 100))
+            cls = f"m{i + 1}"
+            bars += f"""
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">{_fmt_chart_value(val, opts)}</div>
+              <div class="hist-bar {cls}" style="height:{h_pct}%"></div>
+              <div class="loc-bar-month">{mlabel.split()[0][:3]}</div>
+            </div>"""
+        problem_cls = " loc-row-problem" if loc.get("_problem") else ""
+        rows_html += f"""
+        <div class="loc-row{problem_cls}">
+          <div class="loc-name" title="{loc['name']}">{loc['short_name']}</div>
+          <div class="loc-bars">{bars}</div>
         </div>"""
 
     return f"""
-    <div class="chart-card">
+    <div class="chart-card loc-chart-card">
       <h3>{title}</h3>
-      <p class="unit">{unit}</p>
-      <div class="hist-chart">{cols_html}
+      <p class="unit">{unit} · по кожній локації</p>
+      <div class="loc-legend">
+        <span><i class="leg m1"></i> {month_labels[0]}</span>
+        <span><i class="leg m2"></i> {month_labels[1]}</span>
       </div>
-      <div class="chart-wrap"><canvas id="{cid}"></canvas></div>
+      <div class="loc-chart">{rows_html}</div>
     </div>"""
+
+
+def _problem_locations_html(problems: list[dict]) -> str:
+    if not problems:
+        return """
+        <div class="problem-none">
+          ✅ За ключовими показниками жодна локація не має критичних відхилень.
+          Продовжуйте тримати якість та доступність на всіх точках.
+        </div>"""
+
+    cards = ""
+    for p in problems:
+        issues_li = "".join(f"<li>{issue}</li>" for issue in p["issues"])
+        apr, may = p["apr"], p["may"]
+        cards += f"""
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>{p['name']}</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>{apr['orders']}</strong> → <strong>{may['orders']}</strong></span>
+            <span>Доступність: <strong>{apr['avail']:.1f}%</strong> → <strong>{may['avail']:.1f}%</strong></span>
+            <span>Рейтинг: <strong>{apr['rating']:.2f}</strong> → <strong>{may['rating']:.2f}</strong></span>
+          </div>
+          <ul class="problem-list">{issues_li}</ul>
+        </div>"""
+    return f'<div class="problem-locs-grid">{cards}</div>'
 
 
 def _insight_html(insights: list[dict]) -> str:
     icons = {"positive": "✅", "warning": "⚠️", "info": "ℹ️"}
-    parts = []
-    for ins in insights:
-        icon = icons.get(ins["type"], "•")
-        cls = ins["type"]
-        parts.append(f"""
-        <div class="insight-card {cls}">
-          <div class="insight-title">{icon} {ins['title']}</div>
+    return "\n".join(
+        f"""<div class="insight-card {ins['type']}">
+          <div class="insight-title">{icons.get(ins['type'], '•')} {ins['title']}</div>
           <p>{ins['text']}</p>
-        </div>""")
-    return "\n".join(parts)
+        </div>"""
+        for ins in insights
+    )
 
 
 def generate_html(data: dict) -> str:
     months = data["months"]
+    locations = data["locations"]
+    month_labels = data["month_labels"]
     items = data["top_items"]
-    insights = build_insights(months)
-    labels_js = json.dumps([m["label"] for m in months], ensure_ascii=False)
-    colors_js = json.dumps(MONTH_COLORS[: len(months)])
-    borders_js = json.dumps(MONTH_BORDERS[: len(months)])
-
-    last = months[-1] if months else {}
     period = data["period_label"]
     gen = data["generated_at"]
 
-    sections = [
-        ("1. Продажі", [
-            ("c-gross", "Gross Sales (загальні продажі)", "UAH до знижок", "gross", "{}"),
-            ("c-net", "Net Sales (чистий прибуток)", "UAH після знижок", "net", "{}"),
-            ("c-orders", "Delivered Orders", "доставлені замовлення", "orders", "{}"),
-            ("c-aov", "AOV (середній чек)", "UAH / замовлення", "aov", '{"dec":true}'),
-        ]),
-        ("2. Операційні показники", [
-            ("c-avail", "Availability Rate", "доступність на платформі · %", "avail", '{"pct":true,"ymin":80,"ymax":101}'),
-            ("c-accept", "Acceptance Rate", "прийняті замовлення · %", "accept", '{"pct":true,"ymin":90,"ymax":101}'),
-            ("c-refunds", "Orders with Refunds", "компенсації клієнту · %", "refunds", '{"pct":true,"dec":true}'),
-            ("c-del", "Average Delivery Time", "хвилини", "del_time", '{"dec":true}'),
-            ("c-acc-t", "Avg. Merchant Acceptance Time", "хвилини", "acc_time", '{"dec":true}'),
-            ("c-prep", "Avg. Preparation Time", "хвилини", "prep_time", '{"dec":true}'),
-            ("c-wait", "Avg. Courier Wait Time", "хвилини", "wait_time", '{"dec":true}'),
-            ("c-c2m", "Avg. Courier to Merchant Time", "хвилини", "c2m_time", '{"dec":true}'),
-            ("c-c2e", "Avg. Courier to Eater Time", "хвилини", "c2e_time", '{"dec":true}'),
-        ]),
-        ("3. Клієнти та їх поведінка", [
-            ("c-active", "Active Users", "унікальні замовники", "active_users", "{}"),
-            ("c-freq", "Order Frequency", "замовлень / користувач", "freq", '{"dec":true}'),
-            ("c-new", "New Users", "нові клієнти бренду", "new_users", "{}"),
-            ("c-sess", "Sessions with Impressions", "перегляди закладу", "sessions", "{}"),
-            ("c-imp", "Impression → Menu Viewed", "конверсія · %", "imp_menu", '{"pct":true,"dec":true}'),
-            ("c-menu", "Menu Viewed → Product Added", "конверсія · %", "menu_prod", '{"pct":true,"dec":true}'),
-            ("c-rating", "Average Merchant Rating", "оцінка 0–5", "rating", '{"dec":true,"ymin":0,"ymax":5.5}'),
-        ]),
-        ("4. Знижки", [
-            ("c-disc", "Total Discounts for Users", "UAH", "discounts", "{}"),
-            ("c-bolt", "Campaigns Spend by Bolt", "UAH", "camp_bolt", "{}"),
-            ("c-merch", "Campaigns Spend by Merchant", "UAH", "camp_merch", "{}"),
-        ]),
-    ]
+    problems = analyze_problem_locations(locations)
+    problem_names = {p["name"] for p in problems}
+    for loc in locations:
+        loc["_problem"] = loc["name"] in problem_names
+
+    insights = build_insights(months, problems)
 
     charts_html = ""
-    chart_inits: list[tuple[str, str, str]] = []
-    for section_title, chart_defs in sections:
-        charts_html += f'<div class="section-title">{section_title}</div><div class="charts-grid">'
-        for cid, title, unit, key, opts in chart_defs:
-            charts_html += _chart_block(cid, title, unit, key, months, opts)
-            chart_inits.append((cid, _js_arr(months, key), opts))
+    for section_title, chart_defs in LOCATION_CHART_SECTIONS:
+        charts_html += f'<div class="section-title">{section_title}</div>'
+        charts_html += '<p class="section-hint">Порівняння квітень vs травень по кожній локації</p>'
+        charts_html += '<div class="charts-grid loc-charts-grid">'
+        for cid, title, unit, key in chart_defs:
+            charts_html += _location_grouped_chart(
+                cid, title, unit, key, locations, month_labels
+            )
         charts_html += "</div>"
 
+    # Таблиця по локаціях
+    loc_table_head = "".join(
+        f"<th class='num'>{ml}</th>" for ml in month_labels
+    )
+    loc_metrics = [
+        ("Замовлення", "orders", {}),
+        ("Gross Sales (₴)", "gross", {}),
+        ("AOV (₴)", "aov", {}),
+        ("Доступність (%)", "avail", {"pct": True}),
+        ("Прийняття (%)", "accept", {"pct": True}),
+        ("Повернення (%)", "refunds", {"pct": True}),
+        ("Рейтинг", "rating", {"dec": True}),
+    ]
+    loc_table_rows = ""
+    for loc in locations:
+        for label, key, opts in loc_metrics:
+            cells = "".join(
+                f"<td class='num'>{_fmt_chart_value(float(m.get(key, 0)), opts)}</td>"
+                for m in loc["months"]
+            )
+            pname = loc["short_name"]
+            loc_table_rows += (
+                f"<tr><td class='metric-name'>{pname}</td>"
+                f"<td class='sub-metric'>{label}</td>{cells}</tr>"
+            )
+
     metrics_table_rows = ""
-    all_metrics = [
+    brand_metrics = [
         ("Gross Sales (UAH)", "gross", {}),
-        ("Net Sales (UAH)", "net", {}),
         ("Delivered Orders", "orders", {}),
         ("AOV (UAH)", "aov", {"dec": True}),
-        ("Availability Rate (%)", "avail", {"pct": True}),
-        ("Acceptance Rate (%)", "accept", {"pct": True}),
-        ("Orders with Refunds (%)", "refunds", {"pct": True}),
-        ("Average Delivery Time (хв)", "del_time", {"dec": True}),
-        ("Merchant Acceptance Time (хв)", "acc_time", {"dec": True}),
-        ("Preparation Time (хв)", "prep_time", {"dec": True}),
-        ("Courier Wait Time (хв)", "wait_time", {"dec": True}),
-        ("Courier to Merchant (хв)", "c2m_time", {"dec": True}),
-        ("Courier to Eater (хв)", "c2e_time", {"dec": True}),
-        ("Active Users", "active_users", {}),
-        ("Order Frequency", "freq", {"dec": True}),
-        ("New Users", "new_users", {}),
-        ("Sessions with Impressions", "sessions", {}),
-        ("Impression → Menu (%)", "imp_menu", {"pct": True}),
-        ("Menu → Product Added (%)", "menu_prod", {"pct": True}),
-        ("Average Rating (0–5)", "rating", {"dec": True}),
-        ("Total Discounts (UAH)", "discounts", {}),
-        ("Campaigns Spend Bolt (UAH)", "camp_bolt", {}),
-        ("Campaigns Spend Merchant (UAH)", "camp_merch", {}),
+        ("Availability (%)", "avail", {"pct": True}),
+        ("Rating (0–5)", "rating", {"dec": True}),
     ]
-    for label, key, opts in all_metrics:
+    for label, key, opts in brand_metrics:
         cells = "".join(
             f'<td class="num">{_fmt_chart_value(float(m[key]), opts)}</td>'
             for m in months
@@ -527,34 +739,33 @@ def generate_html(data: dict) -> str:
 
     month_headers = "".join(f"<th class='num'>{m['label']}</th>" for m in months)
 
-    chart_init_js = ",\n    ".join(
-        f'{{id:"{cid}", data:{data}, opts:{opts}}}' for cid, data, opts in chart_inits
-    )
-
-    items_rows = ""
-    for it in items:
-        items_rows += f"""
-        <tr>
+    items_rows = "".join(
+        f"""<tr>
           <td class="rank">{it['rank']}</td>
           <td><strong>{it['name']}</strong></td>
           <td class="num">{it['qty']:,}</td>
           <td class="num">{it['revenue']:,} ₴</td>
           <td class="num">{it['avg_price']:.0f} ₴</td>
         </tr>""".replace(",", "\u202f")
+        for it in items
+    )
 
-    month_chips = ""
-    for i, m in enumerate(months):
-        month_chips += f'<span class="month-chip m{i+1}">{m["label"]}</span>\n'
+    month_chips = "".join(
+        f'<span class="month-chip m{i+1}">{m["label"]}</span>\n'
+        for i, m in enumerate(months)
+    )
 
-    kpi = last
+    last = months[-1] if months else {}
     kpi_block = f"""
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Gross Sales</div><div class="kpi-value">{kpi.get('gross',0):,.0f} ₴</div></div>
-      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div><div class="kpi-value">{kpi.get('orders',0)}</div></div>
-      <div class="kpi-card"><div class="kpi-label">AOV</div><div class="kpi-value">{kpi.get('aov',0):,.0f} ₴</div></div>
-      <div class="kpi-card"><div class="kpi-label">Рейтинг</div><div class="kpi-value">{kpi.get('rating',0):.2f}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Доступність</div><div class="kpi-value">{kpi.get('avail',0):.1f}%</div></div>
-      <div class="kpi-card"><div class="kpi-label">Активні клієнти</div><div class="kpi-value">{kpi.get('active_users',0)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gross Sales (мережа)</div>
+        <div class="kpi-value">{last.get('gross',0):,.0f} ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
+        <div class="kpi-value">{last.get('orders',0)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Локацій</div>
+        <div class="kpi-value">9</div></div>
+      <div class="kpi-card"><div class="kpi-label">Точок під увагою</div>
+        <div class="kpi-value">{len(problems)}</div></div>
     </div>""".replace(",", "\u202f")
 
     return f"""<!DOCTYPE html>
@@ -565,58 +776,87 @@ def generate_html(data: dict) -> str:
   <title>MAVRA PIZZA — MBR · {period}</title>
   <style>
     :root {{
-      --green:#34D186; --green-dark:#1aad6a; --green-darker:#0d8a52;
-      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5; --white:#fff;
+      --green:#34D186; --green-darker:#0d8a52;
+      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5;
       --positive:#1aad6a; --warning:#e67e22; --info:#2980b9;
+      --problem-bg:#fff8f0;
     }}
     *{{margin:0;padding:0;box-sizing:border-box}}
-    body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}}
-    .header{{background:var(--black);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}}
+    body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}}
+    .header{{background:var(--black);padding:28px 40px;display:flex;align-items:center;
+      justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}}
     .header-logo{{display:flex;align-items:center;gap:14px}}
-    .bolt-logo{{width:44px;height:44px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center}}
-  .header-title h1{{font-size:22px;font-weight:700;color:#fff}}
-    .header-title p{{font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-top:4px}}
+    .bolt-logo{{width:44px;height:44px;background:var(--green);border-radius:10px;
+      display:flex;align-items:center;justify-content:center}}
+    .header-title h1{{font-size:22px;font-weight:700;color:#fff}}
+    .header-title p{{font-size:11px;color:var(--green);text-transform:uppercase;
+      letter-spacing:1.2px;font-weight:600;margin-top:4px}}
     .header-meta{{text-align:right;color:var(--gray-400);font-size:12px;line-height:1.9}}
     .header-meta strong{{color:var(--green)}}
     .container{{max-width:1280px;margin:0 auto;padding:32px 40px}}
-    .period-bar{{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
-    .period-bar .label{{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)}}
+    .period-bar{{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .month-chip{{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}}
     .m1{{background:var(--green-darker)}} .m2{{background:var(--green)}}
-    .section-title{{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 18px}}
+    .section-title{{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+      color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 10px}}
+    .section-hint{{font-size:12px;color:var(--gray-400);margin-bottom:14px}}
     .kpi-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:8px}}
-    .kpi-card{{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);box-shadow:0 1px 4px rgba(0,0,0,.06)}}
+    .kpi-card{{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .kpi-label{{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}}
     .kpi-value{{font-size:22px;font-weight:700}}
-    .charts-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(460px,1fr));gap:20px;margin-bottom:12px}}
+    .charts-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:20px;margin-bottom:12px}}
     .chart-card{{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .chart-card h3{{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}}
-    .chart-card .unit{{font-size:10px;color:var(--gray-400);margin-bottom:12px}}
-    .hist-chart{{display:flex;align-items:flex-end;justify-content:center;gap:40px;height:200px;padding:8px 0 4px;margin-bottom:8px}}
-    .hist-col{{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;width:100px}}
-    .hist-bar{{width:52px;border-radius:8px 8px 0 0;min-height:8px}}
+    .chart-card .unit{{font-size:10px;color:var(--gray-400);margin-bottom:8px}}
+    .loc-legend{{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:12px}}
+    .loc-legend .leg{{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}}
+    .loc-legend .leg.m1{{background:var(--green-darker)}}
+    .loc-legend .leg.m2{{background:var(--green)}}
+    .loc-chart{{display:flex;flex-direction:column;gap:10px}}
+    .loc-row{{display:flex;align-items:flex-end;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0}}
+    .loc-row-problem{{background:var(--problem-bg);border-radius:8px;padding:8px 10px;
+      border-left:3px solid var(--warning)}}
+    .loc-name{{width:130px;flex-shrink:0;font-size:11px;font-weight:600;color:var(--gray-700);line-height:1.3}}
+    .loc-bars{{display:flex;gap:20px;flex:1;justify-content:flex-start}}
+    .loc-bar-col{{display:flex;flex-direction:column;align-items:center;width:56px;height:100px;justify-content:flex-end}}
+    .loc-bar-val{{font-size:10px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center}}
+    .loc-bar-month{{font-size:9px;color:var(--gray-400);margin-top:4px}}
+    .hist-bar{{width:40px;border-radius:6px 6px 0 0;min-height:6px}}
     .hist-bar.m1{{background:var(--green-darker)}} .hist-bar.m2{{background:var(--green)}}
-    .hist-val{{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:6px;text-align:center}}
-    .hist-lbl{{font-size:10px;color:var(--gray-400);margin-top:8px;text-align:center;max-width:96px;line-height:1.3}}
-    .chart-wrap{{height:0;overflow:hidden;position:absolute;pointer-events:none;opacity:0}}
-    .metric-name{{font-weight:600}}
+    .problem-locs-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:28px}}
+    .problem-loc-card{{background:#fff;border-radius:12px;padding:18px 20px;
+      border:1px solid #f0c090;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
+    .problem-loc-header h3{{font-size:14px;margin-top:6px;color:var(--gray-700)}}
+    .problem-badge{{font-size:11px;font-weight:700;color:var(--warning)}}
+    .problem-kpi-row{{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--gray-400);
+      margin:10px 0;padding:8px 0;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0}}
+    .problem-kpi-row strong{{color:var(--gray-700)}}
+    .problem-list{{margin:10px 0 0 18px;font-size:13px;color:var(--gray-700)}}
+    .problem-list li{{margin-bottom:6px}}
+    .problem-none{{background:#e6faf2;border-radius:12px;padding:20px;color:var(--positive);font-size:14px}}
     .insights-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}}
-    .insight-card{{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);box-shadow:0 1px 4px rgba(0,0,0,.06)}}
+    .insight-card{{background:#fff;border-radius:12px;padding:18px 20px;border-left:4px solid var(--gray-400);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .insight-card.positive{{border-left-color:var(--positive)}}
     .insight-card.warning{{border-left-color:var(--warning)}}
     .insight-card.info{{border-left-color:var(--info)}}
     .insight-title{{font-weight:700;font-size:14px;margin-bottom:8px}}
     .insight-card p{{font-size:13px;color:var(--gray-700)}}
-    .table-wrap{{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}}
-    table{{width:100%;border-collapse:collapse}}
+    .table-wrap{{background:#fff;border-radius:12px;overflow:auto;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}}
+    table{{width:100%;border-collapse:collapse;min-width:600px}}
     th{{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;padding:12px 16px;text-align:left}}
-    th.num, td.num{{text-align:right}}
-    td{{padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px}}
-    td.rank{{color:var(--green-darker);font-weight:700;width:48px}}
+    th.num,td.num{{text-align:right}}
+    td{{padding:8px 16px;border-bottom:1px solid #f0f0f0;font-size:12px}}
+    td.sub-metric{{color:var(--gray-400);font-size:11px}}
+    td.rank{{color:var(--green-darker);font-weight:700}}
+    .metric-name{{font-weight:600;white-space:nowrap}}
     tr:hover td{{background:#e6faf2}}
     .footer{{background:var(--black);color:var(--gray-400);font-size:11px;padding:22px 40px;text-align:center}}
     .footer span{{color:var(--green)}}
-    @media(max-width:700px){{.container{{padding:20px 16px}}.charts-grid{{grid-template-columns:1fr}}}}
+    @media(max-width:700px){{.container{{padding:20px 16px}}.charts-grid{{grid-template-columns:1fr}}.loc-name{{width:90px;font-size:10px}}}}
   </style>
 </head>
 <body>
@@ -639,116 +879,56 @@ def generate_html(data: dict) -> str:
 
 <div class="container">
   <div class="period-bar">
-    <span class="label">Порівняння місяців:</span>
+    <span class="label" style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Порівняння:</span>
     {month_chips}
-    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Валюта: UAH · 9 локацій Запоріжжя</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Гістограми по локаціях · UAH</span>
   </div>
 
-  <div class="section-title">Ключові показники — {last.get('label','')}</div>
+  <div class="section-title">Огляд мережі — {last.get('label','')}</div>
   {kpi_block}
-
-  {charts_html}
-
-  <div class="section-title">Зведена таблиця всіх метрик</div>
-  <div class="table-wrap">
+  <div class="table-wrap" style="margin-top:16px">
     <table>
-      <thead><tr><th>Метрика</th>{month_headers}</tr></thead>
+      <thead><tr><th>Метрика (вся мережа)</th>{month_headers}</tr></thead>
       <tbody>{metrics_table_rows}</tbody>
     </table>
   </div>
 
-  <div class="section-title">ТОП-10 позицій меню (Order Item Report)</div>
-  <p style="font-size:12px;color:var(--gray-400);margin:-8px 0 14px">За весь період звіту · найчастіше замовлювані страви</p>
+  <div class="section-title">⚠️ Проблемні локації</div>
+  <p class="section-hint">Точки з відхиленнями у травні порівняно з квітнем або за абсолютними порогами</p>
+  {_problem_locations_html(problems)}
+
+  {charts_html}
+
+  <div class="section-title">Таблиця метрик по локаціях</div>
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>#</th>
-          <th>Назва позиції</th>
-          <th class="num">Кількість</th>
-          <th class="num">Сума продажів</th>
-          <th class="num">Сер. ціна</th>
-        </tr>
+        <tr><th>Локація</th><th>Метрика</th>{loc_table_head}</tr>
+      </thead>
+      <tbody>{loc_table_rows}</tbody>
+    </table>
+  </div>
+
+  <div class="section-title">ТОП-10 позицій меню</div>
+  <p class="section-hint">За весь період · Order Item Report</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Назва</th><th class="num">Кількість</th>
+            <th class="num">Сума</th><th class="num">Сер. ціна</th></tr>
       </thead>
       <tbody>{items_rows}</tbody>
     </table>
   </div>
 
-  <div class="section-title">Висновки та рекомендації для партнера</div>
-  <p style="font-size:13px;color:var(--gray-700);margin-bottom:16px">
-    Короткий аналіз динаміки між {months[0]['label'] if months else ''} та {months[-1]['label'] if months else ''}.
-    Зосередьтесь на пунктах з ⚠️ — там найбільший потенціал для покращення.
-  </p>
+  <div class="section-title">Висновки та рекомендації</div>
   <div class="insights-grid">{_insight_html(insights)}</div>
 </div>
 
 <footer class="footer">
-  <span>Bolt Food</span> · MBR MAVRA PIZZA · Запоріжжя ·
-  Дані: Databricks · Автооновлення: 1-го числа кожного місяця о 15:00 (Київ) ·
+  <span>Bolt Food</span> · MBR MAVRA PIZZA · Автооновлення: 1-го числа о 15:00 (Київ) ·
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/MBR%20MAVRA%20PIZZA" style="color:var(--green)">GitHub</a>
 </footer>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script>
-(function() {{
-  const CHARTS = [
-    {chart_init_js}
-  ];
-  const MONTH_LABELS = {labels_js};
-  const COLORS = {colors_js};
-  const BORDERS = {borders_js};
-
-  function makeBar(id, data, opts) {{
-    if (typeof Chart === 'undefined') return;
-    const el = document.getElementById(id);
-    if (!el) return;
-    const wrap = el.closest('.chart-card');
-    if (wrap) {{
-      const hist = wrap.querySelector('.hist-chart');
-      if (hist) hist.style.display = 'none';
-      const cw = wrap.querySelector('.chart-wrap');
-      if (cw) {{ cw.style.height = '220px'; cw.style.position = 'relative'; cw.style.opacity = '1'; cw.style.overflow = 'visible'; }}
-    }}
-    new Chart(el, {{
-      type: 'bar',
-      data: {{
-        labels: MONTH_LABELS,
-        datasets: [{{
-          data,
-          backgroundColor: COLORS,
-          borderColor: BORDERS,
-          borderWidth: 1.5,
-          borderRadius: 6,
-        }}]
-      }},
-      options: {{
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {{ legend: {{ display: false }} }},
-        scales: {{
-          x: {{ grid: {{ display: false }} }},
-          y: {{
-            beginAtZero: opts.ymin === undefined,
-            min: opts.ymin,
-            max: opts.ymax,
-            ticks: {{ callback: (v) => opts.pct ? v + '%' : v.toLocaleString('uk-UA') }}
-          }}
-        }}
-      }}
-    }});
-  }}
-
-  function initAll() {{
-    CHARTS.forEach((c) => makeBar(c.id, c.data, c.opts || {{}}));
-  }}
-
-  if (document.readyState === 'loading') {{
-    document.addEventListener('DOMContentLoaded', initAll);
-  }} else {{
-    initAll();
-  }}
-}})();
-</script>
 </body>
 </html>"""
 
@@ -759,10 +939,11 @@ def main() -> None:
         sys.exit(1)
 
     months_range = last_n_full_months(2)
-    print(f"MAVRA PIZZA MBR — період: {month_label(*months_range[0])} — {month_label(*months_range[-1])}")
+    print(f"MAVRA PIZZA MBR — {month_label(*months_range[0])} — {month_label(*months_range[-1])}")
 
     data = fetch_metrics(months_range)
-    print(f"  Місяців даних: {len(data['months'])}, ТОП позицій: {len(data['top_items'])}")
+    problems = analyze_problem_locations(data["locations"])
+    print(f"  Локацій: {len(data['locations'])}, проблемних: {len(problems)}")
 
     html = generate_html(data)
     OUTPUT_FILE.write_text(html, encoding="utf-8")
