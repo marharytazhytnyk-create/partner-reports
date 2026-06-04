@@ -298,26 +298,124 @@ def fmt_pct(val):
         return "—"
 
 
-def is_problematic(row) -> list:
-    """Returns list of problems for a brand (brand-level aggregated metrics)."""
-    problems = []
-    orders = safe_float(row.get("delivered_orders"))
-    locs = max(int(safe_float(row.get("locations_count"), 1)), 1)
+# ─── RED FLAG LOGIC ────────────────────────────────────────────────────────────
 
-    if safe_float(row.get("failed_order_rate")) > 0.05:
-        problems.append(f"Висока частота невдалих замовлень: {fmt_pct(safe_float(row.get('failed_order_rate'))*100)}")
-    if safe_float(row.get("bad_order_rate")) > 0.10:
-        problems.append(f"Висока частота поганих замовлень: {fmt_pct(safe_float(row.get('bad_order_rate'))*100)}")
-    if safe_float(row.get("late_delivery_rate")) > 0.15:
-        problems.append(f"Висока частота запізнень: {fmt_pct(safe_float(row.get('late_delivery_rate'))*100)}")
-    if safe_float(row.get("acceptance_rate")) < 0.85 and safe_float(row.get("acceptance_rate")) > 0:
-        problems.append(f"Низький рівень прийняття замовлень: {fmt_pct(safe_float(row.get('acceptance_rate'))*100)}")
-    if safe_float(row.get("cp_l2_margin_pct")) < -5:
-        problems.append(f"Від'ємна маржа CP L2: {fmt_pct(safe_float(row.get('cp_l2_margin_pct')))}")
-    # Per-location threshold: < 50 orders per location over 4 weeks
-    if orders < (50 * locs):
-        problems.append(f"Мала кількість замовлень: {fmt_num(orders)} (≈{fmt_num(orders/locs)}/лок.)")
-    return problems
+def cp_l2_diagnosis(row) -> tuple:
+    """
+    Returns (reasons_list, fixes_list) for a brand with negative CP L2 margin.
+    Empty lists if margin is OK.
+    """
+    cp = safe_float(row.get("cp_l2_margin_pct"))
+    if cp >= 0:
+        return [], []
+
+    reasons, fixes = [], []
+
+    bad_order_pct   = safe_float(row.get("bad_order_rate")) * 100
+    failed_abs      = safe_float(row.get("failed_orders"))
+    orders          = safe_float(row.get("delivered_orders"))
+    acceptance      = safe_float(row.get("acceptance_rate")) * 100
+    late_rate       = safe_float(row.get("late_delivery_rate")) * 100
+
+    if bad_order_pct > 10:
+        reasons.append(f"Висока частка поганих замовлень ({bad_order_pct:.1f}%) — витрати на компенсації")
+        fixes.append("Перевірити якість пакування та правильність замовлень")
+    if failed_abs > 2:
+        reasons.append(f"Багато невдалих замовлень ({int(failed_abs)}) — прямі збитки і повернення коштів")
+        fixes.append("Стабілізувати прийняття замовлень, перевірити меню та доступність")
+    if acceptance < 85 and acceptance > 0:
+        reasons.append(f"Низький Acceptance Rate ({acceptance:.1f}%) — часті відмови підвищують витрати")
+        fixes.append("Обговорити з рестораном причини відмов і налаштувати робочий графік")
+    if late_rate > 20:
+        reasons.append(f"Часті запізнення доставки ({late_rate:.1f}%) — знижки клієнтам за затримки")
+        fixes.append("Переглянути час приготування у меню (cooking time)")
+    if orders < 80:
+        reasons.append("Малий обсяг замовлень — фіксовані витрати не покриваються обсягом")
+        fixes.append("Підключити акції або ULC-кампанію для зростання замовлень")
+
+    if not reasons:
+        reasons.append("Сукупні витрати (доставка + компенсації + знижки) перевищують комісійний дохід")
+        fixes.append("Переглянути умови комісії або зменшити частку знижок у GMV")
+
+    return reasons, fixes
+
+
+def get_red_flags(row, gmv_wow_pct: float = None) -> dict:
+    """
+    Returns a dict with 4 red flag categories for a brand row.
+    Each key maps to a list of issues (empty = no flag).
+    """
+    flags = {
+        "availability": [],
+        "failed_orders": [],
+        "cp_negative": [],
+        "gmv_drop": [],
+    }
+
+    # 1. Availability < 95%
+    avail = safe_float(row.get("active_rate"))
+    if 0 < avail < 0.95:
+        flags["availability"].append(
+            f"Availability {fmt_pct(avail * 100)} — нижче порогу 95%"
+        )
+
+    # 2. Failed orders > 2 (absolute count)
+    failed_abs = safe_float(row.get("failed_orders"))
+    if failed_abs > 2:
+        flags["failed_orders"].append(
+            f"{int(failed_abs)} зафейлених замовлень за 4 тижні"
+        )
+
+    # 3. Negative CP L2 Margin
+    cp = safe_float(row.get("cp_l2_margin_pct"))
+    if cp < 0:
+        reasons, fixes = cp_l2_diagnosis(row)
+        flags["cp_negative"] = {"margin": cp, "reasons": reasons, "fixes": fixes}
+
+    # 4. GMV drop > 1% WoW
+    if gmv_wow_pct is not None and gmv_wow_pct < -1.0:
+        flags["gmv_drop"].append(
+            f"GMV впав на {abs(gmv_wow_pct):.1f}% у порівнянні з попереднім тижнем"
+        )
+
+    return flags
+
+
+def has_any_flag(flags: dict) -> bool:
+    for v in flags.values():
+        if v:
+            return True
+    return False
+
+
+def compute_gmv_wow(df_trends: pd.DataFrame) -> dict:
+    """
+    Returns dict {(brand, city): wow_pct} for each brand.
+    wow_pct = (last_week_gmv / prev_week_gmv - 1) * 100
+    """
+    result = {}
+    if df_trends.empty or "gmv_eur" not in df_trends.columns:
+        return result
+
+    df_trends = df_trends.copy()
+    df_trends["gmv_eur"] = pd.to_numeric(df_trends["gmv_eur"], errors="coerce")
+
+    for (brand, city), grp in df_trends.groupby(["brand_name", "city_name"]):
+        grp = grp.sort_values("week_start")
+        if len(grp) < 2:
+            continue
+        last_gmv = grp["gmv_eur"].iloc[-1]
+        prev_gmv = grp["gmv_eur"].iloc[-2]
+        if prev_gmv and prev_gmv > 0 and last_gmv is not None:
+            import math
+            if not (math.isnan(float(last_gmv)) or math.isnan(float(prev_gmv))):
+                result[(brand, city)] = (float(last_gmv) / float(prev_gmv) - 1) * 100
+    return result
+
+
+def is_problematic(row, gmv_wow_pct: float = None) -> bool:
+    """Returns True if brand has any red flag."""
+    return has_any_flag(get_red_flags(row, gmv_wow_pct))
 
 
 # ─── HTML GENERATION ──────────────────────────────────────────────────────────
@@ -519,56 +617,89 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     white-space: nowrap;
   }}
 
-  /* ── PROBLEMS ── */
-  .problems-box {{
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    border-left: 5px solid var(--danger);
-    padding: 16px 20px;
+  /* ── RED FLAGS PANEL ── */
+  .red-flags-wrap {{
     margin-bottom: 28px;
   }}
-  .problems-box h3 {{
-    font-size: 14px;
+  .red-flags-title {{
+    font-size: 15px;
     font-weight: 700;
     color: var(--danger);
-    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 12px;
   }}
-  .problem-row {{
-    display: flex;
-    flex-direction: column;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
+  .rf-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
   }}
-  .problem-row:last-child {{ border-bottom: none; }}
-  .problem-row-header {{
+  @media (max-width: 900px) {{ .rf-grid {{ grid-template-columns: 1fr; }} }}
+
+  .rf-card {{
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 14px 18px;
+    border-top: 4px solid var(--danger);
+  }}
+  .rf-card.rf-avail  {{ border-top-color: #E53935; }}
+  .rf-card.rf-failed {{ border-top-color: #FB8C00; }}
+  .rf-card.rf-cp     {{ border-top-color: #7B1FA2; }}
+  .rf-card.rf-gmv    {{ border-top-color: #1976D2; }}
+
+  .rf-card h4 {{
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 4px;
+    gap: 6px;
   }}
-  .problem-name {{
-    font-size: 13px;
-    font-weight: 600;
+  .rf-card.rf-avail  h4 {{ color: #E53935; }}
+  .rf-card.rf-failed h4 {{ color: #FB8C00; }}
+  .rf-card.rf-cp     h4 {{ color: #7B1FA2; }}
+  .rf-card.rf-gmv    h4 {{ color: #1976D2; }}
+
+  .rf-item {{
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+  }}
+  .rf-item:last-child {{ border-bottom: none; }}
+  .rf-brand {{
+    font-size: 12.5px;
+    font-weight: 700;
     color: var(--text);
+    margin-bottom: 3px;
   }}
-  .problem-tags {{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-left: 6px;
+  .rf-detail {{
+    font-size: 11.5px;
+    color: var(--muted);
   }}
-  .problem-tag {{
+  .rf-reason {{
     font-size: 11px;
-    background: #FFEBEE;
-    color: var(--danger);
-    border-radius: 8px;
-    padding: 2px 8px;
-    font-weight: 600;
+    color: #7B1FA2;
+    margin-top: 3px;
   }}
+  .rf-fix {{
+    font-size: 11px;
+    color: #2E7D32;
+    margin-top: 2px;
+    font-style: italic;
+  }}
+  .rf-empty {{
+    font-size: 12px;
+    color: #aaa;
+    text-align: center;
+    padding: 12px 0;
+  }}
+
+  /* ── old problem styles kept for table row highlighting ── */
+  .badge-problem {{ display: inline-block; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; margin-right: 4px; }}
 
   /* ── MAIN TABLE ── */
   .table-wrap {{
@@ -1101,76 +1232,159 @@ def build_top_card(providers: pd.DataFrame, metric_col: str, title: str, icon: s
     </div>"""
 
 
-def build_problems_box(problem_providers: list) -> str:
-    if not problem_providers:
+def build_red_flags_panel(city_df: pd.DataFrame, gmv_wow_map: dict) -> str:
+    """Build the 4-column red flags panel for a city."""
+
+    # Collect flags per brand
+    avail_items, failed_items, cp_items, gmv_items = [], [], [], []
+
+    for _, row in city_df.iterrows():
+        brand = str(row.get("brand_name") or "—")
+        orders = fmt_num(row.get("delivered_orders"))
+        gmv_val = fmt_eur(row.get("gmv_eur"))
+        city = str(row.get("city_name") or "")
+        wow_pct = gmv_wow_map.get((brand, city))
+        flags = get_red_flags(row, wow_pct)
+
+        if flags["availability"]:
+            avail = safe_float(row.get("active_rate")) * 100
+            avail_items.append(
+                f'<div class="rf-item">'
+                f'<div class="rf-brand">{brand}</div>'
+                f'<div class="rf-detail">Availability: <b>{avail:.1f}%</b> (норма ≥95%) · {orders} зам.</div>'
+                f'<div class="rf-fix">→ Перевірити графік роботи та налаштування доступності</div>'
+                f'</div>'
+            )
+
+        if flags["failed_orders"]:
+            failed_abs = int(safe_float(row.get("failed_orders")))
+            failed_rate = safe_float(row.get("failed_order_rate")) * 100
+            avail_val = safe_float(row.get("active_rate")) * 100
+            avail_hint = ""
+            if avail_val < 95:
+                avail_hint = " · можлива причина — низька доступність"
+            accept_val = safe_float(row.get("acceptance_rate")) * 100
+            accept_hint = ""
+            if accept_val < 90 and accept_val > 0:
+                accept_hint = f" · acceptance rate {accept_val:.0f}%"
+            failed_items.append(
+                f'<div class="rf-item">'
+                f'<div class="rf-brand">{brand}</div>'
+                f'<div class="rf-detail"><b>{failed_abs} failed замовлень</b> ({failed_rate:.1f}% від розміщених){avail_hint}{accept_hint}</div>'
+                f'<div class="rf-fix">→ Перевірити причини відмов і налаштувати меню/доступність</div>'
+                f'</div>'
+            )
+
+        if flags["cp_negative"]:
+            cp_data = flags["cp_negative"]
+            margin = cp_data["margin"]
+            cp_html = (
+                f'<div class="rf-item">'
+                f'<div class="rf-brand">{brand}</div>'
+                f'<div class="rf-detail">CP L2 Margin: <b>{margin:.1f}%</b> · GMV: {gmv_val}</div>'
+            )
+            for r in cp_data["reasons"]:
+                cp_html += f'<div class="rf-reason">⚠ {r}</div>'
+            for f_ in cp_data["fixes"]:
+                cp_html += f'<div class="rf-fix">→ {f_}</div>'
+            cp_html += '</div>'
+            cp_items.append(cp_html)
+
+        if flags["gmv_drop"]:
+            wow = wow_pct if wow_pct is not None else 0
+            gmv_items.append(
+                f'<div class="rf-item">'
+                f'<div class="rf-brand">{brand}</div>'
+                f'<div class="rf-detail">GMV впав на <b>{abs(wow):.1f}%</b> WoW · Поточний: {gmv_val}</div>'
+                f'<div class="rf-fix">→ Перевірити динаміку замовлень та активність акцій</div>'
+                f'</div>'
+            )
+
+    total_flags = len(avail_items) + len(failed_items) + len(cp_items) + len(gmv_items)
+    if total_flags == 0:
         return ""
-    rows_html = ""
-    for item in problem_providers[:20]:
-        name = str(item.get("brand_name") or "—")
-        probs = item["problems"]
-        tags = "".join(f'<span class="problem-tag">{p}</span>' for p in probs)
-        orders = fmt_num(item.get("delivered_orders"))
-        gmv = fmt_eur(item.get("gmv_eur"))
-        locs = int(safe_float(item.get("locations_count"), 1))
-        locs_txt = f"{locs} лок." if locs > 1 else ""
-        rows_html += f"""
-        <div class="problem-row">
-          <div class="problem-row-header">
-            <span class="problem-name">⚠️ {name}</span>
-            <span style="font-size:11px;color:var(--muted)">({orders} зам. | {gmv}{' | ' + locs_txt if locs_txt else ''})</span>
-          </div>
-          <div class="problem-tags">{tags}</div>
-        </div>"""
+
+    def card(cls, icon, title, count, items):
+        body = "".join(items[:15]) if items else f'<div class="rf-empty">Немає порушень ✓</div>'
+        cnt = f' <span style="background:#fff2;border-radius:10px;padding:1px 7px;font-size:10px">{count}</span>' if count else ""
+        return f'<div class="rf-card {cls}"><h4>{icon} {title}{cnt}</h4>{body}</div>'
+
     return f"""
-    <div class="problems-box">
-      <h3>🚨 Бренди з проблемами ({len(problem_providers)})</h3>
-      {rows_html}
+    <div class="red-flags-wrap">
+      <div class="red-flags-title">🚩 Red Flag перформери ({total_flags} випадків)</div>
+      <div class="rf-grid">
+        {card("rf-avail",  "🔴", "Availability < 95%",         len(avail_items),  avail_items)}
+        {card("rf-failed", "🟠", "Failed замовлення > 2",       len(failed_items), failed_items)}
+        {card("rf-cp",     "🟣", "Від'ємна CP L2 Margin",       len(cp_items),     cp_items)}
+        {card("rf-gmv",    "📉", "Падіння GMV > 1% WoW",        len(gmv_items),    gmv_items)}
+      </div>
     </div>"""
 
 
-def build_provider_table(providers: pd.DataFrame, city_id: str) -> str:
+def build_provider_table(providers: pd.DataFrame, city_id: str, gmv_wow_map: dict = None) -> str:
     if providers.empty:
         return '<div class="no-data">Немає даних по брендах</div>'
 
+    gmv_wow_map = gmv_wow_map or {}
     table_id = f"tbl_{city_id}"
     rows_html = ""
     for _, row in providers.iterrows():
+        brand = str(row.get("brand_name") or "—")
+        city  = str(row.get("city_name") or "")
         orders = safe_float(row.get("delivered_orders"))
         gmv = safe_float(row.get("gmv_eur"))
         cp = safe_float(row.get("contribution_profit_eur"))
         cp_margin = safe_float(row.get("cp_l2_margin_pct"))
         locs = int(safe_float(row.get("locations_count"), 1))
-        problems = is_problematic(row)
-        problem_icon = '<span class="badge-problem"></span>' if problems else ""
+        avail = safe_float(row.get("active_rate")) * 100
+        failed_abs = safe_float(row.get("failed_orders"))
+        wow_pct = gmv_wow_map.get((brand, city))
+        flags = get_red_flags(row, wow_pct)
+        has_flags = has_any_flag(flags)
+
+        problem_icon = '<span class="badge-problem"></span>' if has_flags else ""
         top_val = str(row.get("is_top_brand"))
         top_badge = '<span class="badge-top">TOP</span>' if top_val in ["1", "1.0", "True", "true"] else ""
         cp_class = "positive" if cp_margin > 0 else "negative" if cp_margin < -1 else "neutral"
         failed_rate = safe_float(row.get("failed_order_rate"))
-        failed_class = "negative" if failed_rate > 0.05 else ""
-        row_class = "problem-highlight" if problems else ""
-        locs_badge = f'<span style="font-size:10px;background:#E3F2FD;color:#1565C0;border-radius:6px;padding:1px 5px;margin-left:4px">{locs} лок.</span>' if locs > 1 else ""
+        failed_class = "negative" if failed_abs > 2 else ""
+        avail_class = "negative" if 0 < avail < 95 else ""
+        row_class = "problem-highlight" if has_flags else ""
+        locs_badge = (
+            f'<span style="font-size:10px;background:#E3F2FD;color:#1565C0;'
+            f'border-radius:6px;padding:1px 5px;margin-left:4px">{locs} лок.</span>'
+        ) if locs > 1 else ""
+        # WoW GMV delta
+        if wow_pct is not None:
+            wow_color = "var(--danger)" if wow_pct < -1 else "#2E7D32"
+            wow_arrow = "▼" if wow_pct < 0 else "▲"
+            wow_html = f' <span style="font-size:10px;color:{wow_color}">{wow_arrow}{abs(wow_pct):.1f}%</span>'
+        else:
+            wow_html = ""
 
         rows_html += f"""
         <tr class="{row_class}">
-          <td>{problem_icon}{str(row.get('brand_name') or '—')} {top_badge}{locs_badge}</td>
+          <td>{problem_icon}{brand} {top_badge}{locs_badge}</td>
           <td>{str(row.get('business_segment_v2') or '—')}</td>
           <td class="num" data-val="{locs}">{locs}</td>
           <td class="num" data-val="{orders}">{fmt_num(orders)}</td>
-          <td class="num" data-val="{gmv}">{fmt_eur(gmv)}</td>
+          <td class="num" data-val="{gmv}">{fmt_eur(gmv)}{wow_html}</td>
           <td class="num" data-val="{cp}">{fmt_eur(cp)}</td>
           <td class="num {cp_class}" data-val="{cp_margin}">{fmt_pct(cp_margin)}</td>
-          <td class="num {failed_class}" data-val="{failed_rate}">{fmt_pct(failed_rate*100)}</td>
+          <td class="num {avail_class}" data-val="{avail}">{fmt_pct(avail) if avail > 0 else '—'}</td>
+          <td class="num {failed_class}" data-val="{failed_abs}">{int(failed_abs)}</td>
           <td class="num" data-val="{safe_float(row.get('bad_order_rate'))}">{fmt_pct(safe_float(row.get('bad_order_rate'))*100)}</td>
           <td class="num" data-val="{safe_float(row.get('acceptance_rate'))}">{fmt_pct(safe_float(row.get('acceptance_rate'))*100)}</td>
         </tr>"""
 
     search_id = f"search_{city_id}"
-    num_cols = 10
+    num_cols = 11
     sort_js = "".join(f"let sort_{table_id}_{i}=false;" for i in range(num_cols))
     header_cols = [
-        ("Бренд", 0), ("Сегмент", 1), ("Локацій", 2),
-        ("Замовлення", 3), ("GMV, €", 4), ("Contribution Profit, €", 5),
-        ("CP L2 Маржа", 6), ("Failed Rate", 7), ("Bad Order Rate", 8), ("Acceptance Rate", 9),
+        ("Бренд", 0), ("Сегмент", 1), ("Лок.", 2),
+        ("Замовлення", 3), ("GMV, €", 4), ("CP, €", 5),
+        ("CP L2 %", 6), ("Availability", 7), ("Failed зам.", 8),
+        ("Bad Order %", 9), ("Acceptance %", 10),
     ]
     th_html = ""
     for label, idx in header_cols:
@@ -1210,10 +1424,11 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     cities = sorted(df["city_name"].dropna().unique().tolist())
-    # Total unique brands across all cities
     total_brands = df["brand_name"].nunique()
-    # Total locations = sum of locations_count
     total_locations = int(df["locations_count"].fillna(1).sum()) if "locations_count" in df.columns else total_brands
+
+    # Compute week-over-week GMV change from trends
+    gmv_wow_map = compute_gmv_wow(df_trends)
 
     city_tabs_html = ""
     city_sections_html = ""
@@ -1224,9 +1439,19 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
         brands_count = len(city_df)
         locs_count = int(city_df["locations_count"].fillna(1).sum()) if "locations_count" in city_df.columns else brands_count
 
+        # Count red flags for tab badge
+        n_flags = sum(
+            1 for _, row in city_df.iterrows()
+            if has_any_flag(get_red_flags(row, gmv_wow_map.get((str(row.get("brand_name") or ""), city))))
+        )
+        flag_badge = (
+            f' <span style="background:#E53935;color:#fff;border-radius:8px;'
+            f'padding:1px 6px;font-size:10px;font-weight:700">🚩{n_flags}</span>'
+        ) if n_flags > 0 else ""
+
         city_tabs_html += (
             f'<div class="city-tab" id="tab-{cid}" onclick="showCity(\'{cid}\')">'
-            f'{city} <span style="font-size:11px;color:var(--muted)">({brands_count})</span></div>'
+            f'{city}{flag_badge} <span style="font-size:11px;color:var(--muted)">({brands_count})</span></div>'
         )
 
         # Totals for the city
@@ -1257,24 +1482,25 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
             <div class="stat-value {'positive' if total_cp >= 0 else 'negative'}">{fmt_eur(total_cp)}</div>
             <div class="stat-sub">маржа: {fmt_pct(avg_cp_margin)}</div>
           </div>
+          <div class="stat-box" style="border-top:3px solid #E53935">
+            <div class="stat-label" style="color:#E53935">🚩 Red Flags</div>
+            <div class="stat-value" style="color:#E53935">{n_flags}</div>
+            <div class="stat-sub">брендів з проблемами</div>
+          </div>
         </div>"""
 
         # TOP 3 by each metric
         top_orders_html = build_top_card(city_df, "delivered_orders", "ТОП по замовленнях", "📦", fmt_num)
-        top_gmv_html = build_top_card(city_df, "gmv_eur", "ТОП по GMV", "💰", fmt_eur)
-        top_cp_html = build_top_card(city_df, "contribution_profit_eur", "ТОП по CP L2", "📈", fmt_eur)
+        top_gmv_html    = build_top_card(city_df, "gmv_eur", "ТОП по GMV", "💰", fmt_eur)
+        top_cp_html     = build_top_card(city_df, "contribution_profit_eur", "ТОП по CP L2", "📈", fmt_eur)
 
-        # Problems
-        problem_list = []
-        for _, row in city_df.iterrows():
-            probs = is_problematic(row)
-            if probs:
-                problem_list.append({**row.to_dict(), "problems": probs})
-        problem_list.sort(key=lambda x: len(x["problems"]), reverse=True)
-        problems_html = build_problems_box(problem_list)
+        # Red Flags panel
+        red_flags_html = build_red_flags_panel(city_df, gmv_wow_map)
 
         # Brand table
-        table_html = build_provider_table(city_df.sort_values("gmv_eur", ascending=False), cid)
+        table_html = build_provider_table(
+            city_df.sort_values("gmv_eur", ascending=False), cid, gmv_wow_map
+        )
 
         city_sections_html += f"""
         <div class="city-section" id="city-{cid}">
@@ -1287,13 +1513,13 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
 
           {stats_html}
 
+          {red_flags_html}
+
           <div class="top-grid">
             {top_orders_html}
             {top_gmv_html}
             {top_cp_html}
           </div>
-
-          {problems_html}
 
           {table_html}
         </div>"""
