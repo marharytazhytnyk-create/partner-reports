@@ -171,6 +171,8 @@ def fetch_provider_summary() -> pd.DataFrame:
         MIN(p.delivery_vertical)    AS delivery_vertical,
         MAX(CAST(p.is_top_brand AS INT)) AS is_top_brand,
         COUNT(DISTINCT p.provider_id) AS locations_count,
+        MIN(p.owner_email)  AS owner_email,
+        MIN(p.provider_email) AS provider_email,
         SUM(f.delivered_orders_count)            AS delivered_orders,
         SUM(f.failed_orders_count)               AS failed_orders,
         SUM(f.placed_orders_count)               AS placed_orders,
@@ -1305,9 +1307,10 @@ def build_red_flags_panel(city_df: pd.DataFrame, gmv_wow_map: dict) -> str:
         return ""
 
     def card(cls, icon, title, count, items):
-        body = "".join(items[:15]) if items else f'<div class="rf-empty">Немає порушень ✓</div>'
+        body = "".join(items[:5]) if items else f'<div class="rf-empty">Немає порушень ✓</div>'
+        more = f'<div class="rf-detail" style="text-align:center;padding:6px 0;color:var(--muted)">+ ще {count - 5} бренд(ів)…</div>' if count > 5 else ""
         cnt = f' <span style="background:#fff2;border-radius:10px;padding:1px 7px;font-size:10px">{count}</span>' if count else ""
-        return f'<div class="rf-card {cls}"><h4>{icon} {title}{cnt}</h4>{body}</div>'
+        return f'<div class="rf-card {cls}"><h4>{icon} {title}{cnt}</h4>{body}{more}</div>'
 
     return f"""
     <div class="red-flags-wrap">

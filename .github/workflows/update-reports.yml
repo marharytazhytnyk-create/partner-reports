@@ -165,3 +165,13 @@ jobs:
           git add "Marharyta_Portfolio/"
           git diff --staged --quiet || git commit -m "📊 Marharyta Portfolio report — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
+
+      - name: Send Red Flag email notifications
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+          GMAIL_USER:            ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:    ${{ secrets.GMAIL_APP_PASSWORD }}
+          AM_EMAIL:              ${{ secrets.AM_EMAIL }}
+        run: python Marharyta_Portfolio/send_red_flag_emails.py
