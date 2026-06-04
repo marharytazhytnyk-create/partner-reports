@@ -174,4 +174,7 @@ jobs:
           GMAIL_USER:            ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD:    ${{ secrets.GMAIL_APP_PASSWORD }}
           AM_EMAIL:              ${{ secrets.AM_EMAIL }}
+          # TEST_MODE=true → всі листи йдуть тільки на AM_EMAIL (не партнерам)
+          # Змінити на "false" коли готова до бойового запуску
+          TEST_MODE: "true"
         run: python Marharyta_Portfolio/send_red_flag_emails.py

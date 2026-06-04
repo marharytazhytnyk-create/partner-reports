@@ -30,7 +30,9 @@ CLUSTER_ID      = os.getenv("DATABRICKS_CLUSTER_ID", "0221-081903-9ag4bh69")
 
 GMAIL_USER     = os.getenv("GMAIL_USER", "")
 GMAIL_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
-AM_EMAIL       = os.getenv("AM_EMAIL", "")          # optional BCC
+AM_EMAIL       = os.getenv("AM_EMAIL", "")          # BCC (or TEST recipient)
+# When TEST_MODE=true — emails go ONLY to AM_EMAIL, not to actual partners
+TEST_MODE      = os.getenv("TEST_MODE", "false").lower() == "true"
 
 ACCOUNT_MANAGER = "Marharyta Zhytnyk"
 COUNTRY_CODE    = "ua"
@@ -382,6 +384,12 @@ def main():
     if not GMAIL_USER or not GMAIL_PASSWORD:
         print("ERROR: GMAIL_USER or GMAIL_APP_PASSWORD not set"); sys.exit(1)
 
+    if TEST_MODE:
+        if not AM_EMAIL:
+            print("ERROR: TEST_MODE=true but AM_EMAIL not set — nowhere to send test emails")
+            sys.exit(1)
+        print(f"⚠️  TEST MODE — всі листи підуть тільки на {AM_EMAIL} (не реальним партнерам)\n")
+
     df = fetch_summary()
 
     # Score every row and pick worst TOP_N per city
@@ -413,18 +421,30 @@ def main():
         flag_summary = ", ".join(f for _, f in flags[:2])
         print(f"  [{brand} / {city}] score={item['score']:.1f} | {flag_summary}")
 
-        if not email or email.lower() in ("none", "nan", ""):
-            print(f"    ⚠ No contact email found — skipping")
-            skipped += 1
-            continue
+        if TEST_MODE:
+            # In test mode — send to AM only, use partner email only as label
+            actual_to = AM_EMAIL
+            email_label = f"{email or 'немає email'} → ТЕСТ: надіслано на {AM_EMAIL}"
+        else:
+            if not email or email.lower() in ("none", "nan", ""):
+                print(f"    ⚠ No contact email found — skipping")
+                skipped += 1
+                continue
+            actual_to   = email
+            email_label = email
 
-        subject = f"Bolt Food — Увага! Показники закладу потребують уваги ({REPORT_DATE})"
+        subject = (
+            f"[ТЕСТ] Bolt Food — {brand} / {city} — Red Flag ({REPORT_DATE})"
+            if TEST_MODE else
+            f"Bolt Food — Увага! Показники закладу потребують уваги ({REPORT_DATE})"
+        )
         html_body  = build_email_html(brand, city, flags, item)
         plain_body = build_email_text(brand, flags)
 
-        ok = send_email(email, subject, html_body, plain_body, bcc=AM_EMAIL)
+        ok = send_email(actual_to, subject, html_body, plain_body,
+                        bcc="" if TEST_MODE else AM_EMAIL)
         if ok:
-            print(f"    ✓ Sent to {email}")
+            print(f"    ✓ Sent to {email_label}")
             sent += 1
         # Small delay between emails
         time.sleep(1)
