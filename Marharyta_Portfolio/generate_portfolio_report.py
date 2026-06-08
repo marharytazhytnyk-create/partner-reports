@@ -901,6 +901,81 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   .city-tab-dynamics.active {{
     border-bottom-color: var(--bolt-mid-green) !important;
   }}
+
+  /* ── OVERVIEW PAGE ── */
+  .ov-kpi-row {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }}
+  @media (max-width: 900px) {{ .ov-kpi-row {{ grid-template-columns: 1fr; }} }}
+
+  .ov-kpi-card {{
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+  }}
+  .ov-kpi-icon {{ font-size: 24px; margin-bottom: 8px; }}
+  .ov-kpi-title {{
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }}
+  .ov-kpi-value {{
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--bolt-dark);
+    margin-bottom: 6px;
+  }}
+  .ov-kpi-delta {{ margin-bottom: 4px; }}
+  .ov-kpi-sub {{
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }}
+  .ov-analysis {{
+    background: #FFF8F0;
+    border-left: 3px solid #FB8C00;
+    border-radius: 0 6px 6px 0;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #555;
+  }}
+  .ov-analysis-title {{
+    font-weight: 700;
+    color: #E65100;
+    font-size: 11px;
+    margin-bottom: 4px;
+  }}
+
+  .ov-charts-row {{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }}
+  @media (max-width: 900px) {{ .ov-charts-row {{ grid-template-columns: 1fr; }} }}
+
+  .ov-chart-card {{
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+  }}
+  .ov-chart-title {{
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.4px;
+    margin-bottom: 10px;
+  }}
 </style>
 </head>
 <body>
@@ -1157,8 +1232,10 @@ function renderCharts() {{
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {{
-  const firstTab = document.querySelector('.city-tab:not(.city-tab-dynamics)');
-  if (firstTab) firstTab.click();
+  // Overview tab is already active by default via HTML class
+  // but trigger click to ensure consistent state
+  const overviewTab = document.getElementById('tab-overview');
+  if (overviewTab) overviewTab.click();
 }});
 </script>
 </body>
@@ -1414,6 +1491,248 @@ def build_provider_table(providers: pd.DataFrame, city_id: str, gmv_wow_map: dic
     <script>{sort_js}</script>"""
 
 
+def build_overview_section(df_trends: pd.DataFrame) -> str:
+    """
+    Build the portfolio overview section comparing last week vs previous week.
+    Returns HTML string.
+    """
+    import math
+
+    if df_trends.empty:
+        return '<div class="no-data">Немає трендових даних для аналізу</div>'
+
+    for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
+                "cp_l2_margin_pct", "failed_order_rate_pct",
+                "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct"]:
+        if col in df_trends.columns:
+            df_trends[col] = pd.to_numeric(df_trends[col], errors="coerce")
+
+    # Aggregate to portfolio level per week
+    portfolio_weekly = (
+        df_trends.groupby("week_start", sort=True)
+        .agg(
+            gmv=("gmv_eur", "sum"),
+            orders=("delivered_orders", "sum"),
+            cp=("contribution_profit_eur", "sum"),
+            failed_rate=("failed_order_rate_pct", "mean"),
+            bad_rate=("bad_order_rate_pct", "mean"),
+            acceptance=("acceptance_rate_pct", "mean"),
+            late_rate=("late_delivery_rate_pct", "mean"),
+        )
+        .reset_index()
+        .sort_values("week_start")
+    )
+
+    if len(portfolio_weekly) < 2:
+        return '<div class="no-data">Недостатньо даних для порівняння тижнів</div>'
+
+    last  = portfolio_weekly.iloc[-1]
+    prev  = portfolio_weekly.iloc[-2]
+    last_week_label = last["week_start"]
+    prev_week_label = prev["week_start"]
+
+    def wow(curr, prev_val):
+        try:
+            c, p = float(curr), float(prev_val)
+            if p == 0 or math.isnan(c) or math.isnan(p):
+                return None
+            return (c / p - 1) * 100
+        except (TypeError, ValueError):
+            return None
+
+    gmv_wow    = wow(last["gmv"],    prev["gmv"])
+    orders_wow = wow(last["orders"], prev["orders"])
+    cp_wow     = wow(last["cp"],     prev["cp"])
+
+    # CP margin %
+    cp_margin_last = (float(last["cp"]) / float(last["gmv"]) * 100) if float(last["gmv"]) > 0 else 0
+    cp_margin_prev = (float(prev["cp"]) / float(prev["gmv"]) * 100) if float(prev["gmv"]) > 0 else 0
+
+    # ── Trend chart data (all weeks, portfolio level) ──────────────────────────
+    weeks_labels = [w for w in portfolio_weekly["week_start"].tolist()]
+    weeks_js = json.dumps(weeks_labels)
+    gmv_series    = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["gmv"]])
+    orders_series = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["orders"]])
+    cp_series     = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["cp"]])
+
+    def kpi_card(icon, title, value_str, wow_pct, sub, analysis_html=""):
+        if wow_pct is None:
+            delta_html = '<span style="color:#aaa;font-size:13px">— WoW</span>'
+        elif wow_pct > 0:
+            delta_html = f'<span style="color:#2E7D32;font-size:14px;font-weight:700">▲ {wow_pct:.1f}%</span>'
+        else:
+            delta_html = f'<span style="color:#E53935;font-size:14px;font-weight:700">▼ {abs(wow_pct):.1f}%</span>'
+
+        border = "#E53935" if (wow_pct is not None and wow_pct < 0) else "#1DC462"
+        return f"""
+        <div class="ov-kpi-card" style="border-top:4px solid {border}">
+          <div class="ov-kpi-icon">{icon}</div>
+          <div class="ov-kpi-title">{title}</div>
+          <div class="ov-kpi-value">{value_str}</div>
+          <div class="ov-kpi-delta">{delta_html}</div>
+          <div class="ov-kpi-sub">{sub}</div>
+          {analysis_html}
+        </div>"""
+
+    def drop_analysis(metric: str, wow_pct, last_row, prev_row) -> str:
+        """Generate Ukrainian explanation for a metric drop."""
+        if wow_pct is None or wow_pct >= 0:
+            return ""
+
+        lines = []
+
+        failed  = float(last_row.get("failed_rate", 0) or 0)
+        bad     = float(last_row.get("bad_rate",    0) or 0)
+        accept  = float(last_row.get("acceptance",  0) or 0)
+        late    = float(last_row.get("late_rate",   0) or 0)
+
+        prev_failed  = float(prev_row.get("failed_rate", 0) or 0)
+        prev_bad     = float(prev_row.get("bad_rate",    0) or 0)
+        prev_accept  = float(prev_row.get("acceptance",  0) or 0)
+
+        if metric == "gmv":
+            # Check if orders also dropped
+            o_wow = wow(last_row["orders"], prev_row["orders"])
+            if o_wow is not None and o_wow < -1:
+                lines.append(f"Кількість замовлень також знизилась на {abs(o_wow):.1f}% — менша активність покупців або нижча доступність закладів")
+            else:
+                lines.append("Кількість замовлень залишилась стабільною — можливо знизився середній чек замовлення")
+            if bad > 10:
+                lines.append(f"Висока частка поганих замовлень ({bad:.1f}%) — збільшились витрати на компенсації")
+            if failed > 3 and failed > prev_failed * 1.1:
+                lines.append(f"Зросла кількість зафейлених замовлень ({failed:.1f}%) — прямі втрати GMV")
+
+        elif metric == "orders":
+            if accept < 90 and accept < prev_accept - 2:
+                lines.append(f"Знизився Acceptance Rate ({accept:.1f}%) — частіші відмови від замовлень")
+            if failed > 3 and failed > prev_failed * 1.1:
+                lines.append(f"Зросла частка failed замовлень ({failed:.1f}%) — заклади не приймали замовлення")
+            if late > 20:
+                lines.append(f"Висока частка запізнень ({late:.1f}%) — погіршення досвіду покупців знижує повторні замовлення")
+            if not lines:
+                lines.append("Можлива сезонність або зниження активності в окремих містах")
+
+        elif metric == "cp":
+            if bad > 10 and bad > prev_bad * 1.05:
+                lines.append(f"Зросла частка поганих замовлень ({bad:.1f}%) — більші витрати на повернення коштів")
+            if failed > 3:
+                lines.append(f"Зафейлені замовлення ({failed:.1f}%) — прямі збитки без доходу")
+            if accept < 88 and accept < prev_accept - 2:
+                lines.append(f"Падіння Acceptance Rate ({accept:.1f}%) — витрати без реалізованого GMV")
+            # Check GMV drop
+            g_wow = wow(last_row["gmv"], prev_row["gmv"])
+            if g_wow is not None and g_wow < -2:
+                lines.append(f"Загальний GMV знизився на {abs(g_wow):.1f}% — менший обсяг для покриття постійних витрат")
+            if not lines:
+                lines.append("Зміна структури замовлень або умов комісії — рекомендується детальний аналіз по брендах")
+
+        if not lines:
+            return ""
+
+        items = "".join(f'<li style="margin-bottom:4px">{l}</li>' for l in lines)
+        return f"""
+        <div class="ov-analysis">
+          <div class="ov-analysis-title">🔍 Можливі причини зниження:</div>
+          <ul style="margin:6px 0 0 16px;padding:0">{items}</ul>
+        </div>"""
+
+    gmv_analysis    = drop_analysis("gmv",    gmv_wow,    last, prev)
+    orders_analysis = drop_analysis("orders", orders_wow, last, prev)
+    cp_analysis     = drop_analysis("cp",     cp_wow,     last, prev)
+
+    kpi1 = kpi_card("💰", "GMV останній тиждень",
+                    fmt_eur(last["gmv"]),
+                    gmv_wow,
+                    f"Попередній: {fmt_eur(prev['gmv'])}",
+                    gmv_analysis)
+    kpi2 = kpi_card("📦", "Delivered Orders",
+                    fmt_num(last["orders"]),
+                    orders_wow,
+                    f"Попередній: {fmt_num(prev['orders'])} замовлень",
+                    orders_analysis)
+    kpi3 = kpi_card("📈", "Contribution Margin",
+                    fmt_eur(last["cp"]),
+                    cp_wow,
+                    f"Маржа: {cp_margin_last:.1f}% (попер. {cp_margin_prev:.1f}%)",
+                    cp_analysis)
+
+    # Mini sparkline charts using Chart.js
+    charts_html = f"""
+    <div class="ov-charts-row">
+      <div class="ov-chart-card">
+        <div class="ov-chart-title">GMV по тижнях (€)</div>
+        <canvas id="ovChartGmv" height="80"></canvas>
+      </div>
+      <div class="ov-chart-card">
+        <div class="ov-chart-title">Замовлення по тижнях</div>
+        <canvas id="ovChartOrders" height="80"></canvas>
+      </div>
+      <div class="ov-chart-card">
+        <div class="ov-chart-title">Contribution Profit по тижнях (€)</div>
+        <canvas id="ovChartCp" height="80"></canvas>
+      </div>
+    </div>
+    <script>
+    (function() {{
+      function mkSparkline(id, labels, data, color) {{
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        new Chart(ctx, {{
+          type: 'line',
+          data: {{
+            labels: labels.map(w => {{
+              const months = ['','січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'];
+              const [,m,d] = w.split('-'); return parseInt(d)+' '+months[parseInt(m)];
+            }}),
+            datasets: [{{
+              data,
+              borderColor: color,
+              backgroundColor: color + '18',
+              borderWidth: 2.5,
+              pointRadius: data.map((_, i) => i === data.length - 1 ? 5 : 3),
+              pointBackgroundColor: data.map((_, i) => i === data.length - 1 ? color : '#fff'),
+              tension: 0.3,
+              fill: true,
+            }}]
+          }},
+          options: {{
+            responsive: true,
+            plugins: {{ legend: {{ display: false }}, tooltip: {{ mode: 'index' }} }},
+            scales: {{
+              x: {{ ticks: {{ font: {{ size: 10 }}, maxRotation: 30 }}, grid: {{ display: false }} }},
+              y: {{ ticks: {{ font: {{ size: 10 }} }}, grid: {{ color: '#f0f0f0' }} }}
+            }}
+          }}
+        }});
+      }}
+      mkSparkline('ovChartGmv',    {weeks_js}, {gmv_series},    '#1DC462');
+      mkSparkline('ovChartOrders', {weeks_js}, {orders_series}, '#1976D2');
+      mkSparkline('ovChartCp',     {weeks_js}, {cp_series},     '#7B1FA2');
+    }})();
+    </script>"""
+
+    # Comparison week label
+    week_label = f"Тиждень {last_week_label} vs {prev_week_label}"
+
+    return f"""
+    <div class="city-section active" id="city-overview">
+      <div class="section-title">
+        🏠 Огляд портфоліо
+        <span class="badge">Marharyta Zhytnyk</span>
+      </div>
+      <div class="section-sub">{week_label} · порівняння останніх двох повних тижнів</div>
+      <div class="period-info">📅 Дані за останні 12 тижнів · Останній тиждень: {last_week_label}</div>
+
+      <div class="ov-kpi-row">
+        {kpi1}
+        {kpi2}
+        {kpi3}
+      </div>
+
+      {charts_html}
+    </div>"""
+
+
 def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_date: str) -> str:
     """Build full HTML report from DataFrame."""
     if df.empty:
@@ -1433,8 +1752,14 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
     # Compute week-over-week GMV change from trends
     gmv_wow_map = compute_gmv_wow(df_trends)
 
-    city_tabs_html = ""
-    city_sections_html = ""
+    # Build overview section
+    overview_section = build_overview_section(df_trends.copy() if not df_trends.empty else df_trends)
+
+    city_tabs_html = (
+        '<div class="city-tab active" id="tab-overview" onclick="showCity(\'overview\')">'
+        '🏠 Огляд портфоліо</div>'
+    )
+    city_sections_html = overview_section
 
     for city in cities:
         cid = city_slug(city)
