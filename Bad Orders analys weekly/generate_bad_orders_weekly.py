@@ -1,0 +1,829 @@
+#!/usr/bin/env python3
+"""
+Marharyta Zhytnyk Portfolio — щотижневий аналіз Bad Orders / Failed Orders.
+
+Джерело: Databricks SQL (ng_delivery_spark).
+Тиждень за замовчуванням — останній повний календарний тиждень (пн–нд).
+Можна передати BAD_ORDERS_WEEK_START=YYYY-MM-DD або згенерувати кілька тижнів.
+"""
+
+from __future__ import annotations
+
+import html
+import json
+import os
+import re
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+import pandas as pd
+from databricks import sql
+
+ACCOUNT_MANAGER = "Marharyta Zhytnyk"
+COUNTRY_CODE = "ua"
+
+SERVER_HOSTNAME = "bolt-incentives.cloud.databricks.com"
+HTTP_PATH = "sql/protocolv1/o/2472566184436351/0221-081903-9ag4bh69"
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_HTML = SCRIPT_DIR / "bad_orders_weekly.html"
+
+CITY_UA = {
+    "Bila Tserkva": "Біла Церква",
+    "Boryspil": "Бориспіль",
+    "Cherkasy": "Черкаси",
+    "Chernihiv": "Чернігів",
+    "Chernivtsi": "Чернівці",
+    "Dnipro": "Дніпро",
+    "Kharkiv": "Харків",
+    "Kremenchuk": "Кременчук",
+    "Kryvyi Rih": "Кривий Ріг",
+    "Kyiv": "Київ",
+    "Lviv": "Львів",
+    "Odesa": "Одеса",
+    "Oleksandriia": "Олександрія",
+    "Pavlohrad": "Павлоград",
+    "Poltava": "\u041f\u043e\u043b\u0442\u0430\u0432\u0430",
+    "Sumy": "Суми",
+    "Vinnytsia": "Вінниця",
+    "Zaporizhia": "Запоріжжя",
+    "Zhytomyr": "Житомир",
+}
+
+ACTOR_UA = {
+    "bolt": "Bolt (платформа)",
+    "courier": "Кур'єр",
+    "provider": "Заклад",
+    "eater": "Клієнт",
+    "client": "Клієнт",
+    "unknown": "Невизначено",
+    None: "Невизначено",
+    "": "Невизначено",
+}
+
+REASON_UA = {
+    "bolt_cooking_eta_underestimate_seconds": "Bolt занизив ETA приготування",
+    "bolt_assignment_delay_from_supply_starvation_seconds": "Bolt: затримка призначення кур'єра (дефіцит кур'єрів)",
+    "bolt_assignment_delay_from_rejections_seconds": "Bolt: затримка через відмови кур'єрів",
+    "bolt_batching_delay_seconds": "Bolt: затримка через батчинг замовлень",
+    "bolt_dispatch_start_delay_seconds": "Bolt: затримка старту диспетчеризації",
+    "bolt_prep_instruction_delay_seconds": "Bolt: затримка інструкцій для закладу",
+    "courier_to_provider_eta_error_seconds": "Кур'єр: помилка ETA до закладу",
+    "provider_to_eater_eta_error_seconds": "Кур'єр: помилка ETA до клієнта",
+    "courier_redispatch_duration_seconds": "Кур'єр: повторна диспетчеризація",
+    "pickup_delay_courier_fault_seconds": "Кур'єр: затримка на pickup",
+    "courier_dropoff_delay_adjusted_seconds": "Кур'єр: затримка на доставці",
+    "order_never_delivered_eater": "Замовлення не доставлено клієнту",
+    "provider_preparation_delay_seconds": "Заклад: затримка приготування",
+    "provider_preparation_overestimate_seconds": "Заклад: переоцінка часу приготування",
+    "pickup_delay_provider_fault_seconds": "Заклад: затримка на видачі",
+    "did_not_respond": "Заклад: не відповів на замовлення",
+    "missing_item_eater": "Заклад: відсутня позиція в замовленні",
+    "items_out_of_stock": "Заклад: позиції немає в наявності",
+    "too_many_orders": "Заклад: занадто багато замовлень",
+    "closed": "Заклад: закритий",
+    "do_not_wish_to_serve_this_client": "Заклад: відмова обслуговувати клієнта",
+    "wrong_item_eater": "Заклад: неправильна позиція",
+    "item_had_a_spoiled_taste_or_smell_eater": "Поганий смак/запах страви",
+    "manually_failed_by_cs": "Скасовано службою підтримки",
+    "order_damaged_eater": "Пошкоджене замовлення",
+    "order_took_longer_eater": "Замовлення зайняло більше часу",
+    "unknown": "Невизначена причина",
+    None: "Без деталізації",
+}
+
+
+def get_token() -> str:
+    token = os.environ.get("DATABRICKS_TOKEN")
+    if token:
+        return token
+    for env_path in (
+        Path(__file__).resolve().parent.parent / "databricks-setup" / ".env",
+        Path.home()
+        / "Library"
+        / "CloudStorage"
+        / "GoogleDrive-marharyta.zhytnyk@bolt.eu"
+        / "My Drive"
+        / "Events project"
+        / "databricks-setup"
+        / ".env",
+    ):
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith("DATABRICKS_TOKEN="):
+                    return line.split("=", 1)[1].strip()
+    raise RuntimeError("DATABRICKS_TOKEN not found")
+
+
+def week_bounds(week_start: date | None = None) -> tuple[date, date]:
+    if week_start:
+        return week_start, week_start + timedelta(days=6)
+    if os.environ.get("BAD_ORDERS_WEEK_START"):
+        start = date.fromisoformat(os.environ["BAD_ORDERS_WEEK_START"])
+        return start, start + timedelta(days=6)
+    today = date.today()
+    end = today if today.weekday() == 6 else today - timedelta(days=today.weekday() + 1)
+    return end - timedelta(days=6), end
+
+
+def city_ua(name: str | None) -> str:
+    if not name:
+        return "—"
+    return CITY_UA.get(name, name)
+
+
+def reason_ua(code) -> str:
+    if code is None or (isinstance(code, float) and pd.isna(code)):
+        return REASON_UA[None]
+    return REASON_UA.get(str(code), str(code).replace("_", " "))
+
+
+def actor_ua(code) -> str:
+    if code is None or (isinstance(code, float) and pd.isna(code)):
+        return ACTOR_UA[None]
+    return ACTOR_UA.get(str(code).lower(), str(code))
+
+
+def classify_failed(row: pd.Series) -> str:
+    state = str(row.get("final_state") or "")
+    if state == "rejected" or row.get("is_rejected_by_provider") is True:
+        return "provider"
+    ncr = int(row.get("number_courier_rejects") or 0)
+    if state == "failed" and ncr > 0:
+        return "courier"
+    if row.get("has_eater_cancellation_ticket") is True:
+        return "client"
+    return "bolt"
+
+
+def failed_detail_ua(row: pd.Series) -> str:
+    state = str(row.get("final_state") or "")
+    from_st = str(row.get("from_state") or "") or "—"
+    ncr = int(row.get("number_courier_rejects") or 0)
+    fault = classify_failed(row)
+    if state == "rejected":
+        return f"Замовлення відхилено закладом (етап: {from_st})"
+    if state == "failed":
+        parts = []
+        stage = {
+            "waiting_delivery": "зрив на етапі доставки",
+            "waiting_preparation": "зрив під час приготування",
+            "waiting_acceptance": "зрив після прийняття",
+        }.get(from_st, f"зрив з етапу «{from_st}»")
+        parts.append(stage)
+        if ncr:
+            parts.append(f"відмови кур'єра: {ncr}")
+        if row.get("has_eater_cancellation_ticket") is True:
+            parts.append("є скасування з боку клієнта")
+        if row.get("is_rejected_by_provider") is True:
+            parts.append("позначено як відхилення закладом")
+        return "Failed: " + "; ".join(parts)
+    return state
+
+
+def run_query(conn, q: str) -> pd.DataFrame:
+    with conn.cursor() as cur:
+        cur.execute(q)
+        cols = [d[0] for d in cur.description]
+        return pd.DataFrame(cur.fetchall(), columns=cols)
+
+
+def fetch_week_data(conn, week_start: date, week_end: date) -> dict:
+    d0, d1 = week_start.isoformat(), week_end.isoformat()
+    print(f"  Fetching {d0} .. {d1} …")
+
+    sql_summary = f"""
+    SELECT
+        p.brand_name,
+        p.city_name,
+        COUNT(*) AS total_orders,
+        SUM(CASE WHEN o.state = 'delivered' THEN 1 ELSE 0 END) AS delivered,
+        SUM(CASE WHEN f.is_bad_order = true OR o.state IN ('failed','rejected') THEN 1 ELSE 0 END) AS bad_count,
+        SUM(CASE WHEN o.state IN ('failed','rejected') THEN 1 ELSE 0 END) AS failed_count
+    FROM ng_delivery_spark.delivery_order_order o
+    INNER JOIN ng_delivery_spark.fact_order_delivery f ON f.order_id = o.id
+    INNER JOIN ng_delivery_spark.dim_provider_v2 p ON p.provider_id = o.provider_id
+    WHERE p.account_manager_name = '{ACCOUNT_MANAGER}'
+      AND p.country_code = '{COUNTRY_CODE}'
+      AND o.created_date BETWEEN '{d0}' AND '{d1}'
+    GROUP BY p.brand_name, p.city_name
+    """
+
+    sql_orders = f"""
+    SELECT
+        o.id AS order_id,
+        o.state AS final_state,
+        o.created AS order_created,
+        p.provider_id,
+        p.provider_name,
+        p.brand_name,
+        p.city_name,
+        f.is_bad_order,
+        f.is_rejected_by_provider,
+        f.number_courier_rejects,
+        f.has_eater_cancellation_ticket,
+        f.order_food_rating_value,
+        a.bad_order_actor_at_fault,
+        a.bad_order_main_reason,
+        a.late_delivery_actor_at_fault_reason
+    FROM ng_delivery_spark.delivery_order_order o
+    INNER JOIN ng_delivery_spark.fact_order_delivery f ON f.order_id = o.id
+    INNER JOIN ng_delivery_spark.dim_provider_v2 p ON p.provider_id = o.provider_id
+    LEFT JOIN ng_delivery_spark.int_order_bad_order_attribution a ON a.order_id = o.id
+    WHERE p.account_manager_name = '{ACCOUNT_MANAGER}'
+      AND p.country_code = '{COUNTRY_CODE}'
+      AND o.created_date BETWEEN '{d0}' AND '{d1}'
+      AND (
+        f.is_bad_order = true
+        OR o.state IN ('failed', 'rejected')
+      )
+    ORDER BY p.city_name, p.brand_name, o.created
+    """
+
+    df_summary = run_query(conn, sql_summary)
+    df_orders = run_query(conn, sql_orders)
+
+    if len(df_orders):
+        ids = ",".join(str(int(x)) for x in df_orders["order_id"].tolist())
+        sql_log = f"""
+        SELECT order_id, from_state, to_state
+        FROM (
+          SELECT order_id, from_state, to_state,
+                 ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY created DESC) AS rn
+          FROM ng_delivery_spark.delivery_order_order_state_log
+          WHERE order_id IN ({ids})
+            AND created_date >= DATE_SUB('{d0}', 5)
+            AND created_date <= DATE_ADD('{d1}', 8)
+        ) t WHERE rn = 1
+        """
+        df_log = run_query(conn, sql_log)
+        df_orders = df_orders.merge(df_log, on="order_id", how="left")
+    else:
+        df_orders["from_state"] = None
+        df_orders["to_state"] = None
+
+    return build_week_payload(week_start, week_end, df_summary, df_orders)
+
+
+def build_week_payload(
+    week_start: date, week_end: date, df_summary: pd.DataFrame, df_orders: pd.DataFrame
+) -> dict:
+    partners: dict[str, dict] = {}
+
+    for _, row in df_summary.iterrows():
+        brand = str(row["brand_name"] or "—")
+        city = str(row["city_name"] or "—")
+        key = f"{brand}|||{city}"
+        delivered = int(row["delivered"] or 0)
+        bad = int(row["bad_count"] or 0)
+        failed = int(row["failed_count"] or 0)
+        partners[key] = {
+            "brand": brand,
+            "city": city,
+            "city_ua": city_ua(city),
+            "delivered": delivered,
+            "bad_count": bad,
+            "failed_count": failed,
+            "bad_pct": round(bad / delivered * 100, 2) if delivered else 0,
+            "failed_pct": round(failed / delivered * 100, 2) if delivered else 0,
+            "failed_by_fault": defaultdict(int),
+            "bad_by_actor": defaultdict(int),
+            "bad_by_reason": defaultdict(int),
+            "failed_orders": [],
+            "bad_orders": [],
+        }
+
+    for _, r in df_orders.iterrows():
+        brand = str(r["brand_name"] or "—")
+        city = str(r["city_name"] or "—")
+        key = f"{brand}|||{city}"
+        if key not in partners:
+            partners[key] = {
+                "brand": brand,
+                "city": city,
+                "city_ua": city_ua(city),
+                "delivered": 0,
+                "bad_count": 0,
+                "failed_count": 0,
+                "bad_pct": 0,
+                "failed_pct": 0,
+                "failed_by_fault": defaultdict(int),
+                "bad_by_actor": defaultdict(int),
+                "bad_by_reason": defaultdict(int),
+                "failed_orders": [],
+                "bad_orders": [],
+            }
+        p = partners[key]
+        state = str(r.get("final_state") or "")
+        order_rec = {
+            "order_id": int(r["order_id"]),
+            "location": str(r.get("provider_name") or "—"),
+            "state": state,
+            "created": str(r.get("order_created") or ""),
+            "rating": None if pd.isna(r.get("order_food_rating_value")) else float(r["order_food_rating_value"]),
+        }
+
+        if state in ("failed", "rejected"):
+            fault = classify_failed(r)
+            p["failed_by_fault"][fault] += 1
+            order_rec["fault"] = fault
+            order_rec["fault_ua"] = actor_ua(fault if fault != "client" else "eater")
+            order_rec["detail"] = failed_detail_ua(r)
+            p["failed_orders"].append(order_rec)
+
+        actor = r.get("bad_order_actor_at_fault")
+        actor_key = str(actor).lower() if actor is not None and not (isinstance(actor, float) and pd.isna(actor)) else "unknown"
+        reason_code = r.get("bad_order_main_reason")
+        reason_key = str(reason_code) if reason_code is not None and not (isinstance(reason_code, float) and pd.isna(reason_code)) else "none"
+
+        p["bad_by_actor"][actor_key] += 1
+        p["bad_by_reason"][reason_key] += 1
+
+        bad_rec = {
+            **order_rec,
+            "actor": actor_key,
+            "actor_ua": actor_ua(actor_key if actor_key != "unknown" else None),
+            "reason_code": reason_key,
+            "reason_ua": reason_ua(reason_code),
+        }
+        p["bad_orders"].append(bad_rec)
+
+    # Convert defaultdicts to plain dicts for JSON
+    out_partners = {}
+    for key, p in partners.items():
+        if p["bad_count"] == 0 and p["failed_count"] == 0 and not p["bad_orders"]:
+            continue
+        out_partners[key] = {
+            **{k: v for k, v in p.items() if k not in ("failed_by_fault", "bad_by_actor", "bad_by_reason")},
+            "failed_by_fault": dict(p["failed_by_fault"]),
+            "bad_by_actor": {actor_ua(k): v for k, v in p["bad_by_actor"].items()},
+            "bad_by_reason": {reason_ua(k if k != "none" else None): v for k, v in p["bad_by_reason"].items()},
+        }
+
+    cities = sorted({p["city_ua"] for p in out_partners.values()}, key=str.lower)
+    brands = sorted({p["brand"] for p in out_partners.values()}, key=str.lower)
+
+    total_delivered = int(df_summary["delivered"].sum()) if len(df_summary) else 0
+    total_bad = int(df_summary["bad_count"].sum()) if len(df_summary) else 0
+    total_failed = int(df_summary["failed_count"].sum()) if len(df_summary) else 0
+
+    return {
+        "week_start": week_start.isoformat(),
+        "week_end": week_end.isoformat(),
+        "label": f"{week_start:%d.%m.%Y} – {week_end:%d.%m.%Y}",
+        "portfolio": {
+            "delivered": total_delivered,
+            "bad_count": total_bad,
+            "failed_count": total_failed,
+            "bad_pct": round(total_bad / total_delivered * 100, 2) if total_delivered else 0,
+            "failed_pct": round(total_failed / total_delivered * 100, 2) if total_delivered else 0,
+        },
+        "cities": cities,
+        "brands": brands,
+        "partners": out_partners,
+    }
+
+
+def load_existing_weeks(html_path: Path) -> dict[str, dict]:
+    if not html_path.exists():
+        return {}
+    text = html_path.read_text(encoding="utf-8")
+    m = re.search(r"const REPORT_WEEKS = (\{.*?\});\s*\n", text, re.DOTALL)
+    if not m:
+        return {}
+    try:
+        return json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return {}
+
+
+def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
+    weeks_json = json.dumps(weeks_data, ensure_ascii=False, separators=(",", ":"))
+    week_keys = sorted(weeks_data.keys(), reverse=True)
+    default_week = week_keys[0] if week_keys else ""
+
+    return f"""<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bad Orders — Marharyta Zhytnyk Portfolio</title>
+  <style>
+    :root {{
+      --green:#1DC462; --dark:#1A1A1A; --bg:#F7F9FC; --card:#fff;
+      --border:#E0E0E0; --text:#222; --muted:#666;
+      --bolt:#2563EB; --courier:#9333EA; --provider:#EA580C; --client:#64748B;
+      --fail:#E53935;
+    }}
+    * {{ box-sizing:border-box; margin:0; padding:0; }}
+    body {{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:var(--bg); color:var(--text); line-height:1.5;
+    }}
+    .header {{
+      background:var(--dark); color:#fff; padding:18px 28px;
+      position:sticky; top:0; z-index:100; box-shadow:0 2px 12px rgba(0,0,0,.2);
+    }}
+    .header h1 {{ font-size:1.2rem; color:var(--green); margin-bottom:4px; }}
+    .header p {{ font-size:.82rem; color:#aaa; }}
+    .filters {{
+      display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; align-items:flex-end;
+    }}
+    .filters label {{ font-size:.72rem; color:#bbb; display:block; margin-bottom:4px; }}
+    .filters select {{
+      background:#2a2a2a; color:#fff; border:1px solid #444; border-radius:8px;
+      padding:8px 12px; font-size:.88rem; min-width:180px;
+    }}
+    .wrap {{ max-width:1200px; margin:0 auto; padding:24px 20px 48px; }}
+    .meta {{ color:var(--muted); font-size:.82rem; margin-bottom:20px; }}
+    .kpi-row {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }}
+    .kpi {{
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:16px 18px; box-shadow:0 1px 4px rgba(0,0,0,.04);
+    }}
+    .kpi .n {{ font-size:1.8rem; font-weight:800; }}
+    .kpi .l {{ font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-top:4px; }}
+    .kpi.bad .n {{ color:var(--fail); }}
+    .kpi.fail .n {{ color:#FB8C00; }}
+    h2 {{
+      font-size:1rem; margin:28px 0 12px; padding-left:10px;
+      border-left:4px solid var(--green);
+    }}
+    h2.fail-h {{ border-left-color:#FB8C00; }}
+    h2.bad-h {{ border-left-color:var(--fail); }}
+    .grid-2 {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
+    @media(max-width:768px) {{ .grid-2 {{ grid-template-columns:1fr; }} }}
+    .card {{
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.04);
+    }}
+    .bar-row {{ display:flex; align-items:center; gap:10px; margin:8px 0; font-size:.85rem; }}
+    .bar-label {{ min-width:140px; flex-shrink:0; }}
+    .bar-track {{ flex:1; height:8px; background:#eee; border-radius:4px; overflow:hidden; }}
+    .bar-fill {{ height:100%; border-radius:4px; }}
+    .bar-fill.bolt {{ background:var(--bolt); }}
+    .bar-fill.courier {{ background:var(--courier); }}
+    .bar-fill.provider {{ background:var(--provider); }}
+    .bar-fill.client {{ background:var(--client); }}
+    .bar-val {{ min-width:36px; text-align:right; font-weight:700; }}
+    .reason-list {{ list-style:none; }}
+    .reason-list li {{
+      display:flex; justify-content:space-between; gap:12px;
+      padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:.84rem;
+    }}
+    .reason-list li:last-child {{ border-bottom:none; }}
+    .btn-detail {{
+      background:var(--green); color:#fff; border:none; border-radius:8px;
+      padding:10px 20px; font-size:.9rem; font-weight:600; cursor:pointer; margin-top:8px;
+    }}
+    .btn-detail:hover {{ filter:brightness(1.05); }}
+    .detail-panel {{
+      display:none; margin-top:16px; background:var(--card);
+      border:1px solid var(--border); border-radius:12px; overflow:hidden;
+    }}
+    .detail-panel.open {{ display:block; }}
+    .detail-tabs {{ display:flex; gap:0; border-bottom:1px solid var(--border); flex-wrap:wrap; }}
+    .detail-tabs button {{
+      background:none; border:none; padding:10px 16px; cursor:pointer;
+      font-size:.82rem; color:var(--muted); border-bottom:2px solid transparent;
+    }}
+    .detail-tabs button.active {{ color:var(--green); border-bottom-color:var(--green); font-weight:600; }}
+    table {{ width:100%; border-collapse:collapse; font-size:.8rem; }}
+    th {{
+      text-align:left; padding:10px 12px; background:#f5f5f5;
+      color:var(--muted); font-weight:600; border-bottom:1px solid var(--border);
+    }}
+    td {{ padding:8px 12px; border-bottom:1px solid #f0f0f0; vertical-align:top; }}
+    tr:hover td {{ background:#fafafa; }}
+    .mono {{ font-family:ui-monospace,monospace; }}
+    .tag {{
+      display:inline-block; padding:2px 8px; border-radius:6px;
+      font-size:.72rem; font-weight:700;
+    }}
+    .tag-failed {{ background:#FFF3E0; color:#E65100; }}
+    .tag-rejected {{ background:#FFEBEE; color:#C62828; }}
+    .empty {{ color:var(--muted); text-align:center; padding:40px 20px; }}
+    .portfolio-note {{
+      background:#E8F9EE; border:1px solid #b8e6c8; border-radius:10px;
+      padding:12px 16px; font-size:.84rem; margin-bottom:20px;
+    }}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Аналіз Bad Orders — Портфоліо Marharyta Zhytnyk</h1>
+    <p>Щотижневий розбір поганих та невдалих замовлень · Bolt Food Ukraine</p>
+    <div class="filters">
+      <div>
+        <label>Тиждень</label>
+        <select id="selWeek"></select>
+      </div>
+      <div>
+        <label>Місто</label>
+        <select id="selCity"><option value="">— Усі міста —</option></select>
+      </div>
+      <div>
+        <label>Бренд (партнер)</label>
+        <select id="selBrand"><option value="">— Оберіть партнера —</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="meta" id="metaLine">Згенеровано: {html.escape(generated_at)} UTC</div>
+    <div id="portfolioNote" class="portfolio-note" style="display:none"></div>
+    <div id="content">
+      <div class="empty">Оберіть місто та бренд, щоб переглянути деталі.</div>
+    </div>
+  </div>
+
+  <script>
+  const REPORT_WEEKS = {weeks_json};
+
+  const FAULT_CLASS = {{
+    'Bolt (платформа)': 'bolt',
+    'Кур\\'єр': 'courier',
+    'Заклад': 'provider',
+    'Клієнт': 'client',
+    'Невизначено': 'client'
+  }};
+
+  function $(id) {{ return document.getElementById(id); }}
+
+  function initFilters() {{
+    const weeks = Object.keys(REPORT_WEEKS).sort().reverse();
+    const selW = $('selWeek');
+    weeks.forEach(wk => {{
+      const o = document.createElement('option');
+      o.value = wk;
+      o.textContent = REPORT_WEEKS[wk].label;
+      selW.appendChild(o);
+    }});
+    if ('{default_week}') selW.value = '{default_week}';
+    selW.addEventListener('change', onFilterChange);
+    $('selCity').addEventListener('change', onCityChange);
+    $('selBrand').addEventListener('change', render);
+    onFilterChange();
+  }}
+
+  function currentWeek() {{
+    return REPORT_WEEKS[$('selWeek').value];
+  }}
+
+  function onFilterChange() {{
+    const wk = currentWeek();
+    if (!wk) return;
+    const selCity = $('selCity');
+    const prev = selCity.value;
+    selCity.innerHTML = '<option value="">— Усі міста —</option>';
+    wk.cities.forEach(c => {{
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      selCity.appendChild(o);
+    }});
+    if ([...selCity.options].some(o => o.value === prev)) selCity.value = prev;
+    onCityChange();
+  }}
+
+  function onCityChange() {{
+    const wk = currentWeek();
+    const city = $('selCity').value;
+    const selBrand = $('selBrand');
+    selBrand.innerHTML = '<option value="">— Оберіть партнера —</option>';
+    if (!wk) return;
+    const brands = new Set();
+    Object.values(wk.partners).forEach(p => {{
+      if (!city || p.city_ua === city) brands.add(p.brand);
+    }});
+    [...brands].sort((a,b) => a.localeCompare(b,'uk')).forEach(b => {{
+      const o = document.createElement('option');
+      o.value = b; o.textContent = b;
+      selBrand.appendChild(o);
+    }});
+    render();
+  }}
+
+  function barRows(obj, total) {{
+    if (!total) return '<p class="empty" style="padding:12px">Немає даних</p>';
+    return Object.entries(obj).sort((a,b) => b[1]-a[1]).map(([label, cnt]) => {{
+      const pct = (cnt/total*100).toFixed(1);
+      const cls = FAULT_CLASS[label] || 'client';
+      return `<div class="bar-row">
+        <span class="bar-label">${{label}}</span>
+        <div class="bar-track"><div class="bar-fill ${{cls}}" style="width:${{pct}}%"></div></div>
+        <span class="bar-val">${{cnt}}</span>
+      </div>`;
+    }}).join('');
+  }}
+
+  function reasonList(obj) {{
+    const entries = Object.entries(obj).sort((a,b) => b[1]-a[1]);
+    if (!entries.length) return '<p class="empty" style="padding:12px">Немає даних</p>';
+    return '<ul class="reason-list">' + entries.map(([r,c]) =>
+      `<li><span>${{r}}</span><strong>${{c}}</strong></li>`
+    ).join('') + '</ul>';
+  }}
+
+  function orderTable(orders, type) {{
+    if (!orders.length) return '<p class="empty">Немає замовлень у цій категорії.</p>';
+    const rows = orders.map(o => {{
+      const tag = o.state === 'rejected'
+        ? '<span class="tag tag-rejected">rejected</span>'
+        : o.state === 'failed'
+        ? '<span class="tag tag-failed">failed</span>'
+        : '<span class="tag tag-failed">bad</span>';
+      const extra = type === 'failed'
+        ? `<td>${{o.fault_ua || '—'}}</td><td>${{o.detail || '—'}}</td>`
+        : `<td>${{o.actor_ua || '—'}}</td><td>${{o.reason_ua || '—'}}</td>`;
+      return `<tr>
+        <td class="mono">${{o.order_id}}</td>
+        <td>${{o.location}}</td>
+        ${{extra}}
+        <td>${{tag}}</td>
+        <td class="mono">${{(o.created||'').slice(0,16)}}</td>
+      </tr>`;
+    }}).join('');
+    const head = type === 'failed'
+      ? '<th>№ замовлення</th><th>Локація</th><th>Винуватець</th><th>Деталі</th><th>Статус</th><th>Час</th>'
+      : '<th>№ замовлення</th><th>Локація</th><th>Винуватець</th><th>Причина</th><th>Статус</th><th>Час</th>';
+    return `<table><thead><tr>${{head}}</tr></thead><tbody>${{rows}}</tbody></table>`;
+  }}
+
+  function mergePartners(list) {{
+    if (!list.length) return null;
+    if (list.length === 1) return list[0];
+    const out = {{
+      brand: list[0].brand,
+      city_ua: 'Усі міста',
+      delivered: 0, bad_count: 0, failed_count: 0,
+      failed_by_fault: {{}}, bad_by_actor: {{}}, bad_by_reason: {{}},
+      failed_orders: [], bad_orders: []
+    }};
+    list.forEach(p => {{
+      out.delivered += p.delivered || 0;
+      out.bad_count += p.bad_count || 0;
+      out.failed_count += p.failed_count || 0;
+      ['failed_by_fault','bad_by_actor','bad_by_reason'].forEach(k => {{
+        Object.entries(p[k] || {{}}).forEach(([a, c]) => {{
+          out[k][a] = (out[k][a] || 0) + c;
+        }});
+      }});
+      out.failed_orders = out.failed_orders.concat(p.failed_orders || []);
+      out.bad_orders = out.bad_orders.concat(p.bad_orders || []);
+    }});
+    out.bad_pct = out.delivered ? +(out.bad_count / out.delivered * 100).toFixed(2) : 0;
+    out.failed_pct = out.delivered ? +(out.failed_count / out.delivered * 100).toFixed(2) : 0;
+    return out;
+  }}
+
+  function render() {{
+    const wk = currentWeek();
+    const city = $('selCity').value;
+    const brand = $('selBrand').value;
+    const el = $('content');
+    const note = $('portfolioNote');
+
+    if (!wk) {{ el.innerHTML = '<div class="empty">Немає даних.</div>'; return; }}
+
+    note.style.display = 'block';
+    note.innerHTML = `<strong>Портфоліо за тиждень ${{wk.label}}:</strong> `
+      + `Bad Orders ${{wk.portfolio.bad_pct}}% (${{wk.portfolio.bad_count}} з ${{wk.portfolio.delivered}} доставлених), `
+      + `Failed Orders ${{wk.portfolio.failed_pct}}% (${{wk.portfolio.failed_count}}).`;
+
+    if (!brand) {{
+      el.innerHTML = '<div class="empty">Оберіть бренд (партнера) для детального аналізу.</div>';
+      return;
+    }}
+
+    const matches = Object.values(wk.partners).filter(p =>
+      p.brand === brand && (!city || p.city_ua === city)
+    );
+    const partner = mergePartners(matches);
+
+    if (!partner) {{
+      el.innerHTML = '<div class="empty">Немає даних для обраного партнера.</div>';
+      return;
+    }}
+
+    const failedTotal = Object.values(partner.failed_by_fault).reduce((a,b)=>a+b,0);
+    const badTotal = Object.values(partner.bad_by_actor).reduce((a,b)=>a+b,0);
+    const titleCity = city || partner.city_ua;
+
+    el.innerHTML = `
+      <h2 style="border:none;padding:0;margin-bottom:8px;font-size:1.15rem">
+        ${{partner.brand}} · ${{titleCity}}
+      </h2>
+      <div class="kpi-row">
+        <div class="kpi bad"><div class="n">${{partner.bad_pct}}%</div><div class="l">Bad Orders</div></div>
+        <div class="kpi fail"><div class="n">${{partner.failed_pct}}%</div><div class="l">Failed Orders</div></div>
+        <div class="kpi"><div class="n">${{partner.bad_count}}</div><div class="l">Поганих замовлень</div></div>
+        <div class="kpi"><div class="n">${{partner.failed_count}}</div><div class="l">Невдалих замовлень</div></div>
+        <div class="kpi"><div class="n">${{partner.delivered}}</div><div class="l">Доставлено</div></div>
+      </div>
+
+      <h2 class="fail-h">Failed Orders — хто винен</h2>
+      <div class="grid-2">
+        <div class="card">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px">
+            Розподіл невдалих (failed/rejected) замовлень за винуватцем
+          </p>
+          ${{barRows({{
+            'Bolt (платформа)': partner.failed_by_fault.bolt || 0,
+            'Кур\\'єр': partner.failed_by_fault.courier || 0,
+            'Заклад': partner.failed_by_fault.provider || 0,
+            'Клієнт': partner.failed_by_fault.client || 0
+          }}, failedTotal)}}
+        </div>
+        <div class="card">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px"><strong>Пояснення категорій:</strong></p>
+          <ul style="font-size:.82rem;color:var(--muted);padding-left:18px">
+            <li><strong>Bolt</strong> — зрив без відмови закладу чи кур'єра</li>
+            <li><strong>Кур'єр</strong> — відмови кур'єра під час пошуку</li>
+            <li><strong>Заклад</strong> — відхилення (rejected) або is_rejected_by_provider</li>
+            <li><strong>Клієнт</strong> — скасування з боку клієнта</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 class="bad-h">Bad Orders — хто винен</h2>
+      <div class="card">${{barRows(partner.bad_by_actor, badTotal)}}</div>
+
+      <h2 class="bad-h">Bad Orders — причини</h2>
+      <div class="card">${{reasonList(partner.bad_by_reason)}}</div>
+
+      <button class="btn-detail" id="btnDetail" type="button">Детально — номери замовлень</button>
+      <div class="detail-panel" id="detailPanel">
+        <div class="detail-tabs">
+          <button type="button" class="active" data-tab="failed">Failed Orders (${{partner.failed_orders.length}})</button>
+          <button type="button" data-tab="bad">Bad Orders (${{partner.bad_orders.length}})</button>
+        </div>
+        <div id="tabFailed" style="overflow:auto">${{orderTable(partner.failed_orders, 'failed')}}</div>
+        <div id="tabBad" style="display:none;overflow:auto">${{orderTable(partner.bad_orders, 'bad')}}</div>
+      </div>
+    `;
+
+    $('btnDetail').addEventListener('click', () => {{
+      $('detailPanel').classList.toggle('open');
+    }});
+    document.querySelectorAll('.detail-tabs button').forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        document.querySelectorAll('.detail-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        $('tabFailed').style.display = tab === 'failed' ? 'block' : 'none';
+        $('tabBad').style.display = tab === 'bad' ? 'block' : 'none';
+      }});
+    }});
+  }}
+
+  initFilters();
+  </script>
+</body>
+</html>
+"""
+
+
+def main() -> None:
+    week_start_env = os.environ.get("BAD_ORDERS_WEEK_START")
+    if week_start_env:
+        weeks_to_fetch = [date.fromisoformat(week_start_env)]
+    else:
+        ws, _ = week_bounds()
+        weeks_to_fetch = [ws]
+
+    existing = load_existing_weeks(OUTPUT_HTML)
+    print(f"Existing weeks in report: {list(existing.keys())}")
+
+    conn = sql.connect(
+        server_hostname=SERVER_HOSTNAME,
+        http_path=HTTP_PATH,
+        access_token=get_token(),
+    )
+    try:
+        for ws in weeks_to_fetch:
+            key = ws.isoformat()
+            if key in existing and not os.environ.get("BAD_ORDERS_FORCE_REFRESH"):
+                print(f"  Week {key} already present — skip (set BAD_ORDERS_FORCE_REFRESH=1 to overwrite)")
+                continue
+            we = ws + timedelta(days=6)
+            existing[key] = fetch_week_data(conn, ws, we)
+    finally:
+        conn.close()
+
+    generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
+    print(f"Written {OUTPUT_HTML} ({len(existing)} week(s))")
+
+    # Also write week-specific snapshot for the requested initial week
+    for key, data in existing.items():
+        ws = date.fromisoformat(key)
+        snap = SCRIPT_DIR / f"Bad Orders {ws:%d.%m}-{ws + timedelta(days=6):%d.%m.%Y}.html"
+        if not snap.exists() or os.environ.get("BAD_ORDERS_FORCE_REFRESH"):
+            single = {key: data}
+            snap.write_text(build_html(single, generated_at), encoding="utf-8")
+            print(f"  Snapshot: {snap.name}")
+
+
+if __name__ == "__main__":
+    main()

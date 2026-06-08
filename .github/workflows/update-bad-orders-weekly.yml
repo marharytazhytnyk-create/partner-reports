@@ -1,0 +1,54 @@
+name: Bad Orders Weekly — Marharyta Portfolio
+
+on:
+  schedule:
+    # Понеділок 11:00 UTC = 14:00 за Києвом (UTC+3)
+    - cron: '0 11 * * 1'
+  workflow_dispatch:
+    inputs:
+      week_start:
+        description: 'Понеділок тижня YYYY-MM-DD (необовʼязково; інакше — останній завершений тиждень)'
+        required: false
+        default: ''
+
+jobs:
+  generate-bad-orders-weekly:
+    name: Marharyta Portfolio — Bad Orders HTML
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Generate Bad Orders weekly report
+        env:
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.week_start }}" ]; then
+            export BAD_ORDERS_WEEK_START="${{ github.event.inputs.week_start }}"
+          fi
+          python "Bad Orders analys weekly/generate_bad_orders_weekly.py"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Bad Orders analys weekly/"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Bad Orders weekly — Marharyta Portfolio $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
