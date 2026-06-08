@@ -182,6 +182,27 @@ def failed_detail_ua(row: pd.Series) -> str:
     return state
 
 
+def bad_comment_ua(row: pd.Series) -> str:
+    parts = []
+    rating = row.get("order_food_rating_value")
+    if rating is not None and not (isinstance(rating, float) and pd.isna(rating)):
+        rv = float(rating)
+        if rv <= 2:
+            parts.append(f"Оцінка їжі: {int(rv)}/5")
+    late = row.get("late_delivery_actor_at_fault_reason")
+    if late is not None and not (isinstance(late, float) and pd.isna(late)):
+        parts.append(reason_ua(str(late).replace("_seconds", "")))
+    return "; ".join(parts) if parts else "—"
+
+
+FAULT_REASON_UA = {
+    "provider": "Відхилення або відмова закладу",
+    "courier": "Відмова кур'єра під час доставки",
+    "client": "Скасування з боку клієнта",
+    "bolt": "Зрив на стороні платформи",
+}
+
+
 def run_query(conn, q: str) -> pd.DataFrame:
     with conn.cursor() as cur:
         cur.execute(q)
@@ -327,9 +348,16 @@ def build_week_payload(
         if state in ("failed", "rejected"):
             fault = classify_failed(r)
             p["failed_by_fault"][fault] += 1
+            reason_code = r.get("bad_order_main_reason")
+            has_reason = reason_code is not None and not (
+                isinstance(reason_code, float) and pd.isna(reason_code)
+            )
             order_rec["fault"] = fault
-            order_rec["fault_ua"] = actor_ua(fault if fault != "client" else "eater")
-            order_rec["detail"] = failed_detail_ua(r)
+            order_rec["culprit_ua"] = actor_ua(fault if fault != "client" else "eater")
+            order_rec["reason_ua"] = (
+                reason_ua(reason_code) if has_reason else FAULT_REASON_UA.get(fault, fault)
+            )
+            order_rec["comment"] = failed_detail_ua(r)
             p["failed_orders"].append(order_rec)
 
         actor = r.get("bad_order_actor_at_fault")
@@ -343,9 +371,10 @@ def build_week_payload(
         bad_rec = {
             **order_rec,
             "actor": actor_key,
-            "actor_ua": actor_ua(actor_key if actor_key != "unknown" else None),
+            "culprit_ua": actor_ua(actor_key if actor_key != "unknown" else None),
             "reason_code": reason_key,
             "reason_ua": reason_ua(reason_code),
+            "comment": bad_comment_ua(r),
         }
         p["bad_orders"].append(bad_rec)
 
@@ -489,6 +518,16 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
       font-size:.82rem; color:var(--muted); border-bottom:2px solid transparent;
     }}
     .detail-tabs button.active {{ color:var(--green); border-bottom-color:var(--green); font-weight:600; }}
+    .detail-toolbar {{
+      display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px;
+      padding:12px 16px; border-bottom:1px solid var(--border); background:#fafafa;
+    }}
+    .detail-toolbar label {{ font-size:.72rem; color:var(--muted); display:block; margin-bottom:4px; }}
+    .detail-toolbar select {{
+      border:1px solid var(--border); border-radius:8px; padding:7px 12px;
+      font-size:.85rem; min-width:200px; background:#fff;
+    }}
+    .detail-count {{ font-size:.78rem; color:var(--muted); margin-left:auto; }}
     table {{ width:100%; border-collapse:collapse; font-size:.8rem; }}
     th {{
       text-align:left; padding:10px 12px; background:#f5f5f5;
@@ -625,29 +664,73 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     ).join('') + '</ul>';
   }}
 
-  function orderTable(orders, type) {{
-    if (!orders.length) return '<p class="empty">Немає замовлень у цій категорії.</p>';
+  function orderTable(orders) {{
+    if (!orders.length) return '<p class="empty">Немає замовлень за обраним фільтром.</p>';
     const rows = orders.map(o => {{
       const tag = o.state === 'rejected'
         ? '<span class="tag tag-rejected">rejected</span>'
         : o.state === 'failed'
         ? '<span class="tag tag-failed">failed</span>'
         : '<span class="tag tag-failed">bad</span>';
-      const extra = type === 'failed'
-        ? `<td>${{o.fault_ua || '—'}}</td><td>${{o.detail || '—'}}</td>`
-        : `<td>${{o.actor_ua || '—'}}</td><td>${{o.reason_ua || '—'}}</td>`;
       return `<tr>
         <td class="mono">${{o.order_id}}</td>
         <td>${{o.location}}</td>
-        ${{extra}}
+        <td>${{o.reason_ua || '—'}}</td>
+        <td>${{o.comment || '—'}}</td>
         <td>${{tag}}</td>
         <td class="mono">${{(o.created||'').slice(0,16)}}</td>
       </tr>`;
     }}).join('');
-    const head = type === 'failed'
-      ? '<th>№ замовлення</th><th>Локація</th><th>Винуватець</th><th>Деталі</th><th>Статус</th><th>Час</th>'
-      : '<th>№ замовлення</th><th>Локація</th><th>Винуватець</th><th>Причина</th><th>Статус</th><th>Час</th>';
+    const head = '<th>№ замовлення</th><th>Локація</th><th>Причина</th><th>Коментар</th><th>Статус</th><th>Час</th>';
     return `<table><thead><tr>${{head}}</tr></thead><tbody>${{rows}}</tbody></table>`;
+  }}
+
+  let detailOrders = {{ failed: [], bad: [] }};
+  let activeDetailTab = 'failed';
+
+  function updateCulpritFilter() {{
+    const sel = $('selCulprit');
+    if (!sel) return;
+    const prev = sel.value;
+    const orders = detailOrders[activeDetailTab] || [];
+    const culprits = [...new Set(orders.map(o => o.culprit_ua).filter(Boolean))].sort((a,b) => a.localeCompare(b,'uk'));
+    sel.innerHTML = '<option value="">— Усі винуватці —</option>';
+    culprits.forEach(c => {{
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    }});
+    if ([...sel.options].some(o => o.value === prev)) sel.value = prev;
+    else sel.value = '';
+  }}
+
+  function renderDetailTable() {{
+    const filter = $('selCulprit')?.value || '';
+    const orders = (detailOrders[activeDetailTab] || []).filter(o => !filter || o.culprit_ua === filter);
+    const host = activeDetailTab === 'failed' ? $('tabFailed') : $('tabBad');
+    if (host) host.innerHTML = orderTable(orders);
+    const cnt = $('detailCount');
+    if (cnt) cnt.textContent = filter
+      ? `Показано ${{orders.length}} з ${{detailOrders[activeDetailTab].length}}`
+      : `Всього: ${{orders.length}}`;
+  }}
+
+  function initDetailPanel(partner) {{
+    detailOrders.failed = (partner.failed_orders || []).map(o => ({{
+      ...o,
+      culprit_ua: o.culprit_ua || o.fault_ua || o.actor_ua || '—',
+      reason_ua: o.reason_ua || '—',
+      comment: o.comment || o.detail || '—',
+    }}));
+    detailOrders.bad = (partner.bad_orders || []).map(o => ({{
+      ...o,
+      culprit_ua: o.culprit_ua || o.actor_ua || '—',
+      reason_ua: o.reason_ua || '—',
+      comment: o.comment || '—',
+    }}));
+    activeDetailTab = 'failed';
+    updateCulpritFilter();
+    renderDetailTable();
   }}
 
   function mergePartners(list) {{
@@ -758,21 +841,33 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
           <button type="button" class="active" data-tab="failed">Failed Orders (${{partner.failed_orders.length}})</button>
           <button type="button" data-tab="bad">Bad Orders (${{partner.bad_orders.length}})</button>
         </div>
-        <div id="tabFailed" style="overflow:auto">${{orderTable(partner.failed_orders, 'failed')}}</div>
-        <div id="tabBad" style="display:none;overflow:auto">${{orderTable(partner.bad_orders, 'bad')}}</div>
+        <div class="detail-toolbar">
+          <div>
+            <label for="selCulprit">\u0412\u0438\u043d\u0443\u0432\u0430\u0442\u0435\u0446\u044c</label>
+            <select id="selCulprit"><option value="">\u2014 \u0423\u0441\u0456 \u0432\u0438\u043d\u0443\u0432\u0430\u0442\u0446\u0456 \u2014</option></select>
+          </div>
+          <span class="detail-count" id="detailCount"></span>
+        </div>
+        <div id="tabFailed" style="overflow:auto"></div>
+        <div id="tabBad" style="display:none;overflow:auto"></div>
       </div>
     `;
+
+    initDetailPanel(partner);
 
     $('btnDetail').addEventListener('click', () => {{
       $('detailPanel').classList.toggle('open');
     }});
+    $('selCulprit').addEventListener('change', renderDetailTable);
     document.querySelectorAll('.detail-tabs button').forEach(btn => {{
       btn.addEventListener('click', () => {{
         document.querySelectorAll('.detail-tabs button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        $('tabFailed').style.display = tab === 'failed' ? 'block' : 'none';
-        $('tabBad').style.display = tab === 'bad' ? 'block' : 'none';
+        activeDetailTab = btn.dataset.tab;
+        $('tabFailed').style.display = activeDetailTab === 'failed' ? 'block' : 'none';
+        $('tabBad').style.display = activeDetailTab === 'bad' ? 'block' : 'none';
+        updateCulpritFilter();
+        renderDetailTable();
       }});
     }});
   }}
@@ -785,6 +880,15 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
 
 
 def main() -> None:
+    if os.environ.get("BAD_ORDERS_HTML_ONLY"):
+        existing = load_existing_weeks(OUTPUT_HTML)
+        if not existing:
+            raise RuntimeError("No existing data in HTML for BAD_ORDERS_HTML_ONLY")
+        generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+        OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
+        print(f"Rebuilt HTML only: {OUTPUT_HTML}")
+        return
+
     week_start_env = os.environ.get("BAD_ORDERS_WEEK_START")
     if week_start_env:
         weeks_to_fetch = [date.fromisoformat(week_start_env)]
