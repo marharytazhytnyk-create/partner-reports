@@ -234,6 +234,7 @@ def fetch_week_data(conn, week_start: date, week_end: date) -> dict:
     sql_orders = f"""
     SELECT
         o.id AS order_id,
+        o.reference_id AS order_ref,
         o.state AS final_state,
         o.created AS order_created,
         p.provider_id,
@@ -339,6 +340,7 @@ def build_week_payload(
         state = str(r.get("final_state") or "")
         order_rec = {
             "order_id": int(r["order_id"]),
+            "order_ref": str(r.get("order_ref") or "—"),
             "location": str(r.get("provider_name") or "—"),
             "state": state,
             "created": str(r.get("order_created") or ""),
@@ -507,6 +509,47 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
       padding:10px 20px; font-size:.9rem; font-weight:600; cursor:pointer; margin-top:8px;
     }}
     .btn-detail:hover {{ filter:brightness(1.05); }}
+    .btn-partner {{
+      background:#fff; color:var(--provider); border:2px solid var(--provider);
+      border-radius:8px; padding:10px 20px; font-size:.9rem; font-weight:600;
+      cursor:pointer; margin-top:8px; margin-left:10px;
+    }}
+    .btn-partner:hover {{ background:#FFF7ED; }}
+    .modal-overlay {{
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+      z-index:200; align-items:center; justify-content:center; padding:20px;
+    }}
+    .modal-overlay.open {{ display:flex; }}
+    .modal-box {{
+      background:#fff; border-radius:14px; width:min(720px,100%);
+      max-height:85vh; display:flex; flex-direction:column;
+      box-shadow:0 12px 40px rgba(0,0,0,.2);
+    }}
+    .modal-head {{
+      padding:16px 20px; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+    }}
+    .modal-head h3 {{ font-size:1rem; }}
+    .modal-close {{
+      background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted);
+    }}
+    .modal-body {{ padding:16px 20px; overflow:auto; flex:1; }}
+    .modal-body textarea {{
+      width:100%; min-height:320px; border:1px solid var(--border); border-radius:10px;
+      padding:12px; font-size:.85rem; line-height:1.55; resize:vertical; font-family:inherit;
+    }}
+    .modal-actions {{
+      padding:12px 20px 18px; display:flex; gap:10px; justify-content:flex-end;
+      border-top:1px solid var(--border);
+    }}
+    .btn-copy {{
+      background:var(--green); color:#fff; border:none; border-radius:8px;
+      padding:9px 18px; font-weight:600; cursor:pointer;
+    }}
+    .btn-close-modal {{
+      background:#f0f0f0; color:var(--text); border:none; border-radius:8px;
+      padding:9px 18px; cursor:pointer;
+    }}
     .detail-panel {{
       display:none; margin-top:16px; background:var(--card);
       border:1px solid var(--border); border-radius:12px; overflow:hidden;
@@ -574,6 +617,22 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     <div id="portfolioNote" class="portfolio-note" style="display:none"></div>
     <div id="content">
       <div class="empty">Оберіть місто та бренд, щоб переглянути деталі.</div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="partnerModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Повідомлення для партнера</h3>
+        <button type="button" class="modal-close" id="btnClosePartnerModal" title="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="partnerMessageText" readonly></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-copy" id="btnCopyPartnerMsg">Скопіювати текст</button>
+        <button type="button" class="btn-close-modal" id="btnClosePartnerModal2">Закрити</button>
+      </div>
     </div>
   </div>
 
@@ -674,6 +733,7 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
         : '<span class="tag tag-failed">bad</span>';
       return `<tr>
         <td class="mono">${{o.order_id}}</td>
+        <td class="mono">${{o.order_ref || '—'}}</td>
         <td>${{o.location}}</td>
         <td>${{o.reason_ua || '—'}}</td>
         <td>${{o.comment || '—'}}</td>
@@ -681,12 +741,97 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
         <td class="mono">${{(o.created||'').slice(0,16)}}</td>
       </tr>`;
     }}).join('');
-    const head = '<th>№ замовлення</th><th>Локація</th><th>Причина</th><th>Коментар</th><th>Статус</th><th>Час</th>';
+    const head = '<th>№ замовлення</th><th>Order ref</th><th>Локація</th><th>Причина</th><th>Коментар</th><th>Статус</th><th>Час</th>';
     return `<table><thead><tr>${{head}}</tr></thead><tbody>${{rows}}</tbody></table>`;
   }}
 
   let detailOrders = {{ failed: [], bad: [] }};
   let activeDetailTab = 'failed';
+  let currentPartnerCtx = null;
+
+  function isProviderFault(o) {{
+    return o.culprit_ua === 'Заклад' || o.actor === 'provider' || o.fault === 'provider';
+  }}
+
+  function providerBadOrders(partner) {{
+    return (partner.bad_orders || []).filter(isProviderFault);
+  }}
+
+  function buildPartnerMessage(partner, weekLabel, brand, cityLabel) {{
+    const orders = providerBadOrders(partner);
+    if (!orders.length) return '';
+
+    const byReason = {{}};
+    orders.forEach(o => {{
+      const reason = o.reason_ua || '—';
+      if (!byReason[reason]) byReason[reason] = [];
+      byReason[reason].push(o);
+    }});
+
+    const lines = [
+      'Вітаємо!',
+      '',
+      `Команда Bolt Food звертає вашу увагу на погані замовлення (Bad Orders) за період ${{weekLabel}} у закладі ${{brand}} (${{cityLabel}}).`,
+      '',
+      `За результатами тижневого аналізу, ${{orders.length}} замовлень мають причини, пов'язані з роботою закладу. Загальний показник Bad Orders за тиждень: ${{partner.bad_pct}}% (${{partner.bad_count}} з ${{partner.delivered}} доставлених).`,
+      '',
+      'Основні причини:',
+    ];
+
+    Object.entries(byReason)
+      .sort((a, b) => b[1].length - a[1].length)
+      .forEach(([reason, list]) => {{
+        lines.push(`• ${{reason}} — ${{list.length}} замовл.`);
+      }});
+
+    lines.push('', 'Деталі по замовленнях:', '');
+    orders.forEach(o => {{
+      lines.push(`— Order ref: ${{o.order_ref || '—'}} | ID: ${{o.order_id}} | ${{o.location}}`);
+      lines.push(`  Причина: ${{o.reason_ua || '—'}}`);
+      if (o.comment && o.comment !== '—') lines.push(`  Коментар: ${{o.comment}}`);
+    }});
+
+    lines.push(
+      '',
+      'Просимо перевірити:',
+      '1. Наявність позицій у меню та своєчасне оновлення стоп-листу',
+      '2. Якість пакування та правильність комплектації замовлень',
+      '3. Час приготування та передачу замовлень курʼєру',
+      '4. Стабільність прийняття замовлень протягом робочого дня',
+      '',
+      'Зниження частки поганих замовлень позитивно вплине на рейтинг закладу, задоволеність клієнтів та обсяг замовлень на платформі.',
+      '',
+      'Якщо потрібна допомога — звертайтесь до вашого акаунт-менеджера.',
+      '',
+      'З повагою,',
+      'Команда Bolt Food',
+    );
+    return lines.join('\\n');
+  }}
+
+  function openPartnerModal() {{
+    if (!currentPartnerCtx) return;
+    const {{ partner, weekLabel, brand, cityLabel }} = currentPartnerCtx;
+    const text = buildPartnerMessage(partner, weekLabel, brand, cityLabel);
+    $('partnerMessageText').value = text;
+    $('partnerModal').classList.add('open');
+  }}
+
+  function closePartnerModal() {{
+    $('partnerModal').classList.remove('open');
+  }}
+
+  function copyPartnerMessage() {{
+    const ta = $('partnerMessageText');
+    ta.select();
+    ta.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(ta.value).then(() => {{
+      const btn = $('btnCopyPartnerMsg');
+      const prev = btn.textContent;
+      btn.textContent = 'Скопійовано!';
+      setTimeout(() => {{ btn.textContent = prev; }}, 2000);
+    }}).catch(() => document.execCommand('copy'));
+  }}
 
   function updateCulpritFilter() {{
     const sel = $('selCulprit');
@@ -718,12 +863,14 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
   function initDetailPanel(partner) {{
     detailOrders.failed = (partner.failed_orders || []).map(o => ({{
       ...o,
+      order_ref: o.order_ref || '—',
       culprit_ua: o.culprit_ua || o.fault_ua || o.actor_ua || '—',
       reason_ua: o.reason_ua || '—',
       comment: o.comment || o.detail || '—',
     }}));
     detailOrders.bad = (partner.bad_orders || []).map(o => ({{
       ...o,
+      order_ref: o.order_ref || '—',
       culprit_ua: o.culprit_ua || o.actor_ua || '—',
       reason_ua: o.reason_ua || '—',
       comment: o.comment || '—',
@@ -792,6 +939,13 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     const failedTotal = Object.values(partner.failed_by_fault).reduce((a,b)=>a+b,0);
     const badTotal = Object.values(partner.bad_by_actor).reduce((a,b)=>a+b,0);
     const titleCity = city || partner.city_ua;
+    const providerBadCount = providerBadOrders(partner).length;
+    currentPartnerCtx = {{
+      partner,
+      weekLabel: wk.label,
+      brand,
+      cityLabel: titleCity,
+    }};
 
     el.innerHTML = `
       <h2 style="border:none;padding:0;margin-bottom:8px;font-size:1.15rem">
@@ -835,7 +989,10 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
       <h2 class="bad-h">Bad Orders — причини</h2>
       <div class="card">${{reasonList(partner.bad_by_reason)}}</div>
 
-      <button class="btn-detail" id="btnDetail" type="button">Детально — номери замовлень</button>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
+        <button class="btn-detail" id="btnDetail" type="button">Детально — номери замовлень</button>
+        ${{providerBadCount > 0 ? `<button class="btn-partner" id="btnPartnerMsg" type="button">Надіслати інформацію партнеру (${{providerBadCount}})</button>` : ''}}
+      </div>
       <div class="detail-panel" id="detailPanel">
         <div class="detail-tabs">
           <button type="button" class="active" data-tab="failed">Failed Orders (${{partner.failed_orders.length}})</button>
@@ -858,6 +1015,8 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     $('btnDetail').addEventListener('click', () => {{
       $('detailPanel').classList.toggle('open');
     }});
+    const btnPartner = $('btnPartnerMsg');
+    if (btnPartner) btnPartner.addEventListener('click', openPartnerModal);
     $('selCulprit').addEventListener('change', renderDetailTable);
     document.querySelectorAll('.detail-tabs button').forEach(btn => {{
       btn.addEventListener('click', () => {{
@@ -873,6 +1032,12 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
   }}
 
   initFilters();
+  $('btnClosePartnerModal').addEventListener('click', closePartnerModal);
+  $('btnClosePartnerModal2').addEventListener('click', closePartnerModal);
+  $('btnCopyPartnerMsg').addEventListener('click', copyPartnerMessage);
+  $('partnerModal').addEventListener('click', e => {{
+    if (e.target === $('partnerModal')) closePartnerModal();
+  }});
   </script>
 </body>
 </html>
