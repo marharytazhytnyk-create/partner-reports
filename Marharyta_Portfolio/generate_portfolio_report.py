@@ -265,6 +265,73 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
     return df
 
 
+def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
+    """
+    Fetch week-by-week per-location (provider_id) data for the Dynamics tab.
+    Includes conversion funnel: impressions → menu views → orders placed.
+    """
+    start_date, end_date = get_last_n_full_weeks(n_weeks)
+    ctx = _create_context()
+
+    sql = f"""
+    SELECT
+        p.provider_id,
+        p.provider_name,
+        p.brand_name,
+        p.city_name,
+        p.zone_name,
+        DATE_FORMAT(DATE_TRUNC('week', f.metric_timestamp_local), 'yyyy-MM-dd') AS week_start,
+        -- Orders & GMV
+        SUM(f.delivered_orders_count)                         AS delivered_orders,
+        SUM(f.failed_orders_count)                            AS failed_orders,
+        SUM(f.total_gmv_before_discounts_eur)                 AS gmv_eur,
+        -- Conversion funnel (sum of sessions per week)
+        SUM(f.provider_impressions_sessions_count)            AS impressions_sessions,
+        SUM(f.provider_menu_viewed_sessions_count)            AS menu_viewed_sessions,
+        SUM(f.provider_order_placed_sessions_count)           AS order_placed_sessions,
+        -- Conversion rates (calculated)
+        ROUND(
+            SUM(f.provider_order_placed_sessions_count) * 100.0
+            / NULLIF(SUM(f.provider_impressions_sessions_count), 0), 2
+        ) AS conversion_impression_to_order_pct,
+        ROUND(
+            SUM(f.provider_order_placed_sessions_count) * 100.0
+            / NULLIF(SUM(f.provider_menu_viewed_sessions_count), 0), 2
+        ) AS conversion_menu_to_order_pct,
+        ROUND(
+            SUM(f.provider_menu_viewed_sessions_count) * 100.0
+            / NULLIF(SUM(f.provider_impressions_sessions_count), 0), 2
+        ) AS conversion_impression_to_menu_pct,
+        -- Quality metrics
+        ROUND(SUM(f.bad_order_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS bad_order_rate_pct,
+        ROUND(SUM(f.failed_order_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS failed_order_rate_pct,
+        ROUND(SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
+        ROUND(SUM(f.provider_active_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS availability_pct
+    FROM ng_delivery_spark.dim_provider_v2 p
+    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+        ON p.provider_id = f.provider_id
+    WHERE
+        p.account_manager_name = '{ACCOUNT_MANAGER}'
+        AND p.country_code      = '{COUNTRY_CODE}'
+        AND p.provider_status   = 'active'
+        AND CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
+    GROUP BY
+        p.provider_id, p.provider_name, p.brand_name, p.city_name, p.zone_name,
+        DATE_TRUNC('week', f.metric_timestamp_local)
+    ORDER BY p.brand_name, p.city_name, p.provider_id, week_start
+    """
+
+    print(f"Running per-location trends query ({n_weeks} weeks)...")
+    result = _exec_sql(ctx, sql, timeout=360)
+    df = _to_df(result)
+    print(f"Fetched {len(df):,} location-week rows")
+    return df
+
+
 # ─── HELPER FUNCTIONS ──────────────────────────────────────────────────────────
 
 def safe_float(val, default=0.0):
@@ -1034,6 +1101,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </div>
 
   <div id="dynCharts" style="display:none">
+    <!-- Brand-level charts -->
+    <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:12px">📊 Загальна динаміка бренду</div>
     <div class="charts-grid">
       <div class="chart-card"><h4>📦 Замовлення (доставлені)</h4><canvas id="chartOrders"></canvas></div>
       <div class="chart-card"><h4>💰 GMV (€, до знижок)</h4><canvas id="chartGmv"></canvas></div>
@@ -1043,6 +1112,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <div class="chart-card"><h4>😞 Bad Order Rate (%)</h4><canvas id="chartBad"></canvas></div>
       <div class="chart-card"><h4>✅ Acceptance Rate (%)</h4><canvas id="chartAcceptance"></canvas></div>
       <div class="chart-card"><h4>⏰ Late Delivery Rate (%)</h4><canvas id="chartLate"></canvas></div>
+    </div>
+
+    <!-- Per-location conversion section -->
+    <div id="locSection" style="display:none;margin-top:8px">
+      <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:4px">
+        📍 Конверсія по локаціях
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">
+        Воронка: покази → перегляди меню → замовлення — по кожній точці окремо
+      </div>
+
+      <!-- Location selector tabs -->
+      <div id="locTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+      <!-- Location detail -->
+      <div id="locDetail">
+        <!-- Funnel summary bar -->
+        <div id="locFunnelBar" style="background:#fff;border-radius:12px;box-shadow:var(--shadow);
+             padding:16px 20px;margin-bottom:16px"></div>
+
+        <!-- Location charts grid -->
+        <div class="charts-grid" id="locChartsGrid">
+          <div class="chart-card"><h4>🎯 Конверсія: показ → замовлення (%)</h4><canvas id="locChartConvFull"></canvas></div>
+          <div class="chart-card"><h4>📋 Конверсія: меню → замовлення (%)</h4><canvas id="locChartConvMenu"></canvas></div>
+          <div class="chart-card"><h4>👁️ Конверсія: показ → меню (%)</h4><canvas id="locChartConvImp"></canvas></div>
+          <div class="chart-card"><h4>📦 Замовлення (доставлені)</h4><canvas id="locChartOrders"></canvas></div>
+          <div class="chart-card"><h4>📱 Покази (сесії)</h4><canvas id="locChartImpressions"></canvas></div>
+          <div class="chart-card"><h4>🍽️ Перегляди меню</h4><canvas id="locChartMenuViews"></canvas></div>
+          <div class="chart-card"><h4>✅ Acceptance Rate (%)</h4><canvas id="locChartAcceptance"></canvas></div>
+          <div class="chart-card"><h4>🟢 Availability (%)</h4><canvas id="locChartAvailability"></canvas></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1195,6 +1296,7 @@ function renderCharts() {{
   const placeholder = document.getElementById('dynPlaceholder');
   const chartsDiv   = document.getElementById('dynCharts');
   const infoDiv     = document.getElementById('dynBrandInfo');
+  const locSection  = document.getElementById('locSection');
 
   if (!key || !TRENDS[key]) {{
     placeholder.style.display = '';
@@ -1208,8 +1310,10 @@ function renderCharts() {{
 
   const d = TRENDS[key];
   const labels = d.weeks.map(fmtWeek);
+  const locs = d.locations || {{}};
+  const locCount = Object.keys(locs).length;
 
-  infoDiv.innerHTML = `<strong>${{d.brand}}</strong> · ${{d.city}} · ${{d.weeks.length}} тижнів даних`;
+  infoDiv.innerHTML = `<strong>${{d.brand}}</strong> · ${{d.city}} · ${{d.weeks.length}} тижнів · ${{locCount}} локац.`;
 
   const GREEN  = '#1DC462';
   const BLUE   = '#1976D2';
@@ -1220,6 +1324,7 @@ function renderCharts() {{
   const INDIGO = '#3949AB';
   const AMBER  = '#F9A825';
 
+  // Brand-level charts
   makeOrUpdate('chartOrders',    labels, d.delivered_orders,        GREEN,  'Замовлення', false);
   makeOrUpdate('chartGmv',       labels, d.gmv_eur,                 BLUE,   'GMV, €', false);
   makeOrUpdate('chartCp',        labels, d.contribution_profit_eur, TEAL,   'CP, €', false);
@@ -1228,6 +1333,101 @@ function renderCharts() {{
   makeOrUpdate('chartBad',       labels, d.bad_order_rate_pct,      ORANGE, 'Bad Order Rate, %', false);
   makeOrUpdate('chartAcceptance',labels, d.acceptance_rate_pct,     INDIGO, 'Acceptance Rate, %', false);
   makeOrUpdate('chartLate',      labels, d.late_delivery_rate_pct,  AMBER,  'Late Delivery, %', false);
+
+  // ── Per-location conversion section ──────────────────────────────────────
+  if (locCount === 0) {{
+    locSection.style.display = 'none';
+    return;
+  }}
+  locSection.style.display = '';
+
+  // Build location tab buttons
+  const tabsEl = document.getElementById('locTabs');
+  tabsEl.innerHTML = '';
+  const locIds = Object.keys(locs);
+
+  locIds.forEach((pid, idx) => {{
+    const loc = locs[pid];
+    const btn = document.createElement('button');
+    btn.textContent = loc.name + (loc.zone ? ` · ${{loc.zone}}` : '');
+    btn.dataset.pid = pid;
+    btn.style.cssText = `padding:7px 14px;border:none;border-radius:8px;cursor:pointer;
+      font-size:12px;font-weight:600;transition:all 0.15s;
+      background:${{idx===0?'var(--bolt-green)':'#f0f0f0'}};
+      color:${{idx===0?'#fff':'#444'}};`;
+    btn.onclick = () => {{
+      tabsEl.querySelectorAll('button').forEach(b => {{
+        b.style.background = '#f0f0f0'; b.style.color = '#444';
+      }});
+      btn.style.background = 'var(--bolt-green)';
+      btn.style.color = '#fff';
+      renderLocationCharts(locs[pid]);
+    }};
+    tabsEl.appendChild(btn);
+  }});
+
+  // Render first location by default
+  renderLocationCharts(locs[locIds[0]]);
+}}
+
+function renderLocationCharts(loc) {{
+  const labels = loc.weeks.map(fmtWeek);
+  const lastIdx = loc.weeks.length - 1;
+
+  // Funnel summary bar
+  const lastImp  = loc.impressions  && loc.impressions[lastIdx]  != null ? loc.impressions[lastIdx].toLocaleString('uk-UA')  : '—';
+  const lastMenu = loc.menu_views   && loc.menu_views[lastIdx]   != null ? loc.menu_views[lastIdx].toLocaleString('uk-UA')   : '—';
+  const lastOrd  = loc.orders_placed&& loc.orders_placed[lastIdx]!= null ? loc.orders_placed[lastIdx].toLocaleString('uk-UA'): '—';
+  const convFull = loc.conv_imp_to_order && loc.conv_imp_to_order[lastIdx] != null ? loc.conv_imp_to_order[lastIdx].toFixed(1)+'%' : '—';
+  const convMenu = loc.conv_menu_to_order&& loc.conv_menu_to_order[lastIdx]!= null ? loc.conv_menu_to_order[lastIdx].toFixed(1)+'%' : '—';
+
+  document.getElementById('locFunnelBar').innerHTML = `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);
+                letter-spacing:.5px;margin-bottom:10px">Воронка — останній тиждень</div>
+    <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap">
+      ${{funnelStep('👁️ Покази', lastImp, '#1976D2')}}
+      ${{funnelArrow(loc.conv_imp_to_menu && loc.conv_imp_to_menu[lastIdx] != null ? loc.conv_imp_to_menu[lastIdx].toFixed(1)+'%' : '—')}}
+      ${{funnelStep('🍽️ Меню', lastMenu, '#7B1FA2')}}
+      ${{funnelArrow(convMenu)}}
+      ${{funnelStep('📦 Замовлення', lastOrd, '#1DC462')}}
+      <div style="margin-left:auto;text-align:right;padding:8px 12px;
+                  background:#E8F9EE;border-radius:8px">
+        <div style="font-size:10px;color:var(--muted)">Загальна конверсія</div>
+        <div style="font-size:20px;font-weight:800;color:var(--bolt-mid-green)">${{convFull}}</div>
+        <div style="font-size:10px;color:var(--muted)">показ → замовлення</div>
+      </div>
+    </div>`;
+
+  const RED    = '#E53935';
+  const GREEN  = '#1DC462';
+  const BLUE   = '#1976D2';
+  const PURPLE = '#7B1FA2';
+  const TEAL   = '#00897B';
+  const INDIGO = '#3949AB';
+
+  makeOrUpdate('locChartConvFull',    labels, loc.conv_imp_to_order,  GREEN,  'Конверсія показ→замов., %', false);
+  makeOrUpdate('locChartConvMenu',    labels, loc.conv_menu_to_order, TEAL,   'Конверсія меню→замов., %',  false);
+  makeOrUpdate('locChartConvImp',     labels, loc.conv_imp_to_menu,   PURPLE, 'Конверсія показ→меню, %',   false);
+  makeOrUpdate('locChartOrders',      labels, loc.delivered_orders,   BLUE,   'Замовлення',                false);
+  makeOrUpdate('locChartImpressions', labels, loc.impressions,        INDIGO, 'Покази (сесії)',             false);
+  makeOrUpdate('locChartMenuViews',   labels, loc.menu_views,         '#8D6E63', 'Перегляди меню',          false);
+  makeOrUpdate('locChartAcceptance',  labels, loc.acceptance,         GREEN,  'Acceptance Rate, %',         false);
+  makeOrUpdate('locChartAvailability',labels, loc.availability,       TEAL,   'Availability, %',            false);
+}}
+
+function funnelStep(label, value, color) {{
+  return `<div style="text-align:center;padding:10px 16px;background:#f9f9f9;
+                      border-radius:8px;min-width:100px">
+    <div style="font-size:11px;color:${{color}};font-weight:700">${{label}}</div>
+    <div style="font-size:18px;font-weight:800;color:#1A1A1A">${{value}}</div>
+  </div>`;
+}}
+
+function funnelArrow(pct) {{
+  return `<div style="padding:0 8px;color:#aaa;text-align:center">
+    <div style="font-size:18px">→</div>
+    <div style="font-size:11px;font-weight:700;color:var(--bolt-mid-green)">${{pct}}</div>
+  </div>`;
 }}
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -1243,10 +1443,22 @@ document.addEventListener('DOMContentLoaded', () => {{
 """
 
 
-def build_trends_json(df_trends: pd.DataFrame) -> str:
-    """Convert weekly trends DataFrame into a JSON string for embedding in HTML."""
+def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
+    """
+    Convert weekly trends DataFrames into a JSON string for embedding in HTML.
+    Includes brand-level aggregate data AND per-location conversion funnel data.
+    """
     import math
     data = {}
+
+    def clean(val):
+        try:
+            v = float(val)
+            return None if math.isnan(v) or math.isinf(v) else round(v, 2)
+        except (TypeError, ValueError):
+            return None
+
+    # ── Brand-level aggregate trends ──────────────────────────────────────────
     for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
                 "cp_l2_margin_pct", "failed_order_rate_pct",
                 "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct"]:
@@ -1256,14 +1468,6 @@ def build_trends_json(df_trends: pd.DataFrame) -> str:
     for (brand, city), grp in df_trends.groupby(["brand_name", "city_name"], sort=False):
         key = f"{brand}|||{city}"
         grp = grp.sort_values("week_start")
-
-        def clean(val):
-            try:
-                v = float(val)
-                return None if math.isnan(v) or math.isinf(v) else round(v, 2)
-            except (TypeError, ValueError):
-                return None
-
         data[key] = {
             "brand": brand,
             "city": city,
@@ -1276,7 +1480,55 @@ def build_trends_json(df_trends: pd.DataFrame) -> str:
             "bad_order_rate_pct":      [clean(v) for v in grp["bad_order_rate_pct"]],
             "acceptance_rate_pct":     [clean(v) for v in grp["acceptance_rate_pct"]],
             "late_delivery_rate_pct":  [clean(v) for v in grp["late_delivery_rate_pct"]],
+            "locations": {},  # filled below
         }
+
+    # ── Per-location conversion data ──────────────────────────────────────────
+    if not df_loc.empty:
+        for col in ["delivered_orders", "gmv_eur", "impressions_sessions",
+                    "menu_viewed_sessions", "order_placed_sessions",
+                    "conversion_impression_to_order_pct", "conversion_menu_to_order_pct",
+                    "conversion_impression_to_menu_pct",
+                    "bad_order_rate_pct", "failed_order_rate_pct",
+                    "acceptance_rate_pct", "availability_pct"]:
+            if col in df_loc.columns:
+                df_loc[col] = pd.to_numeric(df_loc[col], errors="coerce")
+
+        for (brand, city, provider_id), grp in df_loc.groupby(
+                ["brand_name", "city_name", "provider_id"], sort=False):
+            brand_key = f"{brand}|||{city}"
+            grp = grp.sort_values("week_start")
+            loc_name = str(grp["provider_name"].iloc[0])
+            zone     = str(grp["zone_name"].iloc[0]) if "zone_name" in grp.columns else ""
+
+            loc_data = {
+                "provider_id":   int(provider_id),
+                "name":          loc_name,
+                "zone":          zone,
+                "weeks":         grp["week_start"].tolist(),
+                "delivered_orders": [clean(v) for v in grp["delivered_orders"]],
+                "gmv_eur":          [clean(v) for v in grp["gmv_eur"]],
+                "impressions":      [clean(v) for v in grp["impressions_sessions"]],
+                "menu_views":       [clean(v) for v in grp["menu_viewed_sessions"]],
+                "orders_placed":    [clean(v) for v in grp["order_placed_sessions"]],
+                "conv_imp_to_order": [clean(v) for v in grp["conversion_impression_to_order_pct"]],
+                "conv_menu_to_order":[clean(v) for v in grp["conversion_menu_to_order_pct"]],
+                "conv_imp_to_menu":  [clean(v) for v in grp["conversion_impression_to_menu_pct"]],
+                "bad_order_rate":    [clean(v) for v in grp["bad_order_rate_pct"]],
+                "failed_rate":       [clean(v) for v in grp["failed_order_rate_pct"]],
+                "acceptance":        [clean(v) for v in grp["acceptance_rate_pct"]],
+                "availability":      [clean(v) for v in grp["availability_pct"]],
+            }
+
+            if brand_key in data:
+                data[brand_key]["locations"][str(provider_id)] = loc_data
+            # If brand not in trends (edge case), create minimal entry
+            else:
+                data[brand_key] = {
+                    "brand": brand, "city": city,
+                    "weeks": [], "locations": {str(provider_id): loc_data}
+                }
+
     return json.dumps(data, ensure_ascii=False)
 
 
@@ -1733,7 +1985,7 @@ def build_overview_section(df_trends: pd.DataFrame) -> str:
     </div>"""
 
 
-def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_date: str) -> str:
+def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, df_loc: pd.DataFrame, start_date: str, end_date: str) -> str:
     """Build full HTML report from DataFrame."""
     if df.empty:
         return "<html><body><h1>Немає даних</h1></body></html>"
@@ -1858,8 +2110,8 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, start_date: str, end_d
         f'        <option value="{c}">{c}</option>' for c in all_cities
     )
 
-    # Build trends JSON
-    trends_json_str = build_trends_json(df_trends)
+    # Build trends JSON (brand-level + per-location conversion)
+    trends_json_str = build_trends_json(df_trends, df_loc if not df_loc.empty else pd.DataFrame())
 
     html = HTML_TEMPLATE.format(
         report_date=REPORT_DATE,
@@ -1897,10 +2149,16 @@ def main():
         print(f"WARNING: Could not fetch weekly trends: {exc}")
         df_trends = pd.DataFrame()
 
+    try:
+        df_loc = fetch_location_trends(n_weeks=12)
+    except Exception as exc:
+        print(f"WARNING: Could not fetch location trends: {exc}")
+        df_loc = pd.DataFrame()
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(base_dir, OUTPUT_FILE)
 
-    html = build_html(df, df_trends, start_date, end_date)
+    html = build_html(df, df_trends, df_loc, start_date, end_date)
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
