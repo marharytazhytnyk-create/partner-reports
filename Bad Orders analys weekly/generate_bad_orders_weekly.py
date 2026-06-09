@@ -769,11 +769,13 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     }});
 
     const lines = [
-      'Вітаємо!',
+      'Вітаю!',
       '',
-      `Команда Bolt Food звертає вашу увагу на погані замовлення (Bad Orders) за період ${{weekLabel}} у закладі ${{brand}} (${{cityLabel}}).`,
+      `Це Marharyta Zhytnyk, ваш акаунт-менеджер Bolt Food.`,
       '',
-      `За результатами тижневого аналізу, ${{orders.length}} замовлень мають причини, пов'язані з роботою закладу. Загальний показник Bad Orders за тиждень: ${{partner.bad_pct}}% (${{partner.bad_count}} з ${{partner.delivered}} доставлених).`,
+      `Звертаю вашу увагу на погані замовлення за період ${{weekLabel}} у закладі ${{brand}} (${{cityLabel}}).`,
+      '',
+      `За результатами тижневого аналізу, ${{orders.length}} замовлень мають причини, пов'язані з роботою закладу. Загальний показник поганих замовлень за тиждень: ${{partner.bad_pct}}% (${{partner.bad_count}} з ${{partner.delivered}} доставлених).`,
       '',
       'Основні причини:',
     ];
@@ -781,19 +783,19 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     Object.entries(byReason)
       .sort((a, b) => b[1].length - a[1].length)
       .forEach(([reason, list]) => {{
-        lines.push(`• ${{reason}} — ${{list.length}} замовл.`);
+        lines.push(`• ${{reason}} — ${{list.length}} замовлень`);
       }});
 
     lines.push('', 'Деталі по замовленнях:', '');
     orders.forEach(o => {{
-      lines.push(`— Order ref: ${{o.order_ref || '—'}} | ID: ${{o.order_id}} | ${{o.location}}`);
+      lines.push(`— Код замовлення: ${{o.order_ref || '—'}} | ${{o.location}}`);
       lines.push(`  Причина: ${{o.reason_ua || '—'}}`);
       if (o.comment && o.comment !== '—') lines.push(`  Коментар: ${{o.comment}}`);
     }});
 
     lines.push(
       '',
-      'Просимо перевірити:',
+      'Прошу перевірити:',
       '1. Наявність позицій у меню та своєчасне оновлення стоп-листу',
       '2. Якість пакування та правильність комплектації замовлень',
       '3. Час приготування та передачу замовлень курʼєру',
@@ -801,10 +803,11 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
       '',
       'Зниження частки поганих замовлень позитивно вплине на рейтинг закладу, задоволеність клієнтів та обсяг замовлень на платформі.',
       '',
-      'Якщо потрібна допомога — звертайтесь до вашого акаунт-менеджера.',
+      'Якщо потрібна допомога — напишіть мені, з радістю допоможу.',
       '',
       'З повагою,',
-      'Команда Bolt Food',
+      'Marharyta Zhytnyk',
+      'Акаунт-менеджер Bolt Food',
     );
     return lines.join('\\n');
   }}
