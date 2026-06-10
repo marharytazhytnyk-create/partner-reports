@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Потенційне підключення — Marharyta Zhytnyk</title>
+<style>
+  :root {
+    --bolt-green: #1DC462;
+    --bolt-dark: #1A1A1A;
+    --danger: #E53935;
+    --warning: #FB8C00;
+    --info: #1976D2;
+    --purple: #7B1FA2;
+    --text: #222;
+    --muted: #666;
+    --border: #E0E0E0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #F7F9FC;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .header {
+    background: var(--bolt-dark);
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .header-logo { font-size: 22px; font-weight: 800; color: var(--bolt-green); }
+  .header-title { font-size: 15px; font-weight: 600; }
+  .header-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .header-meta { margin-left: auto; text-align: right; font-size: 12px; color: #aaa; }
+  .header-meta strong { color: var(--bolt-green); }
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px 48px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--bolt-green);
+  }
+  .stat.warn { border-top-color: var(--warning); }
+  .stat.info { border-top-color: var(--info); }
+  .stat.purple { border-top-color: var(--purple); }
+  .stat-label { font-size: 11px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .stat-value { font-size: 26px; font-weight: 800; margin: 4px 0; }
+  .stat-sub { font-size: 11px; color: var(--muted); }
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 20px 22px;
+    margin-bottom: 24px;
+  }
+  .section h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .note {
+    background: #F0FAF4;
+    border-left: 4px solid var(--bolt-green);
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    color: #444;
+    margin-bottom: 16px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    background: #F5F5F5;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background: #FAFFFE; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .sub { font-size: 11px; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .pos { color: #2E7D32; font-weight: 600; }
+  .neg { color: var(--danger); font-weight: 600; }
+  .badge-top {
+    font-size: 9px; background: #FFD600; color: #333;
+    border-radius: 6px; padding: 1px 5px; font-weight: 700; margin-left: 4px;
+  }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    border-radius: 8px; padding: 2px 8px; white-space: nowrap;
+  }
+  .tag-smart { background: #EDE7F6; color: var(--purple); }
+  .tag-sl { background: #E3F2FD; color: var(--info); }
+  .tag-rec { background: #E8F9EE; color: #1A9A5A; }
+  .rec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .rec-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: #FAFFFE;
+    position: relative;
+  }
+  .rec-rank {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 11px; font-weight: 800; color: var(--bolt-green);
+  }
+  .rec-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; padding-right: 28px; }
+  .rec-city { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .rec-metrics {
+    display: flex; flex-wrap: wrap; gap: 6px 10px;
+    font-size: 11px; margin-bottom: 10px;
+  }
+  .rec-product { font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
+  .rec-reason { font-size: 11px; color: #444; line-height: 1.45; }
+  .empty, .empty-block { text-align: center; color: var(--muted); padding: 24px; }
+  .footer {
+    text-align: center; font-size: 11px; color: #999;
+    padding: 20px 0 8px;
+  }
+  .footer a { color: var(--bolt-green); }
+  @media (max-width: 768px) {
+    .header { flex-wrap: wrap; }
+    .header-meta { margin-left: 0; text-align: left; width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo">⚡ Bolt Food</div>
+    <div>
+      <div class="header-title">Потенційне підключення — Smart Promotions & Sponsored Listing</div>
+      <div class="header-sub">Marharyta Zhytnyk · Портфоліо Україна</div>
+    </div>
+    <div class="header-meta">
+      Оновлено: <strong>2026-06-10</strong><br>
+      Метрики: 2026-05-11 — 2026-06-07
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Активних локацій</div>
+        <div class="stat-value">321</div>
+        <div class="stat-sub">144 брендів</div>
+      </div>
+      <div class="stat purple">
+        <div class="stat-label">Smart Promotions</div>
+        <div class="stat-value">52</div>
+        <div class="stat-sub">активні в порталі зараз</div>
+      </div>
+      <div class="stat info">
+        <div class="stat-label">Sponsored Listing</div>
+        <div class="stat-value">9</div>
+        <div class="stat-sub">активні останні 7 днів</div>
+      </div>
+      <div class="stat warn">
+        <div class="stat-label">Без жодної функції</div>
+        <div class="stat-value">107</div>
+        <div class="stat-sub">брендів-кандидатів</div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Методологія:</strong>
+      Smart Promotions — <code>delivery_smart_promotion_log</code> зі статусом <em>active</em>.
+      Sponsored Listing — локації з <code>sponsored_listing_duration_hours &gt; 0</code> за останні 7 днів.
+      Рекомендації для брендів без обох функцій базуються на GMV, CP L2 маржі та конверсії (показ → замовлення) за останні 4 повні тижні.
+    </div>
+
+    <section class="section">
+      <h2>🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу</h2>
+      <div class="section-sub">Топ-20 брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%</div>
+      <div class="rec-grid">
+        <div class="rec-card">
+          <div class="rec-rank">#1</div>
+          <div class="rec-title">APPETITO <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Kharkiv · 3 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €8 707</span>
+            <span>Зам. 645</span>
+            <span>CP 21.0%</span>
+            <span>Conv. 2.9%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#2</div>
+          <div class="rec-title">MON AMI BURUM </div>
+          <div class="rec-city">Dnipro · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €6 834</span>
+            <span>Зам. 677</span>
+            <span>CP 16.4%</span>
+            <span>Conv. 6.1%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#3</div>
+          <div class="rec-title">MON CHER <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Kharkiv · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €6 964</span>
+            <span>Зам. 461</span>
+            <span>CP 18.4%</span>
+            <span>Conv. 3.3%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#4</div>
+          <div class="rec-title">NASLEDNIKI <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Dnipro · 2 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €7 411</span>
+            <span>Зам. 317</span>
+            <span>CP 26.5%</span>
+            <span>Conv. 1.3%</span>
+          </div>
+          <div class="rec-product">Sponsored Listing → Smart Promotions</div>
+          <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#5</div>
+          <div class="rec-title">SOYA </div>
+          <div class="rec-city">Cherkasy · 3 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €9 570</span>
+            <span>Зам. 574</span>
+            <span>CP 14.5%</span>
+            <span>Conv. 2.5%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#6</div>
+          <div class="rec-title">DNIPROVSKA REBERNYA <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Dnipro · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €7 585</span>
+            <span>Зам. 349</span>
+            <span>CP 21.4%</span>
+            <span>Conv. 1.6%</span>
+          </div>
+          <div class="rec-product">Sponsored Listing → Smart Promotions</div>
+          <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#7</div>
+          <div class="rec-title">TRATTORIA <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Kharkiv · 3 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €8 789</span>
+            <span>Зам. 475</span>
+            <span>CP 8.6%</span>
+            <span>Conv. 2.3%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#8</div>
+          <div class="rec-title">JOSPER SVINTUZ <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Zaporizhia · 12 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €7 554</span>
+            <span>Зам. 621</span>
+            <span>CP 4.0%</span>
+            <span>Conv. 3.8%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#9</div>
+          <div class="rec-title">PIZZA CELENTANO <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Dnipro · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 862</span>
+            <span>Зам. 432</span>
+            <span>CP 13.8%</span>
+            <span>Conv. 3.8%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#10</div>
+          <div class="rec-title">KRABSBURGER </div>
+          <div class="rec-city">Zaporizhia · 2 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €6 087</span>
+            <span>Зам. 563</span>
+            <span>CP 10.5%</span>
+            <span>Conv. 5.2%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#11</div>
+          <div class="rec-title">KUMA SHAURMA <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Odesa · 6 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 457</span>
+            <span>Зам. 537</span>
+            <span>CP 14.5%</span>
+            <span>Conv. 2.5%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#12</div>
+          <div class="rec-title">MAVRA PIZZA <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Zaporizhia · 9 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €7 100</span>
+            <span>Зам. 561</span>
+            <span>CP 5.6%</span>
+            <span>Conv. 3.0%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#13</div>
+          <div class="rec-title">TOOMAN DELIVERY <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Cherkasy · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €4 315</span>
+            <span>Зам. 260</span>
+            <span>CP 23.5%</span>
+            <span>Conv. 1.8%</span>
+          </div>
+          <div class="rec-product">Sponsored Listing → Smart Promotions</div>
+          <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#14</div>
+          <div class="rec-title">PURI CHVENI DN <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Dnipro · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 894</span>
+            <span>Зам. 268</span>
+            <span>CP 16.5%</span>
+            <span>Conv. 1.9%</span>
+          </div>
+          <div class="rec-product">Sponsored Listing → Smart Promotions</div>
+          <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#15</div>
+          <div class="rec-title">LITTLE MARIUPOL <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Dnipro · 5 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 372</span>
+            <span>Зам. 299</span>
+            <span>CP 20.0%</span>
+            <span>Conv. 1.0%</span>
+          </div>
+          <div class="rec-product">Sponsored Listing → Smart Promotions</div>
+          <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#16</div>
+          <div class="rec-title">VAM DONER? </div>
+          <div class="rec-city">Cherkasy · 5 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €6 083</span>
+            <span>Зам. 551</span>
+            <span>CP 13.4%</span>
+            <span>Conv. 2.6%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#17</div>
+          <div class="rec-title">BON CHICKEN <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Odesa · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €4 645</span>
+            <span>Зам. 357</span>
+            <span>CP 12.5%</span>
+            <span>Conv. 3.0%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#18</div>
+          <div class="rec-title">NARESHTI ZP </div>
+          <div class="rec-city">Zaporizhia · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 067</span>
+            <span>Зам. 349</span>
+            <span>CP 13.9%</span>
+            <span>Conv. 4.3%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#19</div>
+          <div class="rec-title">JOSPER SVINTUZ <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Vinnytsia · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €5 613</span>
+            <span>Зам. 389</span>
+            <span>CP 9.4%</span>
+            <span>Conv. 2.6%</span>
+          </div>
+          <div class="rec-product">Smart Promotions + Sponsored Listing</div>
+          <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-rank">#20</div>
+          <div class="rec-title">PURI CHVENI KR <span class="badge-top">TOP</span></div>
+          <div class="rec-city">Kryvyi Rih · 1 лок.</div>
+          <div class="rec-metrics">
+            <span>GMV €3 384</span>
+            <span>Зам. 204</span>
+            <span>CP 14.7%</span>
+            <span>Conv. 4.3%</span>
+          </div>
+          <div class="rec-product">Smart Promotions</div>
+          <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+        </div></div>
+    </section>
+
+    <section class="section">
+      <h2>🟣 Заклади з активними Smart Promotions</h2>
+      <div class="section-sub">52 локацій · Розумні акції на Порталі для Ресторанів</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Заклад / бренд</th><th>Місто</th><th>Зона</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td><strong>AMERICAN FOOD</strong> <br>
+              <span class="sub">American Food</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">5</td>
+          <td class="num">€116</td>
+          <td class="num pos">20.0%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BLACK BURGER</strong> <br>
+              <span class="sub">Black Burger</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">2</td>
+          <td class="num">€55</td>
+          <td class="num pos">7.2%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BLACK FOOD</strong> <br>
+              <span class="sub">Black Food Шаурма проспект Гагаріна</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">158</td>
+          <td class="num">€1 569</td>
+          <td class="num pos">18.4%</td>
+          <td class="num">3.3%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BLACK FOOD</strong> <br>
+              <span class="sub">BLACK FOOD Шаурма бульвар Слави</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">57</td>
+          <td class="num">€589</td>
+          <td class="num pos">17.2%</td>
+          <td class="num">3.0%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BURGER HOUSE</strong> <br>
+              <span class="sub">Burger house</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">0</td>
+          <td class="num">€0</td>
+          <td class="num ">nan%</td>
+          <td class="num">0.0%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BURGER LITE</strong> <br>
+              <span class="sub">Burger Lite</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">4</td>
+          <td class="num">€47</td>
+          <td class="num pos">8.5%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>CRAZYCRAB</strong> <br>
+              <span class="sub">Crazycrab вул. Маршала Малиновського</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Manuilovkiy</td>
+          <td class="num">63</td>
+          <td class="num">€1 143</td>
+          <td class="num pos">18.8%</td>
+          <td class="num">1.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DO DO DONER</strong> <br>
+              <span class="sub">Do Do DONER вул. Калинова</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">81</td>
+          <td class="num">€984</td>
+          <td class="num pos">23.6%</td>
+          <td class="num">2.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DO DO DONER</strong> <br>
+              <span class="sub">Do Do DONER Парусний</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Novokodatska </td>
+          <td class="num">51</td>
+          <td class="num">€601</td>
+          <td class="num pos">22.5%</td>
+          <td class="num">2.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DO DO DONER</strong> <br>
+              <span class="sub">Do Do DONER пров. Вільний</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">51</td>
+          <td class="num">€554</td>
+          <td class="num pos">19.2%</td>
+          <td class="num">2.4%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DO DO DONER</strong> <br>
+              <span class="sub">Do Do DONER проспект Слобожанський</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">32</td>
+          <td class="num">€407</td>
+          <td class="num pos">22.6%</td>
+          <td class="num">1.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DONER HOUSE</strong> <br>
+              <span class="sub">Doner House</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">5</td>
+          <td class="num">€60</td>
+          <td class="num pos">11.2%</td>
+          <td class="num">0.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>LUNCH BAR</strong> <br>
+              <span class="sub">Lunch Bar</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">5</td>
+          <td class="num">€70</td>
+          <td class="num pos">19.1%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MAO SUSHI</strong> <br>
+              <span class="sub">Mao Sushi</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">4</td>
+          <td class="num">€87</td>
+          <td class="num pos">21.1%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>PANASIAN TIGER</strong> <br>
+              <span class="sub">PanAsian Tiger</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">9</td>
+          <td class="num">€153</td>
+          <td class="num neg">-5.7%</td>
+          <td class="num">0.4%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>PIZZERIA DNIPRO</strong> <br>
+              <span class="sub">Pizzeria</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">2</td>
+          <td class="num">€13</td>
+          <td class="num neg">-41.9%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>REST FOOD</strong> <br>
+              <span class="sub">Rest Food</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">5</td>
+          <td class="num">€74</td>
+          <td class="num pos">9.6%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SCORSESE PIZZA</strong> <br>
+              <span class="sub">Scorsese Pizza</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">12</td>
+          <td class="num">€177</td>
+          <td class="num pos">2.0%</td>
+          <td class="num">0.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SHAURMANIYA</strong> <br>
+              <span class="sub">Шаурманія</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">32</td>
+          <td class="num">€414</td>
+          <td class="num pos">12.2%</td>
+          <td class="num">0.7%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Калнишевського</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">27</td>
+          <td class="num">€665</td>
+          <td class="num pos">24.8%</td>
+          <td class="num">0.9%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Робоча 162К</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Chechelivska zone</td>
+          <td class="num">10</td>
+          <td class="num">€356</td>
+          <td class="num pos">23.9%</td>
+          <td class="num">0.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Титова</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center 2</td>
+          <td class="num">14</td>
+          <td class="num">€337</td>
+          <td class="num pos">22.7%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Панікахи</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Shevchenkivska</td>
+          <td class="num">16</td>
+          <td class="num">€308</td>
+          <td class="num pos">25.0%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Науки</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">15</td>
+          <td class="num">€291</td>
+          <td class="num pos">17.0%</td>
+          <td class="num">0.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Луговська</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Manuilovkiy</td>
+          <td class="num">16</td>
+          <td class="num">€230</td>
+          <td class="num pos">20.8%</td>
+          <td class="num">1.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Робоча 67к</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Chechelivska zone</td>
+          <td class="num">12</td>
+          <td class="num">€213</td>
+          <td class="num pos">19.2%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Міхновського</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">6</td>
+          <td class="num">€170</td>
+          <td class="num pos">23.1%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Метробудівська</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Novokodatska </td>
+          <td class="num">7</td>
+          <td class="num">€134</td>
+          <td class="num pos">25.2%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family б-р Слави</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">8</td>
+          <td class="num">€133</td>
+          <td class="num pos">22.7%</td>
+          <td class="num">0.5%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Донецьке шосе</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Amur-Nyzhniodniprovska</td>
+          <td class="num">6</td>
+          <td class="num">€126</td>
+          <td class="num pos">21.5%</td>
+          <td class="num">0.4%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Нижньодніпровська</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">4</td>
+          <td class="num">€92</td>
+          <td class="num pos">24.8%</td>
+          <td class="num">0.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family вул. Широка</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Amur-Nyzhniodniprovska</td>
+          <td class="num">3</td>
+          <td class="num">€37</td>
+          <td class="num pos">18.8%</td>
+          <td class="num">0.9%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI FAMILY</strong> <br>
+              <span class="sub">Sushi Family Малиновського</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Manuilovkiy</td>
+          <td class="num">2</td>
+          <td class="num">€37</td>
+          <td class="num pos">22.3%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI HOUSE</strong> <br>
+              <span class="sub">Sushi house</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">4</td>
+          <td class="num">€115</td>
+          <td class="num pos">18.9%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI KING DNIPRO</strong> <br>
+              <span class="sub">Sushi King вулиця Робоча</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Chechelivska zone</td>
+          <td class="num">3</td>
+          <td class="num">€93</td>
+          <td class="num pos">9.7%</td>
+          <td class="num">0.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI KING DNIPRO</strong> <br>
+              <span class="sub">Sushi King узвіз Крутогірний</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">2</td>
+          <td class="num">€32</td>
+          <td class="num pos">9.3%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI KING DNIPRO</strong> <br>
+              <span class="sub">Sushi King пр-т Дмитра Яворницького</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">1</td>
+          <td class="num">€21</td>
+          <td class="num pos">9.6%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI KING DNIPRO</strong> <br>
+              <span class="sub">Sushi King пр-т Героїв</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">1</td>
+          <td class="num">€17</td>
+          <td class="num pos">12.3%</td>
+          <td class="num">0.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI KING DNIPRO</strong> <br>
+              <span class="sub">Sushi King вулиця Калинова</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Industrialna </td>
+          <td class="num">1</td>
+          <td class="num">€11</td>
+          <td class="num neg">-101.3%</td>
+          <td class="num">0.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>VIKTORIA</strong> <br>
+              <span class="sub">Viktoria food & drink</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">59</td>
+          <td class="num">€856</td>
+          <td class="num pos">16.8%</td>
+          <td class="num">0.8%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>FOODPROM</strong> <br>
+              <span class="sub">Food.prom Трінклера</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Center</td>
+          <td class="num">96</td>
+          <td class="num">€1 609</td>
+          <td class="num pos">17.9%</td>
+          <td class="num">1.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>FOODPROM</strong> <br>
+              <span class="sub">Food.prom Сумська</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Center</td>
+          <td class="num">19</td>
+          <td class="num">€297</td>
+          <td class="num pos">17.0%</td>
+          <td class="num">0.7%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MARANELLO</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">Maranello Тракторобудівників</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - 602 District</td>
+          <td class="num">121</td>
+          <td class="num">€1 695</td>
+          <td class="num pos">12.7%</td>
+          <td class="num">1.4%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MARANELLO</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">Maranello вул. Тарасівська</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Slobidska</td>
+          <td class="num">113</td>
+          <td class="num">€1 683</td>
+          <td class="num pos">14.5%</td>
+          <td class="num">1.8%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MARANELLO</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">Maranello 23 Серпня</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Shevchenkivska </td>
+          <td class="num">33</td>
+          <td class="num">€394</td>
+          <td class="num pos">14.7%</td>
+          <td class="num">1.3%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MRL-PIZZA</strong> <br>
+              <span class="sub">MRL-PIZZA вул. Дерев'янка</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Shevchenkivska </td>
+          <td class="num">56</td>
+          <td class="num">€785</td>
+          <td class="num pos">13.9%</td>
+          <td class="num">1.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUSHI USHI</strong> <br>
+              <span class="sub">Суші уші на пр. Університетському</span></td>
+          <td>Kryvyi Rih</td>
+          <td class="sub">Kryvyi Rih - Myru</td>
+          <td class="num">81</td>
+          <td class="num">€1 814</td>
+          <td class="num pos">19.8%</td>
+          <td class="num">1.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SHAUROOM</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">ШауRoom пров. Фінський</span></td>
+          <td>Kyiv</td>
+          <td class="sub">Kyiv - Dniprovskyi</td>
+          <td class="num">26</td>
+          <td class="num">€345</td>
+          <td class="num pos">22.1%</td>
+          <td class="num">1.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>POKEWAY</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">PokeWay Грецька площа 3/4</span></td>
+          <td>Odesa</td>
+          <td class="sub">Odesa - Prymorskyi</td>
+          <td class="num">41</td>
+          <td class="num">€684</td>
+          <td class="num pos">19.7%</td>
+          <td class="num">1.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>#ARIZONA</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">Arizona</span></td>
+          <td>Poltava</td>
+          <td class="sub">Poltava - Center</td>
+          <td class="num">147</td>
+          <td class="num">€2 471</td>
+          <td class="num pos">15.4%</td>
+          <td class="num">0.9%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SAMURAI ARIZONA</strong> <br>
+              <span class="sub">Самурай</span></td>
+          <td>Poltava</td>
+          <td class="sub">Poltava - Center</td>
+          <td class="num">139</td>
+          <td class="num">€3 070</td>
+          <td class="num pos">16.2%</td>
+          <td class="num">1.4%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>KATANA ZP</strong> <br>
+              <span class="sub">KATANA пр-т Соборний</span></td>
+          <td>Zaporizhia</td>
+          <td class="sub">Zaporizhzhia - Center</td>
+          <td class="num">134</td>
+          <td class="num">€2 893</td>
+          <td class="num pos">20.1%</td>
+          <td class="num">1.6%</td>
+          
+        </tr></tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>🔵 Заклади з активним Sponsored Listing</h2>
+      <div class="section-sub">9 локацій · спонсоровані оголошення за останні 7 днів</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Заклад / бренд</th><th>Місто</th><th>Зона</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td><strong>BLACK SHEEP</strong> <br>
+              <span class="sub">Black Sheep</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">183</td>
+          <td class="num">€3 522</td>
+          <td class="num pos">12.3%</td>
+          <td class="num">1.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>BROOKS FOOD</strong> <br>
+              <span class="sub">BROOKS</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">277</td>
+          <td class="num">€6 013</td>
+          <td class="num pos">13.9%</td>
+          <td class="num">1.0%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>DOMASHNYA YIZA</strong> <br>
+              <span class="sub">Домашня Їжа Виконкомівська</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">64</td>
+          <td class="num">€921</td>
+          <td class="num pos">18.9%</td>
+          <td class="num">0.6%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>INTERMEZZO DP</strong> <br>
+              <span class="sub">Intermezzo</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">486</td>
+          <td class="num">€11 313</td>
+          <td class="num pos">23.4%</td>
+          <td class="num">1.1%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MOSHE</strong> <br>
+              <span class="sub">Moshe</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">122</td>
+          <td class="num">€2 153</td>
+          <td class="num pos">13.3%</td>
+          <td class="num">1.3%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>SUZIRIA</strong> <br>
+              <span class="sub">Сузір'я</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Soborna</td>
+          <td class="num">63</td>
+          <td class="num">€1 308</td>
+          <td class="num pos">14.0%</td>
+          <td class="num">0.9%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>VARBURGER</strong> <br>
+              <span class="sub">Varcafe (ex. Varburger)</span></td>
+          <td>Dnipro</td>
+          <td class="sub">Dnipro - Center </td>
+          <td class="num">121</td>
+          <td class="num">€2 753</td>
+          <td class="num pos">13.9%</td>
+          <td class="num">0.8%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>IZI BURGER</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">IZI BURGER Григорівське шосе</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Novobavarska</td>
+          <td class="num">327</td>
+          <td class="num">€5 316</td>
+          <td class="num pos">10.7%</td>
+          <td class="num">2.2%</td>
+          
+        </tr>
+        <tr>
+          <td><strong>MARCELLO KHARKIV</strong> <span class="badge-top">TOP</span><br>
+              <span class="sub">Marcello Академіка Павлова</span></td>
+          <td>Kharkiv</td>
+          <td class="sub">Kharkiv - Zhuravlivka </td>
+          <td class="num">87</td>
+          <td class="num">€1 582</td>
+          <td class="num pos">7.9%</td>
+          <td class="num">0.4%</td>
+          
+        </tr></tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>📋 Бренди без Smart Promotions і Sponsored Listing</h2>
+      <div class="section-sub">107 брендів · повний список з рекомендованим продуктом</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td><strong>SOYA</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">3</td>
+          <td class="num">574</td>
+          <td class="num">€9 570</td>
+          <td class="num pos">14.5%</td>
+          <td class="num">2.5%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>TRATTORIA</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">3</td>
+          <td class="num">475</td>
+          <td class="num">€8 789</td>
+          <td class="num pos">8.6%</td>
+          <td class="num">2.3%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>APPETITO</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">3</td>
+          <td class="num">645</td>
+          <td class="num">€8 707</td>
+          <td class="num pos">21.0%</td>
+          <td class="num">2.9%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>DNIPROVSKA REBERNYA</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">349</td>
+          <td class="num">€7 585</td>
+          <td class="num pos">21.4%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">12</td>
+          <td class="num">621</td>
+          <td class="num">€7 554</td>
+          <td class="num pos">4.0%</td>
+          <td class="num">3.8%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>NASLEDNIKI</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">2</td>
+          <td class="num">317</td>
+          <td class="num">€7 411</td>
+          <td class="num pos">26.5%</td>
+          <td class="num">1.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAVRA PIZZA</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">9</td>
+          <td class="num">561</td>
+          <td class="num">€7 100</td>
+          <td class="num pos">5.6%</td>
+          <td class="num">3.0%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MON CHER</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">461</td>
+          <td class="num">€6 964</td>
+          <td class="num pos">18.4%</td>
+          <td class="num">3.3%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>MON AMI BURUM</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">677</td>
+          <td class="num">€6 834</td>
+          <td class="num pos">16.4%</td>
+          <td class="num">6.1%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>KRABSBURGER</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">2</td>
+          <td class="num">563</td>
+          <td class="num">€6 087</td>
+          <td class="num pos">10.5%</td>
+          <td class="num">5.2%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>VAM DONER?</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">5</td>
+          <td class="num">551</td>
+          <td class="num">€6 083</td>
+          <td class="num pos">13.4%</td>
+          <td class="num">2.6%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PURI CHVENI DN</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">268</td>
+          <td class="num">€5 894</td>
+          <td class="num pos">16.5%</td>
+          <td class="num">1.9%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">432</td>
+          <td class="num">€5 862</td>
+          <td class="num pos">13.8%</td>
+          <td class="num">3.8%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
+          <td>Vinnytsia</td>
+          <td class="num">1</td>
+          <td class="num">389</td>
+          <td class="num">€5 613</td>
+          <td class="num pos">9.4%</td>
+          <td class="num">2.6%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BELLA MOZZARELLA</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">6</td>
+          <td class="num">285</td>
+          <td class="num">€5 586</td>
+          <td class="num pos">8.3%</td>
+          <td class="num">0.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>KUMA SHAURMA</strong> <span class="badge-top">TOP</span></td>
+          <td>Odesa</td>
+          <td class="num">6</td>
+          <td class="num">537</td>
+          <td class="num">€5 457</td>
+          <td class="num pos">14.5%</td>
+          <td class="num">2.5%</td>
+          <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>LITTLE MARIUPOL</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">5</td>
+          <td class="num">299</td>
+          <td class="num">€5 372</td>
+          <td class="num pos">20.0%</td>
+          <td class="num">1.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>NARESHTI ZP</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">349</td>
+          <td class="num">€5 067</td>
+          <td class="num pos">13.9%</td>
+          <td class="num">4.3%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>STREET PIZZA</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">7</td>
+          <td class="num">423</td>
+          <td class="num">€4 921</td>
+          <td class="num pos">19.3%</td>
+          <td class="num">1.9%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>BON CHICKEN</strong> <span class="badge-top">TOP</span></td>
+          <td>Odesa</td>
+          <td class="num">1</td>
+          <td class="num">357</td>
+          <td class="num">€4 645</td>
+          <td class="num pos">12.5%</td>
+          <td class="num">3.0%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>AMVAM DELIVERY</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">2</td>
+          <td class="num">320</td>
+          <td class="num">€4 520</td>
+          <td class="num pos">20.9%</td>
+          <td class="num">1.9%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>TOOMAN DELIVERY</strong> <span class="badge-top">TOP</span></td>
+          <td>Cherkasy</td>
+          <td class="num">1</td>
+          <td class="num">260</td>
+          <td class="num">€4 315</td>
+          <td class="num pos">23.5%</td>
+          <td class="num">1.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>ONE GOGI</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">2</td>
+          <td class="num">225</td>
+          <td class="num">€4 157</td>
+          <td class="num pos">26.7%</td>
+          <td class="num">1.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">146</td>
+          <td class="num">€3 990</td>
+          <td class="num pos">15.1%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>SPRAGA</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">10</td>
+          <td class="num">431</td>
+          <td class="num">€3 925</td>
+          <td class="num pos">3.2%</td>
+          <td class="num">2.4%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>PURI CHVENI KH</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">176</td>
+          <td class="num">€3 425</td>
+          <td class="num pos">15.6%</td>
+          <td class="num">2.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SHO TUT</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">2</td>
+          <td class="num">237</td>
+          <td class="num">€3 422</td>
+          <td class="num pos">20.5%</td>
+          <td class="num">1.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>PURI CHVENI KR</strong> <span class="badge-top">TOP</span></td>
+          <td>Kryvyi Rih</td>
+          <td class="num">1</td>
+          <td class="num">204</td>
+          <td class="num">€3 384</td>
+          <td class="num pos">14.7%</td>
+          <td class="num">4.3%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>NAPO</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">13</td>
+          <td class="num">333</td>
+          <td class="num">€3 374</td>
+          <td class="num pos">14.2%</td>
+          <td class="num">1.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>SANDWICH MARKET</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">4</td>
+          <td class="num">276</td>
+          <td class="num">€3 354</td>
+          <td class="num pos">9.4%</td>
+          <td class="num">2.7%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAVRA PIZZA</strong> <span class="badge-top">TOP</span></td>
+          <td>Kryvyi Rih</td>
+          <td class="num">3</td>
+          <td class="num">275</td>
+          <td class="num">€3 270</td>
+          <td class="num pos">14.9%</td>
+          <td class="num">2.3%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>DONO</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">5</td>
+          <td class="num">247</td>
+          <td class="num">€3 215</td>
+          <td class="num pos">16.5%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>FUGU</strong> <span class="badge-top">TOP</span></td>
+          <td>Cherkasy</td>
+          <td class="num">4</td>
+          <td class="num">147</td>
+          <td class="num">€3 099</td>
+          <td class="num pos">22.2%</td>
+          <td class="num">0.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>GRILL PARK</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">171</td>
+          <td class="num">€3 053</td>
+          <td class="num pos">11.1%</td>
+          <td class="num">2.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
+          <td>Lviv</td>
+          <td class="num">1</td>
+          <td class="num">113</td>
+          <td class="num">€3 004</td>
+          <td class="num pos">14.2%</td>
+          <td class="num">0.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>HELLO BURGER CHERKASY</strong> <span class="badge-top">TOP</span></td>
+          <td>Cherkasy</td>
+          <td class="num">1</td>
+          <td class="num">165</td>
+          <td class="num">€2 915</td>
+          <td class="num pos">21.6%</td>
+          <td class="num">1.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SHAVUCHA TEAM</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">3</td>
+          <td class="num">253</td>
+          <td class="num">€2 668</td>
+          <td class="num pos">14.8%</td>
+          <td class="num">2.2%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">192</td>
+          <td class="num">€2 464</td>
+          <td class="num pos">12.4%</td>
+          <td class="num">3.0%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
+          <td>Kryvyi Rih</td>
+          <td class="num">1</td>
+          <td class="num">183</td>
+          <td class="num">€2 375</td>
+          <td class="num pos">6.7%</td>
+          <td class="num">2.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MON CHER</strong> <span class="badge-top">TOP</span></td>
+          <td>Odesa</td>
+          <td class="num">1</td>
+          <td class="num">157</td>
+          <td class="num">€2 342</td>
+          <td class="num pos">22.2%</td>
+          <td class="num">2.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>STAR TIMES</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">2</td>
+          <td class="num">203</td>
+          <td class="num">€2 333</td>
+          <td class="num pos">12.2%</td>
+          <td class="num">1.7%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>CHAS SHAURMY</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">3</td>
+          <td class="num">184</td>
+          <td class="num">€2 333</td>
+          <td class="num pos">17.6%</td>
+          <td class="num">1.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUSHI LA PIEZZA</strong> <span class="badge-top">TOP</span></td>
+          <td>Sumy</td>
+          <td class="num">1</td>
+          <td class="num">176</td>
+          <td class="num">€2 206</td>
+          <td class="num pos">8.4%</td>
+          <td class="num">5.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>ITALIYSʹKYY KVARTAL</strong> </td>
+          <td>Odesa</td>
+          <td class="num">4</td>
+          <td class="num">134</td>
+          <td class="num">€2 116</td>
+          <td class="num pos">18.3%</td>
+          <td class="num">1.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAVRA AZIA</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">4</td>
+          <td class="num">113</td>
+          <td class="num">€2 063</td>
+          <td class="num pos">9.1%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>GRILL VIBE</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">171</td>
+          <td class="num">€1 969</td>
+          <td class="num pos">9.4%</td>
+          <td class="num">2.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PINKMAN BAR</strong> <span class="badge-top">TOP</span></td>
+          <td>Kharkiv</td>
+          <td class="num">6</td>
+          <td class="num">91</td>
+          <td class="num">€1 916</td>
+          <td class="num pos">7.3%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MOLTO MEATFISH</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">3</td>
+          <td class="num">110</td>
+          <td class="num">€1 871</td>
+          <td class="num pos">20.0%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>ALLO LOSOS</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">4</td>
+          <td class="num">104</td>
+          <td class="num">€1 820</td>
+          <td class="num pos">16.5%</td>
+          <td class="num">1.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SALTIVSKYI CHEBUREK</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">120</td>
+          <td class="num">€1 695</td>
+          <td class="num pos">21.8%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">77</td>
+          <td class="num">€1 684</td>
+          <td class="num pos">15.1%</td>
+          <td class="num">0.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>VERTEP</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">119</td>
+          <td class="num">€1 650</td>
+          <td class="num pos">20.0%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MIAO</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">92</td>
+          <td class="num">€1 572</td>
+          <td class="num pos">19.6%</td>
+          <td class="num">1.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>GALUSHKA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">116</td>
+          <td class="num">€1 557</td>
+          <td class="num pos">20.4%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BELLA VITA STEFANIKOVO NAMESTI</strong> <span class="badge-top">TOP</span></td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">83</td>
+          <td class="num">€1 415</td>
+          <td class="num pos">4.5%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SMARTFOOD</strong> <span class="badge-top">TOP</span></td>
+          <td>Sumy</td>
+          <td class="num">1</td>
+          <td class="num">147</td>
+          <td class="num">€1 413</td>
+          <td class="num pos">12.5%</td>
+          <td class="num">5.2%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>CONFETTI</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">4</td>
+          <td class="num">80</td>
+          <td class="num">€1 376</td>
+          <td class="num pos">20.0%</td>
+          <td class="num">0.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SHAURMA NA VUHILLI</strong> <span class="badge-top">TOP</span></td>
+          <td>Kryvyi Rih</td>
+          <td class="num">3</td>
+          <td class="num">124</td>
+          <td class="num">€1 340</td>
+          <td class="num pos">13.4%</td>
+          <td class="num">1.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>HOCHY KEBAB</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">99</td>
+          <td class="num">€1 326</td>
+          <td class="num pos">15.9%</td>
+          <td class="num">2.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>DEPARTAMENT PELMENIV</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">5</td>
+          <td class="num">74</td>
+          <td class="num">€1 259</td>
+          <td class="num pos">20.4%</td>
+          <td class="num">0.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>WOW GRILL</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">99</td>
+          <td class="num">€1 220</td>
+          <td class="num pos">12.9%</td>
+          <td class="num">2.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BOOGIE PIZZA&SUSHI</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">4</td>
+          <td class="num">83</td>
+          <td class="num">€1 204</td>
+          <td class="num pos">8.4%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
+          <td>Cherkasy</td>
+          <td class="num">1</td>
+          <td class="num">44</td>
+          <td class="num">€1 153</td>
+          <td class="num pos">17.6%</td>
+          <td class="num">0.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>966.UA</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">31</td>
+          <td class="num">€1 150</td>
+          <td class="num pos">10.0%</td>
+          <td class="num">0.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>TERASA TERYTORIIA MIASA</strong> <span class="badge-top">TOP</span></td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">60</td>
+          <td class="num">€1 105</td>
+          <td class="num pos">20.6%</td>
+          <td class="num">0.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
+          <td>Pavlohrad</td>
+          <td class="num">2</td>
+          <td class="num">103</td>
+          <td class="num">€1 092</td>
+          <td class="num pos">10.3%</td>
+          <td class="num">6.7%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>LA PIZZA ESPRESSO</strong> <span class="badge-top">TOP</span></td>
+          <td>Chernihiv</td>
+          <td class="num">3</td>
+          <td class="num">85</td>
+          <td class="num">€1 020</td>
+          <td class="num pos">4.2%</td>
+          <td class="num">1.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>IKURA FOOD</strong> <span class="badge-top">TOP</span></td>
+          <td>Oleksandriia</td>
+          <td class="num">1</td>
+          <td class="num">60</td>
+          <td class="num">€899</td>
+          <td class="num pos">18.0%</td>
+          <td class="num">2.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SHAUROOM</strong> <span class="badge-top">TOP</span></td>
+          <td>Pavlohrad</td>
+          <td class="num">3</td>
+          <td class="num">92</td>
+          <td class="num">€856</td>
+          <td class="num pos">11.6%</td>
+          <td class="num">3.9%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>SANDWICH MARKET</strong> <span class="badge-top">TOP</span></td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">70</td>
+          <td class="num">€829</td>
+          <td class="num pos">12.8%</td>
+          <td class="num">4.7%</td>
+          <td><span class="tag tag-rec">Smart Promotions</span></td>
+        </tr>
+        <tr>
+          <td><strong>VERDE BY LA SPEZIA</strong> <span class="badge-top">TOP</span></td>
+          <td>Sumy</td>
+          <td class="num">1</td>
+          <td class="num">50</td>
+          <td class="num">€719</td>
+          <td class="num pos">4.2%</td>
+          <td class="num">4.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>DONO</strong> </td>
+          <td>Pavlohrad</td>
+          <td class="num">5</td>
+          <td class="num">65</td>
+          <td class="num">€692</td>
+          <td class="num pos">6.0%</td>
+          <td class="num">2.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BELLA ITALIA</strong> </td>
+          <td>Odesa</td>
+          <td class="num">1</td>
+          <td class="num">42</td>
+          <td class="num">€681</td>
+          <td class="num pos">18.9%</td>
+          <td class="num">1.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>LUCIANO PIZZA BY#ARIZONA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">41</td>
+          <td class="num">€584</td>
+          <td class="num pos">12.0%</td>
+          <td class="num">0.8%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>966.UA</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">1</td>
+          <td class="num">19</td>
+          <td class="num">€531</td>
+          <td class="num pos">9.7%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>VIVA OLIVA</strong> <span class="badge-top">TOP</span></td>
+          <td>Kremenchuk</td>
+          <td class="num">1</td>
+          <td class="num">42</td>
+          <td class="num">€502</td>
+          <td class="num pos">21.1%</td>
+          <td class="num">2.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>DAVINCI ZP</strong> </td>
+          <td>Zaporizhia</td>
+          <td class="num">1</td>
+          <td class="num">21</td>
+          <td class="num">€451</td>
+          <td class="num pos">15.2%</td>
+          <td class="num">0.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>ZOLOTIY DRAKON</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">22</td>
+          <td class="num">€430</td>
+          <td class="num pos">11.8%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>FELLINI PIZZA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">34</td>
+          <td class="num">€422</td>
+          <td class="num pos">11.8%</td>
+          <td class="num">0.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>KOZATSKA BROVARNIA</strong> </td>
+          <td>Kremenchuk</td>
+          <td class="num">1</td>
+          <td class="num">32</td>
+          <td class="num">€410</td>
+          <td class="num pos">20.1%</td>
+          <td class="num">1.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SHAVA OT SHEFA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">38</td>
+          <td class="num">€366</td>
+          <td class="num pos">4.8%</td>
+          <td class="num">1.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
+          <td>Kremenchuk</td>
+          <td class="num">1</td>
+          <td class="num">21</td>
+          <td class="num">€345</td>
+          <td class="num pos">15.1%</td>
+          <td class="num">1.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>GANGSTER DOG</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">28</td>
+          <td class="num">€314</td>
+          <td class="num pos">10.1%</td>
+          <td class="num">0.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>ACE BURGER</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">20</td>
+          <td class="num">€309</td>
+          <td class="num pos">15.0%</td>
+          <td class="num">0.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>FITNES SHAURMA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">24</td>
+          <td class="num">€253</td>
+          <td class="num pos">11.2%</td>
+          <td class="num">0.7%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PANI KARTOPLA</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">3</td>
+          <td class="num">17</td>
+          <td class="num">€250</td>
+          <td class="num pos">19.1%</td>
+          <td class="num">0.4%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>BIG BRO BURGERS</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">21</td>
+          <td class="num">€241</td>
+          <td class="num pos">7.7%</td>
+          <td class="num">0.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PRIMA PASTA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">21</td>
+          <td class="num">€231</td>
+          <td class="num pos">10.0%</td>
+          <td class="num">0.9%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>OBID TYT</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">2</td>
+          <td class="num">14</td>
+          <td class="num">€210</td>
+          <td class="num pos">19.6%</td>
+          <td class="num">0.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUSHI USHI</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">6</td>
+          <td class="num">€178</td>
+          <td class="num pos">19.2%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>LAPSHA TA RISE</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">9</td>
+          <td class="num">€177</td>
+          <td class="num pos">15.7%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>ORIGINAL SUSHI BY #ARIZONA</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">14</td>
+          <td class="num">€173</td>
+          <td class="num pos">15.0%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>966.UA</strong> </td>
+          <td>Odesa</td>
+          <td class="num">1</td>
+          <td class="num">5</td>
+          <td class="num">€172</td>
+          <td class="num pos">10.1%</td>
+          <td class="num">0.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>DEPARTAMENT PELMENIV</strong> <span class="badge-top">TOP</span></td>
+          <td>Lviv</td>
+          <td class="num">1</td>
+          <td class="num">10</td>
+          <td class="num">€169</td>
+          <td class="num pos">20.3%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUSHI CK UA</strong> </td>
+          <td>Cherkasy</td>
+          <td class="num">1</td>
+          <td class="num">10</td>
+          <td class="num">€163</td>
+          <td class="num pos">18.3%</td>
+          <td class="num">0.6%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUSHI TOKIO</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">7</td>
+          <td class="num">€139</td>
+          <td class="num pos">19.0%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>VOKA VOKA</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">7</td>
+          <td class="num">€134</td>
+          <td class="num pos">14.1%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PANI KARTOPLA</strong> </td>
+          <td>Lviv</td>
+          <td class="num">1</td>
+          <td class="num">8</td>
+          <td class="num">€133</td>
+          <td class="num pos">17.8%</td>
+          <td class="num">0.5%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>966.UA</strong> </td>
+          <td>Kyiv</td>
+          <td class="num">1</td>
+          <td class="num">3</td>
+          <td class="num">€96</td>
+          <td class="num pos">9.8%</td>
+          <td class="num">0.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SALAD DAY</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">7</td>
+          <td class="num">€91</td>
+          <td class="num pos">14.8%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>AKADEMIA SHAURMY</strong> </td>
+          <td>Poltava</td>
+          <td class="num">1</td>
+          <td class="num">8</td>
+          <td class="num">€88</td>
+          <td class="num pos">13.8%</td>
+          <td class="num">0.3%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAMYNY DERUNY</strong> </td>
+          <td>Dnipro</td>
+          <td class="num">4</td>
+          <td class="num">6</td>
+          <td class="num">€67</td>
+          <td class="num pos">17.0%</td>
+          <td class="num">0.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SAMA SUSHI</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">2</td>
+          <td class="num">€45</td>
+          <td class="num pos">24.3%</td>
+          <td class="num">0.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>MAMYNY DERUNY</strong> </td>
+          <td>Lviv</td>
+          <td class="num">1</td>
+          <td class="num">2</td>
+          <td class="num">€31</td>
+          <td class="num pos">17.9%</td>
+          <td class="num">0.2%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>PAKIMAO</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">1</td>
+          <td class="num">€25</td>
+          <td class="num pos">12.4%</td>
+          <td class="num">0.1%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>SUSHI MAKI MAKI</strong> </td>
+          <td>Kharkiv</td>
+          <td class="num">1</td>
+          <td class="num">0</td>
+          <td class="num">€0</td>
+          <td class="num ">nan%</td>
+          <td class="num">0.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr>
+        <tr>
+          <td><strong>nan</strong> </td>
+          <td>Kyiv</td>
+          <td class="num">1</td>
+          <td class="num">0</td>
+          <td class="num">€0</td>
+          <td class="num ">nan%</td>
+          <td class="num">0.0%</td>
+          <td><span class="tag tag-rec">Sponsored Listing</span></td>
+        </tr></tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="footer">
+    Автоматично згенеровано · Bolt Food Partner Reports ·
+    <a href="https://github.com/marharytazhytnyk-create/partner-reports">GitHub</a>
+    · Наступне оновлення: щопонеділка о 14:00 (EEST)
+  </div>
+</body>
+</html>
