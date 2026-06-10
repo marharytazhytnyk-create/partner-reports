@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
@@ -310,6 +311,77 @@ def fmt_pct(val) -> str:
         return "—"
 
 
+def brand_key(brand: str, city: str) -> str:
+    return f"{brand}|{city}"
+
+
+def build_brand_payload(
+    df_loc: pd.DataFrame,
+    df_brand: pd.DataFrame,
+    start_date: str,
+    end_date: str,
+) -> dict:
+    """JSON-ready payload per brand+city for client-side message generation."""
+    payload: dict = {}
+    candidates = df_brand[
+        (df_brand["has_smart_promotion"] == 0) & (df_brand["has_sponsored_listing"] == 0)
+    ]
+
+    for _, brow in candidates.iterrows():
+        brand = str(brow["brand_name"] or "")
+        city = str(brow["city_name"] or "")
+        key = brand_key(brand, city)
+        product, reason = recommend_product(brow)
+
+        locs = df_loc[
+            (df_loc["brand_name"] == brand)
+            & (df_loc["city_name"] == city)
+            & (df_loc["has_smart_promotion"] == 0)
+            & (df_loc["has_sponsored_listing"] == 0)
+        ].sort_values("gmv_eur", ascending=False)
+
+        locations = []
+        for _, loc in locs.iterrows():
+            cp = loc.get("cp_margin_pct")
+            locations.append({
+                "name": str(loc.get("provider_name") or ""),
+                "zone": str(loc.get("zone_name") or ""),
+                "orders": int(float(loc.get("delivered_orders") or 0)),
+                "gmv_eur": round(float(loc.get("gmv_eur") or 0)),
+                "cp_margin_pct": round(float(cp), 1) if cp is not None and pd.notna(cp) else None,
+                "conv_pct": round(float(loc.get("conv_imp_to_order_pct") or 0), 2)
+                if loc.get("conv_imp_to_order_pct") is not None and pd.notna(loc.get("conv_imp_to_order_pct"))
+                else None,
+            })
+
+        cp = brow.get("cp_margin_pct")
+        payload[key] = {
+            "brand": brand,
+            "city": city,
+            "product": product,
+            "reason": reason,
+            "is_top_brand": bool(int(brow.get("is_top_brand") or 0)),
+            "locations_count": int(brow.get("locations_count") or len(locations)),
+            "delivered_orders": int(float(brow.get("delivered_orders") or 0)),
+            "gmv_eur": round(float(brow.get("gmv_eur") or 0)),
+            "cp_margin_pct": round(float(cp), 1) if cp is not None and pd.notna(cp) else None,
+            "conv_imp_to_order_pct": round(float(brow.get("conv_imp_to_order_pct") or 0), 2),
+            "period_start": start_date,
+            "period_end": end_date,
+            "locations": locations,
+        }
+    return payload
+
+
+def send_rec_button(key: str) -> str:
+    safe_key = json.dumps(key, ensure_ascii=False)
+    return (
+        f'<button type="button" class="btn-send-rec" '
+        f'onclick="openRecommendation({safe_key})">'
+        f"📨 Надіслати рекомендацію підключення</button>"
+    )
+
+
 def build_table_rows(df: pd.DataFrame, show_features: bool = False) -> str:
     if df.empty:
         return '<tr><td colspan="10" class="empty">Немає даних</td></tr>'
@@ -348,6 +420,7 @@ def build_recommendation_cards(df: pd.DataFrame) -> str:
     for i, (_, row) in enumerate(df.iterrows(), 1):
         product, reason = recommend_product(row)
         top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
         html += f"""
         <div class="rec-card">
           <div class="rec-rank">#{i}</div>
@@ -361,6 +434,7 @@ def build_recommendation_cards(df: pd.DataFrame) -> str:
           </div>
           <div class="rec-product">{product}</div>
           <div class="rec-reason">{reason}</div>
+          <div class="rec-actions">{send_rec_button(key)}</div>
         </div>"""
     html += "</div>"
     return html
@@ -372,6 +446,7 @@ def build_html(
     df_rec: pd.DataFrame,
     start_date: str,
     end_date: str,
+    brand_payload: dict,
 ) -> str:
     n_loc = len(df_loc)
     n_brands = len(df_brand)
@@ -400,6 +475,7 @@ def build_html(
         cp = row.get("cp_margin_pct")
         cp_class = "pos" if cp is not None and float(cp) > 0 else "neg" if cp is not None and float(cp) < 0 else ""
         top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
         neither_rows += f"""
         <tr>
           <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
@@ -410,7 +486,10 @@ def build_html(
           <td class="num {cp_class}">{fmt_pct(cp) if cp is not None else '—'}</td>
           <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
           <td><span class="tag tag-rec">{product}</span></td>
+          <td class="action-cell">{send_rec_button(key)}</td>
         </tr>"""
+
+    brands_json = json.dumps(brand_payload, ensure_ascii=False)
 
     return f"""<!DOCTYPE html>
 <html lang="uk">
@@ -551,7 +630,52 @@ def build_html(
     font-size: 11px; margin-bottom: 10px;
   }}
   .rec-product {{ font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }}
-  .rec-reason {{ font-size: 11px; color: #444; line-height: 1.45; }}
+  .rec-reason {{ font-size: 11px; color: #444; line-height: 1.45; margin-bottom: 10px; }}
+  .rec-actions {{ margin-top: 4px; }}
+  .btn-send-rec {{
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--bolt-green); color: #fff; border: none;
+    border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }}
+  .btn-send-rec:hover {{ background: #13A350; }}
+  .action-cell {{ min-width: 200px; }}
+  .modal-overlay {{
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; align-items: center; justify-content: center; padding: 20px;
+  }}
+  .modal-overlay.open {{ display: flex; }}
+  .modal {{
+    background: #fff; border-radius: 14px; width: min(640px, 100%);
+    max-height: 90vh; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column;
+  }}
+  .modal-header {{
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }}
+  .modal-header h3 {{ font-size: 15px; }}
+  .modal-close {{
+    background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted);
+    line-height: 1; padding: 0 4px;
+  }}
+  .modal-body {{ padding: 16px 20px; overflow-y: auto; flex: 1; }}
+  .modal-text {{
+    width: 100%; min-height: 320px; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; font-family: inherit;
+    font-size: 13px; line-height: 1.55; resize: vertical; background: #FAFFFE;
+  }}
+  .modal-footer {{
+    padding: 12px 20px 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }}
+  .btn-modal {{
+    border: none; border-radius: 8px; padding: 9px 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+  }}
+  .btn-copy {{ background: var(--bolt-green); color: #fff; }}
+  .btn-copy:hover {{ background: #13A350; }}
+  .btn-copy.copied {{ background: #2E7D32; }}
   .empty, .empty-block {{ text-align: center; color: var(--muted); padding: 24px; }}
   .footer {{
     text-align: center; font-size: 11px; color: #999;
@@ -652,12 +776,28 @@ def build_html(
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
             <th class="num">Замовлення</th><th class="num">GMV</th>
-            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th><th>Дія</th>
           </tr>
         </thead>
-        <tbody>{neither_rows or '<tr><td colspan="8" class="empty">Немає</td></tr>'}</tbody>
+        <tbody>{neither_rows or '<tr><td colspan="9" class="empty">Немає</td></tr>'}</tbody>
       </table>
     </section>
+  </div>
+
+  <div id="recModal" class="modal-overlay" onclick="if(event.target===this)closeRecommendation()">
+    <div class="modal" role="dialog" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Рекомендація підключення</h3>
+        <button type="button" class="modal-close" onclick="closeRecommendation()" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="modalText" class="modal-text" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal btn-copy" id="btnCopy" onclick="copyRecommendation()">📋 Скопіювати текст</button>
+        <button type="button" class="btn-modal" style="background:#eee;color:#333" onclick="closeRecommendation()">Закрити</button>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -665,6 +805,149 @@ def build_html(
     <a href="https://github.com/marharytazhytnyk-create/partner-reports">GitHub</a>
     · Наступне оновлення: щопонеділка о 14:00 (EEST)
   </div>
+
+<script>
+const BRAND_DATA = {brands_json};
+const AM_NAME = {json.dumps(ACCOUNT_MANAGER, ensure_ascii=False)};
+
+function fmtEur(n) {{
+  if (n == null || isNaN(n)) return '—';
+  return '€' + Math.round(n).toLocaleString('uk-UA');
+}}
+
+function fmtPct(n) {{
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toFixed(1) + '%';
+}}
+
+function productDetails(product) {{
+  if (product.includes('Smart Promotions') && product.includes('Sponsored')) {{
+    return (
+      'Пропоную комбінований підхід:\\n' +
+      '• Sponsored Listing — платне просування (125 грн/день) та/або просування у пошуку (100 грн/день) для більшої видимості.\\n' +
+      '• Smart Promotions (Розумні акції) — співінвестиція 50/50 з Bolt для когорт активних, нових та «давно не замовляли» клієнтів.'
+    );
+  }}
+  if (product.includes('Smart Promotions')) {{
+    return (
+      'Пропоную підключити Smart Promotions (Розумні акції) на Порталі для Ресторанів:\\n' +
+      '• Для активних клієнтів: −25% на меню + безкоштовна доставка до 70 грн (спліт 50/50 з Bolt).\\n' +
+      '• Для нових та «давно не замовляли»: −30% + доставка до 70 грн (також 50/50).\\n' +
+      '• Для клієнтів із великим чеком: −10% на меню (100% за рахунок партнера) — за бажанням.'
+    );
+  }}
+  if (product.includes('Sponsored Listing')) {{
+    return (
+      'Пропоную підключити Sponsored Listing (спонсоровані оголошення):\\n' +
+      '• Платне просування — 125 грн/день (преміум-розміщення).\\n' +
+      '• Просування у пошуку — 100 грн/день.\\n' +
+      '• Знижка для гостя не обовʼязкова — це інструмент для зростання показів і замовлень.'
+    );
+  }}
+  if (product.includes('операційні')) {{
+    return (
+      'Перед масштабним промо рекомендую стабілізувати операційні показники (доступність, acceptance rate). ' +
+      'Після покращення — тестове Sponsored Listing для контрольованого зростання видимості.'
+    );
+  }}
+  return (
+    'Пропоную почати з Sponsored Listing для видимості, далі — Smart Promotions для залучення клієнтських когорт.'
+  );
+}}
+
+function buildRecommendationText(d) {{
+  const locs = d.locations || [];
+  const locWord = d.locations_count === 1 ? 'локацію' : 'локації';
+  const lines = [];
+
+  lines.push('Вітаю!');
+  lines.push('');
+  lines.push('Це ' + AM_NAME + ', ваш акаунт-менеджер Bolt Food.');
+  lines.push('');
+  lines.push(
+    'Я проаналізувала показники вашого бренду **' + d.brand + '** (' + d.city + ') ' +
+    'за період ' + d.period_start + ' — ' + d.period_end + ' ' +
+    'і хочу запропонувати підключити **' + d.product + '**.'
+  );
+  lines.push('');
+  lines.push('**Чому саме зараз:**');
+  lines.push('• Доставлено замовлень: ' + d.delivered_orders.toLocaleString('uk-UA'));
+  lines.push('• GMV (до знижок): ' + fmtEur(d.gmv_eur));
+  if (d.cp_margin_pct != null) lines.push('• CP L2 маржа: ' + fmtPct(d.cp_margin_pct));
+  lines.push('• Конверсія (показ → замовлення): ' + fmtPct(d.conv_imp_to_order_pct));
+  lines.push('• ' + d.reason);
+  lines.push('');
+  lines.push('**На яких ' + locWord + ' рекомендую підключити** (' + locs.length + '):');
+
+  locs.forEach((loc, i) => {{
+    let line = (i + 1) + '. ' + loc.name;
+    if (loc.zone) line += ' (' + loc.zone + ')';
+    const stats = [];
+    if (loc.orders) stats.push(loc.orders.toLocaleString('uk-UA') + ' зам.');
+    if (loc.gmv_eur) stats.push(fmtEur(loc.gmv_eur) + ' GMV');
+    if (loc.conv_pct != null) stats.push('conv. ' + fmtPct(loc.conv_pct));
+    if (stats.length) line += ' — ' + stats.join(', ');
+    lines.push(line);
+  }});
+
+  if (locs.length > 1) {{
+    lines.push('');
+    lines.push(
+      'Якщо у вас кілька точок, можемо стартувати з найсильнішої за GMV — «' +
+      locs[0].name + '» — і масштабувати на решту після перших результатів.'
+    );
+  }}
+
+  lines.push('');
+  lines.push('**Що саме пропоную:**');
+  lines.push(productDetails(d.product));
+  lines.push('');
+  lines.push(
+    'Я допоможу з налаштуванням у Partner Portal (food.bolt.eu/partner) ' +
+    'та підберу оптимальний бюджет під ваші цілі.'
+  );
+  lines.push('');
+  lines.push('Буду рада обговорити деталі на короткому дзвінку або в месенджері.');
+  lines.push('');
+  lines.push('З повагою,');
+  lines.push(AM_NAME);
+  lines.push('Account Manager · Bolt Food Ukraine');
+
+  return lines.join('\\n').replace(/\\*\\*/g, '');
+}}
+
+function openRecommendation(key) {{
+  const d = BRAND_DATA[key];
+  if (!d) {{ alert('Дані для цього бренду не знайдено'); return; }}
+  document.getElementById('modalTitle').textContent =
+    'Рекомендація: ' + d.brand + ' · ' + d.city;
+  document.getElementById('modalText').value = buildRecommendationText(d);
+  document.getElementById('btnCopy').textContent = '📋 Скопіювати текст';
+  document.getElementById('btnCopy').classList.remove('copied');
+  document.getElementById('recModal').classList.add('open');
+}}
+
+function closeRecommendation() {{
+  document.getElementById('recModal').classList.remove('open');
+}}
+
+function copyRecommendation() {{
+  const ta = document.getElementById('modalText');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {{
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = '✓ Скопійовано';
+    btn.classList.add('copied');
+  }}).catch(() => {{
+    document.execCommand('copy');
+    document.getElementById('btnCopy').textContent = '✓ Скопійовано';
+  }});
+}}
+
+document.addEventListener('keydown', e => {{
+  if (e.key === 'Escape') closeRecommendation();
+}});
+</script>
 </body>
 </html>"""
 
@@ -685,7 +968,8 @@ def main() -> None:
     df_candidates["priority_score"] = priority_score(df_candidates)
     df_rec = df_candidates.sort_values("priority_score", ascending=False).head(TOP_RECOMMENDATIONS)
 
-    html = build_html(df_loc, df_brand, df_rec, start_date, end_date)
+    brand_payload = build_brand_payload(df_loc, df_brand, start_date, end_date)
+    html = build_html(df_loc, df_brand, df_rec, start_date, end_date, brand_payload)
     out_path = Path(__file__).resolve().parent / OUTPUT_FILE
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Report saved → {out_path}")

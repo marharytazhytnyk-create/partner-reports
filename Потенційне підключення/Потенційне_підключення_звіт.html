@@ -137,7 +137,52 @@
     font-size: 11px; margin-bottom: 10px;
   }
   .rec-product { font-size: 12px; font-weight: 700; color: var(--purple); margin-bottom: 6px; }
-  .rec-reason { font-size: 11px; color: #444; line-height: 1.45; }
+  .rec-reason { font-size: 11px; color: #444; line-height: 1.45; margin-bottom: 10px; }
+  .rec-actions { margin-top: 4px; }
+  .btn-send-rec {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--bolt-green); color: #fff; border: none;
+    border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }
+  .btn-send-rec:hover { background: #13A350; }
+  .action-cell { min-width: 200px; }
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 200; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; width: min(640px, 100%);
+    max-height: 90vh; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column;
+  }
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .modal-header h3 { font-size: 15px; }
+  .modal-close {
+    background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted);
+    line-height: 1; padding: 0 4px;
+  }
+  .modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .modal-text {
+    width: 100%; min-height: 320px; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; font-family: inherit;
+    font-size: 13px; line-height: 1.55; resize: vertical; background: #FAFFFE;
+  }
+  .modal-footer {
+    padding: 12px 20px 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .btn-modal {
+    border: none; border-radius: 8px; padding: 9px 16px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .btn-copy { background: var(--bolt-green); color: #fff; }
+  .btn-copy:hover { background: #13A350; }
+  .btn-copy.copied { background: #2E7D32; }
   .empty, .empty-block { text-align: center; color: var(--muted); padding: 24px; }
   .footer {
     text-align: center; font-size: 11px; color: #999;
@@ -210,6 +255,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("APPETITO|Kharkiv")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#2</div>
@@ -223,6 +269,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("MON AMI BURUM|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#3</div>
@@ -236,6 +283,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("MON CHER|Kharkiv")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#4</div>
@@ -249,6 +297,7 @@
           </div>
           <div class="rec-product">Sponsored Listing → Smart Promotions</div>
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("NASLEDNIKI|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#5</div>
@@ -262,6 +311,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("SOYA|Cherkasy")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#6</div>
@@ -275,6 +325,7 @@
           </div>
           <div class="rec-product">Sponsored Listing → Smart Promotions</div>
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("DNIPROVSKA REBERNYA|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#7</div>
@@ -288,6 +339,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("TRATTORIA|Kharkiv")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#8</div>
@@ -301,6 +353,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("JOSPER SVINTUZ|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#9</div>
@@ -314,6 +367,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("PIZZA CELENTANO|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#10</div>
@@ -327,6 +381,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("KRABSBURGER|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#11</div>
@@ -340,6 +395,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("KUMA SHAURMA|Odesa")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#12</div>
@@ -353,6 +409,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAVRA PIZZA|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#13</div>
@@ -366,6 +423,7 @@
           </div>
           <div class="rec-product">Sponsored Listing → Smart Promotions</div>
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("TOOMAN DELIVERY|Cherkasy")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#14</div>
@@ -379,6 +437,7 @@
           </div>
           <div class="rec-product">Sponsored Listing → Smart Promotions</div>
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("PURI CHVENI DN|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#15</div>
@@ -392,6 +451,7 @@
           </div>
           <div class="rec-product">Sponsored Listing → Smart Promotions</div>
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("LITTLE MARIUPOL|Dnipro")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#16</div>
@@ -405,6 +465,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("VAM DONER?|Cherkasy")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#17</div>
@@ -418,6 +479,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("BON CHICKEN|Odesa")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#18</div>
@@ -431,6 +493,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("NARESHTI ZP|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#19</div>
@@ -444,6 +507,7 @@
           </div>
           <div class="rec-product">Smart Promotions + Sponsored Listing</div>
           <div class="rec-reason">Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("JOSPER SVINTUZ|Vinnytsia")">📨 Надіслати рекомендацію підключення</button></div>
         </div>
         <div class="rec-card">
           <div class="rec-rank">#20</div>
@@ -457,6 +521,7 @@
           </div>
           <div class="rec-product">Smart Promotions</div>
           <div class="rec-reason">Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.</div>
+          <div class="rec-actions"><button type="button" class="btn-send-rec" onclick="openRecommendation("PURI CHVENI KR|Kryvyi Rih")">📨 Надіслати рекомендацію підключення</button></div>
         </div></div>
     </section>
 
@@ -1169,7 +1234,7 @@
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
             <th class="num">Замовлення</th><th class="num">GMV</th>
-            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th><th>Дія</th>
           </tr>
         </thead>
         <tbody>
@@ -1182,6 +1247,7 @@
           <td class="num pos">14.5%</td>
           <td class="num">2.5%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SOYA|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>TRATTORIA</strong> <span class="badge-top">TOP</span></td>
@@ -1192,6 +1258,7 @@
           <td class="num pos">8.6%</td>
           <td class="num">2.3%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("TRATTORIA|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>APPETITO</strong> <span class="badge-top">TOP</span></td>
@@ -1202,6 +1269,7 @@
           <td class="num pos">21.0%</td>
           <td class="num">2.9%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("APPETITO|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DNIPROVSKA REBERNYA</strong> <span class="badge-top">TOP</span></td>
@@ -1212,6 +1280,7 @@
           <td class="num pos">21.4%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DNIPROVSKA REBERNYA|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
@@ -1222,6 +1291,7 @@
           <td class="num pos">4.0%</td>
           <td class="num">3.8%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("JOSPER SVINTUZ|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>NASLEDNIKI</strong> <span class="badge-top">TOP</span></td>
@@ -1232,6 +1302,7 @@
           <td class="num pos">26.5%</td>
           <td class="num">1.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("NASLEDNIKI|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MAVRA PIZZA</strong> <span class="badge-top">TOP</span></td>
@@ -1242,6 +1313,7 @@
           <td class="num pos">5.6%</td>
           <td class="num">3.0%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAVRA PIZZA|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MON CHER</strong> <span class="badge-top">TOP</span></td>
@@ -1252,6 +1324,7 @@
           <td class="num pos">18.4%</td>
           <td class="num">3.3%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MON CHER|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MON AMI BURUM</strong> </td>
@@ -1262,6 +1335,7 @@
           <td class="num pos">16.4%</td>
           <td class="num">6.1%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MON AMI BURUM|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>KRABSBURGER</strong> </td>
@@ -1272,6 +1346,7 @@
           <td class="num pos">10.5%</td>
           <td class="num">5.2%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("KRABSBURGER|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>VAM DONER?</strong> </td>
@@ -1282,6 +1357,7 @@
           <td class="num pos">13.4%</td>
           <td class="num">2.6%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("VAM DONER?|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PURI CHVENI DN</strong> <span class="badge-top">TOP</span></td>
@@ -1292,6 +1368,7 @@
           <td class="num pos">16.5%</td>
           <td class="num">1.9%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PURI CHVENI DN|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
@@ -1302,6 +1379,7 @@
           <td class="num pos">13.8%</td>
           <td class="num">3.8%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PIZZA CELENTANO|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
@@ -1312,6 +1390,7 @@
           <td class="num pos">9.4%</td>
           <td class="num">2.6%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("JOSPER SVINTUZ|Vinnytsia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BELLA MOZZARELLA</strong> <span class="badge-top">TOP</span></td>
@@ -1322,6 +1401,7 @@
           <td class="num pos">8.3%</td>
           <td class="num">0.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BELLA MOZZARELLA|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>KUMA SHAURMA</strong> <span class="badge-top">TOP</span></td>
@@ -1332,6 +1412,7 @@
           <td class="num pos">14.5%</td>
           <td class="num">2.5%</td>
           <td><span class="tag tag-rec">Smart Promotions + Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("KUMA SHAURMA|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>LITTLE MARIUPOL</strong> <span class="badge-top">TOP</span></td>
@@ -1342,6 +1423,7 @@
           <td class="num pos">20.0%</td>
           <td class="num">1.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("LITTLE MARIUPOL|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>NARESHTI ZP</strong> </td>
@@ -1352,6 +1434,7 @@
           <td class="num pos">13.9%</td>
           <td class="num">4.3%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("NARESHTI ZP|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>STREET PIZZA</strong> </td>
@@ -1362,6 +1445,7 @@
           <td class="num pos">19.3%</td>
           <td class="num">1.9%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("STREET PIZZA|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BON CHICKEN</strong> <span class="badge-top">TOP</span></td>
@@ -1372,6 +1456,7 @@
           <td class="num pos">12.5%</td>
           <td class="num">3.0%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BON CHICKEN|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>AMVAM DELIVERY</strong> </td>
@@ -1382,6 +1467,7 @@
           <td class="num pos">20.9%</td>
           <td class="num">1.9%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("AMVAM DELIVERY|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>TOOMAN DELIVERY</strong> <span class="badge-top">TOP</span></td>
@@ -1392,6 +1478,7 @@
           <td class="num pos">23.5%</td>
           <td class="num">1.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("TOOMAN DELIVERY|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ONE GOGI</strong> </td>
@@ -1402,6 +1489,7 @@
           <td class="num pos">26.7%</td>
           <td class="num">1.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ONE GOGI|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
@@ -1412,6 +1500,7 @@
           <td class="num pos">15.1%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BARANCHIK|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SPRAGA</strong> </td>
@@ -1422,6 +1511,7 @@
           <td class="num pos">3.2%</td>
           <td class="num">2.4%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SPRAGA|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PURI CHVENI KH</strong> <span class="badge-top">TOP</span></td>
@@ -1432,6 +1522,7 @@
           <td class="num pos">15.6%</td>
           <td class="num">2.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PURI CHVENI KH|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SHO TUT</strong> </td>
@@ -1442,6 +1533,7 @@
           <td class="num pos">20.5%</td>
           <td class="num">1.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SHO TUT|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PURI CHVENI KR</strong> <span class="badge-top">TOP</span></td>
@@ -1452,6 +1544,7 @@
           <td class="num pos">14.7%</td>
           <td class="num">4.3%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PURI CHVENI KR|Kryvyi Rih")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>NAPO</strong> </td>
@@ -1462,6 +1555,7 @@
           <td class="num pos">14.2%</td>
           <td class="num">1.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("NAPO|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SANDWICH MARKET</strong> <span class="badge-top">TOP</span></td>
@@ -1472,6 +1566,7 @@
           <td class="num pos">9.4%</td>
           <td class="num">2.7%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SANDWICH MARKET|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MAVRA PIZZA</strong> <span class="badge-top">TOP</span></td>
@@ -1482,6 +1577,7 @@
           <td class="num pos">14.9%</td>
           <td class="num">2.3%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAVRA PIZZA|Kryvyi Rih")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DONO</strong> </td>
@@ -1492,6 +1588,7 @@
           <td class="num pos">16.5%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DONO|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>FUGU</strong> <span class="badge-top">TOP</span></td>
@@ -1502,6 +1599,7 @@
           <td class="num pos">22.2%</td>
           <td class="num">0.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("FUGU|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>GRILL PARK</strong> </td>
@@ -1512,6 +1610,7 @@
           <td class="num pos">11.1%</td>
           <td class="num">2.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("GRILL PARK|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
@@ -1522,6 +1621,7 @@
           <td class="num pos">14.2%</td>
           <td class="num">0.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing → Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BARANCHIK|Lviv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>HELLO BURGER CHERKASY</strong> <span class="badge-top">TOP</span></td>
@@ -1532,6 +1632,7 @@
           <td class="num pos">21.6%</td>
           <td class="num">1.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("HELLO BURGER CHERKASY|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SHAVUCHA TEAM</strong> </td>
@@ -1542,6 +1643,7 @@
           <td class="num pos">14.8%</td>
           <td class="num">2.2%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SHAVUCHA TEAM|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
@@ -1552,6 +1654,7 @@
           <td class="num pos">12.4%</td>
           <td class="num">3.0%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PIZZA CELENTANO|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>JOSPER SVINTUZ</strong> <span class="badge-top">TOP</span></td>
@@ -1562,6 +1665,7 @@
           <td class="num pos">6.7%</td>
           <td class="num">2.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("JOSPER SVINTUZ|Kryvyi Rih")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MON CHER</strong> <span class="badge-top">TOP</span></td>
@@ -1572,6 +1676,7 @@
           <td class="num pos">22.2%</td>
           <td class="num">2.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MON CHER|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>STAR TIMES</strong> </td>
@@ -1582,6 +1687,7 @@
           <td class="num pos">12.2%</td>
           <td class="num">1.7%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("STAR TIMES|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>CHAS SHAURMY</strong> </td>
@@ -1592,6 +1698,7 @@
           <td class="num pos">17.6%</td>
           <td class="num">1.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("CHAS SHAURMY|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SUSHI LA PIEZZA</strong> <span class="badge-top">TOP</span></td>
@@ -1602,6 +1709,7 @@
           <td class="num pos">8.4%</td>
           <td class="num">5.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SUSHI LA PIEZZA|Sumy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ITALIYSʹKYY KVARTAL</strong> </td>
@@ -1612,6 +1720,7 @@
           <td class="num pos">18.3%</td>
           <td class="num">1.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ITALIYSʹKYY KVARTAL|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MAVRA AZIA</strong> <span class="badge-top">TOP</span></td>
@@ -1622,6 +1731,7 @@
           <td class="num pos">9.1%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAVRA AZIA|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>GRILL VIBE</strong> </td>
@@ -1632,6 +1742,7 @@
           <td class="num pos">9.4%</td>
           <td class="num">2.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("GRILL VIBE|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PINKMAN BAR</strong> <span class="badge-top">TOP</span></td>
@@ -1642,6 +1753,7 @@
           <td class="num pos">7.3%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PINKMAN BAR|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MOLTO MEATFISH</strong> </td>
@@ -1652,6 +1764,7 @@
           <td class="num pos">20.0%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MOLTO MEATFISH|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ALLO LOSOS</strong> <span class="badge-top">TOP</span></td>
@@ -1662,6 +1775,7 @@
           <td class="num pos">16.5%</td>
           <td class="num">1.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ALLO LOSOS|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SALTIVSKYI CHEBUREK</strong> </td>
@@ -1672,6 +1786,7 @@
           <td class="num pos">21.8%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SALTIVSKYI CHEBUREK|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
@@ -1682,6 +1797,7 @@
           <td class="num pos">15.1%</td>
           <td class="num">0.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BARANCHIK|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>VERTEP</strong> </td>
@@ -1692,6 +1808,7 @@
           <td class="num pos">20.0%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("VERTEP|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MIAO</strong> </td>
@@ -1702,6 +1819,7 @@
           <td class="num pos">19.6%</td>
           <td class="num">1.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MIAO|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>GALUSHKA</strong> </td>
@@ -1712,6 +1830,7 @@
           <td class="num pos">20.4%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("GALUSHKA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BELLA VITA STEFANIKOVO NAMESTI</strong> <span class="badge-top">TOP</span></td>
@@ -1722,6 +1841,7 @@
           <td class="num pos">4.5%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BELLA VITA STEFANIKOVO NAMESTI|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SMARTFOOD</strong> <span class="badge-top">TOP</span></td>
@@ -1732,6 +1852,7 @@
           <td class="num pos">12.5%</td>
           <td class="num">5.2%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SMARTFOOD|Sumy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>CONFETTI</strong> </td>
@@ -1742,6 +1863,7 @@
           <td class="num pos">20.0%</td>
           <td class="num">0.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("CONFETTI|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SHAURMA NA VUHILLI</strong> <span class="badge-top">TOP</span></td>
@@ -1752,6 +1874,7 @@
           <td class="num pos">13.4%</td>
           <td class="num">1.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SHAURMA NA VUHILLI|Kryvyi Rih")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>HOCHY KEBAB</strong> </td>
@@ -1762,6 +1885,7 @@
           <td class="num pos">15.9%</td>
           <td class="num">2.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("HOCHY KEBAB|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DEPARTAMENT PELMENIV</strong> <span class="badge-top">TOP</span></td>
@@ -1772,6 +1896,7 @@
           <td class="num pos">20.4%</td>
           <td class="num">0.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DEPARTAMENT PELMENIV|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>WOW GRILL</strong> </td>
@@ -1782,6 +1907,7 @@
           <td class="num pos">12.9%</td>
           <td class="num">2.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("WOW GRILL|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BOOGIE PIZZA&SUSHI</strong> </td>
@@ -1792,6 +1918,7 @@
           <td class="num pos">8.4%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BOOGIE PIZZA&SUSHI|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
@@ -1802,6 +1929,7 @@
           <td class="num pos">17.6%</td>
           <td class="num">0.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BARANCHIK|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>966.UA</strong> </td>
@@ -1812,6 +1940,7 @@
           <td class="num pos">10.0%</td>
           <td class="num">0.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("966.UA|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>TERASA TERYTORIIA MIASA</strong> <span class="badge-top">TOP</span></td>
@@ -1822,6 +1951,7 @@
           <td class="num pos">20.6%</td>
           <td class="num">0.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("TERASA TERYTORIIA MIASA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PIZZA CELENTANO</strong> <span class="badge-top">TOP</span></td>
@@ -1832,6 +1962,7 @@
           <td class="num pos">10.3%</td>
           <td class="num">6.7%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PIZZA CELENTANO|Pavlohrad")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>LA PIZZA ESPRESSO</strong> <span class="badge-top">TOP</span></td>
@@ -1842,6 +1973,7 @@
           <td class="num pos">4.2%</td>
           <td class="num">1.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("LA PIZZA ESPRESSO|Chernihiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>IKURA FOOD</strong> <span class="badge-top">TOP</span></td>
@@ -1852,6 +1984,7 @@
           <td class="num pos">18.0%</td>
           <td class="num">2.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("IKURA FOOD|Oleksandriia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SHAUROOM</strong> <span class="badge-top">TOP</span></td>
@@ -1862,6 +1995,7 @@
           <td class="num pos">11.6%</td>
           <td class="num">3.9%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SHAUROOM|Pavlohrad")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SANDWICH MARKET</strong> <span class="badge-top">TOP</span></td>
@@ -1872,6 +2006,7 @@
           <td class="num pos">12.8%</td>
           <td class="num">4.7%</td>
           <td><span class="tag tag-rec">Smart Promotions</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SANDWICH MARKET|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>VERDE BY LA SPEZIA</strong> <span class="badge-top">TOP</span></td>
@@ -1882,6 +2017,7 @@
           <td class="num pos">4.2%</td>
           <td class="num">4.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("VERDE BY LA SPEZIA|Sumy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DONO</strong> </td>
@@ -1892,6 +2028,7 @@
           <td class="num pos">6.0%</td>
           <td class="num">2.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DONO|Pavlohrad")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BELLA ITALIA</strong> </td>
@@ -1902,6 +2039,7 @@
           <td class="num pos">18.9%</td>
           <td class="num">1.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BELLA ITALIA|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>LUCIANO PIZZA BY#ARIZONA</strong> </td>
@@ -1912,6 +2050,7 @@
           <td class="num pos">12.0%</td>
           <td class="num">0.8%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("LUCIANO PIZZA BY#ARIZONA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>966.UA</strong> </td>
@@ -1922,6 +2061,7 @@
           <td class="num pos">9.7%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("966.UA|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>VIVA OLIVA</strong> <span class="badge-top">TOP</span></td>
@@ -1932,6 +2072,7 @@
           <td class="num pos">21.1%</td>
           <td class="num">2.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("VIVA OLIVA|Kremenchuk")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DAVINCI ZP</strong> </td>
@@ -1942,6 +2083,7 @@
           <td class="num pos">15.2%</td>
           <td class="num">0.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DAVINCI ZP|Zaporizhia")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ZOLOTIY DRAKON</strong> </td>
@@ -1952,6 +2094,7 @@
           <td class="num pos">11.8%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ZOLOTIY DRAKON|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>FELLINI PIZZA</strong> </td>
@@ -1962,6 +2105,7 @@
           <td class="num pos">11.8%</td>
           <td class="num">0.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("FELLINI PIZZA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>KOZATSKA BROVARNIA</strong> </td>
@@ -1972,6 +2116,7 @@
           <td class="num pos">20.1%</td>
           <td class="num">1.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("KOZATSKA BROVARNIA|Kremenchuk")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SHAVA OT SHEFA</strong> </td>
@@ -1982,6 +2127,7 @@
           <td class="num pos">4.8%</td>
           <td class="num">1.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SHAVA OT SHEFA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BARANCHIK</strong> <span class="badge-top">TOP</span></td>
@@ -1992,6 +2138,7 @@
           <td class="num pos">15.1%</td>
           <td class="num">1.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BARANCHIK|Kremenchuk")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>GANGSTER DOG</strong> </td>
@@ -2002,6 +2149,7 @@
           <td class="num pos">10.1%</td>
           <td class="num">0.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("GANGSTER DOG|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ACE BURGER</strong> </td>
@@ -2012,6 +2160,7 @@
           <td class="num pos">15.0%</td>
           <td class="num">0.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ACE BURGER|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>FITNES SHAURMA</strong> </td>
@@ -2022,6 +2171,7 @@
           <td class="num pos">11.2%</td>
           <td class="num">0.7%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("FITNES SHAURMA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PANI KARTOPLA</strong> </td>
@@ -2032,6 +2182,7 @@
           <td class="num pos">19.1%</td>
           <td class="num">0.4%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PANI KARTOPLA|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>BIG BRO BURGERS</strong> </td>
@@ -2042,6 +2193,7 @@
           <td class="num pos">7.7%</td>
           <td class="num">0.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("BIG BRO BURGERS|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PRIMA PASTA</strong> </td>
@@ -2052,6 +2204,7 @@
           <td class="num pos">10.0%</td>
           <td class="num">0.9%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PRIMA PASTA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>OBID TYT</strong> </td>
@@ -2062,6 +2215,7 @@
           <td class="num pos">19.6%</td>
           <td class="num">0.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("OBID TYT|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SUSHI USHI</strong> </td>
@@ -2072,6 +2226,7 @@
           <td class="num pos">19.2%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SUSHI USHI|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>LAPSHA TA RISE</strong> </td>
@@ -2082,6 +2237,7 @@
           <td class="num pos">15.7%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("LAPSHA TA RISE|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>ORIGINAL SUSHI BY #ARIZONA</strong> </td>
@@ -2092,6 +2248,7 @@
           <td class="num pos">15.0%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("ORIGINAL SUSHI BY #ARIZONA|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>966.UA</strong> </td>
@@ -2102,6 +2259,7 @@
           <td class="num pos">10.1%</td>
           <td class="num">0.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("966.UA|Odesa")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>DEPARTAMENT PELMENIV</strong> <span class="badge-top">TOP</span></td>
@@ -2112,6 +2270,7 @@
           <td class="num pos">20.3%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("DEPARTAMENT PELMENIV|Lviv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SUSHI CK UA</strong> </td>
@@ -2122,6 +2281,7 @@
           <td class="num pos">18.3%</td>
           <td class="num">0.6%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SUSHI CK UA|Cherkasy")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SUSHI TOKIO</strong> </td>
@@ -2132,6 +2292,7 @@
           <td class="num pos">19.0%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SUSHI TOKIO|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>VOKA VOKA</strong> </td>
@@ -2142,6 +2303,7 @@
           <td class="num pos">14.1%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("VOKA VOKA|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PANI KARTOPLA</strong> </td>
@@ -2152,6 +2314,7 @@
           <td class="num pos">17.8%</td>
           <td class="num">0.5%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PANI KARTOPLA|Lviv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>966.UA</strong> </td>
@@ -2162,6 +2325,7 @@
           <td class="num pos">9.8%</td>
           <td class="num">0.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("966.UA|Kyiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SALAD DAY</strong> </td>
@@ -2172,6 +2336,7 @@
           <td class="num pos">14.8%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SALAD DAY|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>AKADEMIA SHAURMY</strong> </td>
@@ -2182,6 +2347,7 @@
           <td class="num pos">13.8%</td>
           <td class="num">0.3%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("AKADEMIA SHAURMY|Poltava")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MAMYNY DERUNY</strong> </td>
@@ -2192,6 +2358,7 @@
           <td class="num pos">17.0%</td>
           <td class="num">0.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAMYNY DERUNY|Dnipro")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SAMA SUSHI</strong> </td>
@@ -2202,6 +2369,7 @@
           <td class="num pos">24.3%</td>
           <td class="num">0.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SAMA SUSHI|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>MAMYNY DERUNY</strong> </td>
@@ -2212,6 +2380,7 @@
           <td class="num pos">17.9%</td>
           <td class="num">0.2%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("MAMYNY DERUNY|Lviv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>PAKIMAO</strong> </td>
@@ -2222,6 +2391,7 @@
           <td class="num pos">12.4%</td>
           <td class="num">0.1%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("PAKIMAO|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>SUSHI MAKI MAKI</strong> </td>
@@ -2232,6 +2402,7 @@
           <td class="num ">nan%</td>
           <td class="num">0.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("SUSHI MAKI MAKI|Kharkiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr>
         <tr>
           <td><strong>nan</strong> </td>
@@ -2242,9 +2413,26 @@
           <td class="num ">nan%</td>
           <td class="num">0.0%</td>
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
+          <td class="action-cell"><button type="button" class="btn-send-rec" onclick="openRecommendation("nan|Kyiv")">📨 Надіслати рекомендацію підключення</button></td>
         </tr></tbody>
       </table>
     </section>
+  </div>
+
+  <div id="recModal" class="modal-overlay" onclick="if(event.target===this)closeRecommendation()">
+    <div class="modal" role="dialog" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h3 id="modalTitle">Рекомендація підключення</h3>
+        <button type="button" class="modal-close" onclick="closeRecommendation()" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="modalText" class="modal-text" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal btn-copy" id="btnCopy" onclick="copyRecommendation()">📋 Скопіювати текст</button>
+        <button type="button" class="btn-modal" style="background:#eee;color:#333" onclick="closeRecommendation()">Закрити</button>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -2252,5 +2440,148 @@
     <a href="https://github.com/marharytazhytnyk-create/partner-reports">GitHub</a>
     · Наступне оновлення: щопонеділка о 14:00 (EEST)
   </div>
+
+<script>
+const BRAND_DATA = {"966.UA|Dnipro": {"brand": "966.UA", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 19, "gmv_eur": 531, "cp_margin_pct": 9.7, "conv_imp_to_order_pct": 0.3, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "966", "zone": "Dnipro - Chechelivska zone", "orders": 19, "gmv_eur": 531, "cp_margin_pct": 9.7, "conv_pct": 0.3}]}, "966.UA|Kharkiv": {"brand": "966.UA", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 31, "gmv_eur": 1150, "cp_margin_pct": 10.0, "conv_imp_to_order_pct": 0.39, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "966", "zone": "Kharkiv - Center", "orders": 31, "gmv_eur": 1150, "cp_margin_pct": 10.0, "conv_pct": 0.39}]}, "966.UA|Kyiv": {"brand": "966.UA", "city": "Kyiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 3, "gmv_eur": 96, "cp_margin_pct": 9.8, "conv_imp_to_order_pct": 0.13, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "966", "zone": "Kyiv - City Centre", "orders": 3, "gmv_eur": 96, "cp_margin_pct": 9.8, "conv_pct": 0.13}]}, "966.UA|Odesa": {"brand": "966.UA", "city": "Odesa", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 5, "gmv_eur": 172, "cp_margin_pct": 10.1, "conv_imp_to_order_pct": 0.12, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "966", "zone": "Odesa - Malynovs'ka", "orders": 5, "gmv_eur": 172, "cp_margin_pct": 10.1, "conv_pct": 0.12}]}, "ACE BURGER|Poltava": {"brand": "ACE BURGER", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 20, "gmv_eur": 309, "cp_margin_pct": 15.0, "conv_imp_to_order_pct": 0.23, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Ace Burger", "zone": "Poltava - Center", "orders": 20, "gmv_eur": 309, "cp_margin_pct": 15.0, "conv_pct": 0.23}]}, "AKADEMIA SHAURMY|Poltava": {"brand": "AKADEMIA SHAURMY", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 8, "gmv_eur": 88, "cp_margin_pct": 13.8, "conv_imp_to_order_pct": 0.27, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Академія шаурми", "zone": "Poltava - Center", "orders": 8, "gmv_eur": 88, "cp_margin_pct": 13.8, "conv_pct": 0.27}]}, "ALLO LOSOS|Zaporizhia": {"brand": "ALLO LOSOS", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 4, "delivered_orders": 104, "gmv_eur": 1820, "cp_margin_pct": 16.5, "conv_imp_to_order_pct": 1.1, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Allo, Losos SUSHI / Алло, Лосось СУШІ Олександрівська", "zone": "Zaporizhzhia - Center", "orders": 43, "gmv_eur": 860, "cp_margin_pct": 17.3, "conv_pct": 1.68}, {"name": "Allo, Losos SUSHI / Алло, Лосось СУШІ Сталеварів", "zone": "Zaporizhzhia - Center", "orders": 21, "gmv_eur": 430, "cp_margin_pct": 19.6, "conv_pct": 1.71}, {"name": "Allo, Lososʹ PIZZA / Алло, Лосось PIZZA Олександрівська", "zone": "Zaporizhzhia - Center", "orders": 23, "gmv_eur": 306, "cp_margin_pct": 11.0, "conv_pct": 1.05}, {"name": "Allo, Lososʹ PIZZA / Алло, Лосось PIZZA Сталеварів", "zone": "Zaporizhzhia - Center", "orders": 17, "gmv_eur": 224, "cp_margin_pct": 15.2, "conv_pct": 0.51}]}, "AMVAM DELIVERY|Cherkasy": {"brand": "AMVAM DELIVERY", "city": "Cherkasy", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 320, "gmv_eur": 4520, "cp_margin_pct": 20.9, "conv_imp_to_order_pct": 1.86, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "AMVAM Delivery", "zone": "Cherkasy - Center Zone", "orders": 262, "gmv_eur": 3659, "cp_margin_pct": 21.4, "conv_pct": 2.14}, {"name": "AMVAM Delivery Сумгаїтська", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 58, "gmv_eur": 861, "cp_margin_pct": 18.5, "conv_pct": 1.21}]}, "APPETITO|Kharkiv": {"brand": "APPETITO", "city": "Kharkiv", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 645, "gmv_eur": 8707, "cp_margin_pct": 21.0, "conv_imp_to_order_pct": 2.93, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "АППЕТІТО просп. Олександрівський", "zone": "Kharkiv - Industrialna ", "orders": 219, "gmv_eur": 2985, "cp_margin_pct": 20.8, "conv_pct": 4.1}, {"name": "АППЕТІТО Рибалко", "zone": "Kharkiv - Industrialna ", "orders": 225, "gmv_eur": 2881, "cp_margin_pct": 21.1, "conv_pct": 3.17}, {"name": "АППЕТІТО Гвардійців Широнінців", "zone": "Kharkiv - Saltivka", "orders": 201, "gmv_eur": 2841, "cp_margin_pct": 21.2, "conv_pct": 2.12}]}, "BARANCHIK|Cherkasy": {"brand": "BARANCHIK", "city": "Cherkasy", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 44, "gmv_eur": 1153, "cp_margin_pct": 17.6, "conv_imp_to_order_pct": 0.6, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Той самий Баранчик", "zone": "Cherkasy - Center Zone", "orders": 44, "gmv_eur": 1153, "cp_margin_pct": 17.6, "conv_pct": 0.6}]}, "BARANCHIK|Kharkiv": {"brand": "BARANCHIK", "city": "Kharkiv", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 146, "gmv_eur": 3990, "cp_margin_pct": 15.1, "conv_imp_to_order_pct": 1.45, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Той самий Баранчик", "zone": "Kharkiv - Center", "orders": 146, "gmv_eur": 3990, "cp_margin_pct": 15.1, "conv_pct": 1.45}]}, "BARANCHIK|Kremenchuk": {"brand": "BARANCHIK", "city": "Kremenchuk", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 21, "gmv_eur": 345, "cp_margin_pct": 15.1, "conv_imp_to_order_pct": 1.16, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Той самий Баранчик", "zone": "Kremenchuk - Center", "orders": 21, "gmv_eur": 345, "cp_margin_pct": 15.1, "conv_pct": 1.16}]}, "BARANCHIK|Lviv": {"brand": "BARANCHIK", "city": "Lviv", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 113, "gmv_eur": 3004, "cp_margin_pct": 14.2, "conv_imp_to_order_pct": 0.78, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Той самий Баранчик", "zone": "Lviv - Central Zone 1", "orders": 113, "gmv_eur": 3004, "cp_margin_pct": 14.2, "conv_pct": 0.78}]}, "BARANCHIK|Poltava": {"brand": "BARANCHIK", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 77, "gmv_eur": 1684, "cp_margin_pct": 15.1, "conv_imp_to_order_pct": 0.74, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Той самий Баранчик", "zone": "Poltava - Center", "orders": 77, "gmv_eur": 1684, "cp_margin_pct": 15.1, "conv_pct": 0.74}]}, "BELLA ITALIA|Odesa": {"brand": "BELLA ITALIA", "city": "Odesa", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 42, "gmv_eur": 681, "cp_margin_pct": 18.9, "conv_imp_to_order_pct": 1.06, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "«Белла Італія» вул. Базарна", "zone": "Odesa - Prymorskyi", "orders": 42, "gmv_eur": 681, "cp_margin_pct": 18.9, "conv_pct": 1.06}]}, "BELLA MOZZARELLA|Kharkiv": {"brand": "BELLA MOZZARELLA", "city": "Kharkiv", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 6, "delivered_orders": 285, "gmv_eur": 5586, "cp_margin_pct": 8.3, "conv_imp_to_order_pct": 0.76, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Bella Mozzarella вул.Сумська", "zone": "Kharkiv - Zhuravlivka ", "orders": 119, "gmv_eur": 2216, "cp_margin_pct": 9.0, "conv_pct": 0.9}, {"name": "Bella Mozzarella п-кт Григоренка", "zone": "Kharkiv - Slobidska", "orders": 99, "gmv_eur": 1903, "cp_margin_pct": 9.5, "conv_pct": 1.17}, {"name": "Bella Mozzarella вулиця Полтавський Шлях", "zone": "Kharkiv - Kholodnohirska", "orders": 24, "gmv_eur": 556, "cp_margin_pct": 2.8, "conv_pct": 0.44}, {"name": "Bella Mozzarella вул.Нескоренних", "zone": "Kharkiv - Pivnichna Saltivka", "orders": 19, "gmv_eur": 377, "cp_margin_pct": 7.3, "conv_pct": 0.52}, {"name": "Bella Mozzarella  п-кт Тракторобудівників", "zone": "Kharkiv - 602 District", "orders": 12, "gmv_eur": 288, "cp_margin_pct": 7.5, "conv_pct": 0.3}, {"name": "Bella Mozzarella пр-т Перемоги", "zone": "Kharkiv - Shevchenkivska ", "orders": 12, "gmv_eur": 245, "cp_margin_pct": 7.4, "conv_pct": 0.48}]}, "BELLA VITA STEFANIKOVO NAMESTI|Zaporizhia": {"brand": "BELLA VITA STEFANIKOVO NAMESTI", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 83, "gmv_eur": 1415, "cp_margin_pct": 4.5, "conv_imp_to_order_pct": 1.37, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Bella Vita", "zone": "Zaporizhzhia - Center", "orders": 83, "gmv_eur": 1415, "cp_margin_pct": 4.5, "conv_pct": 1.37}]}, "BIG BRO BURGERS|Poltava": {"brand": "BIG BRO BURGERS", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 21, "gmv_eur": 241, "cp_margin_pct": 7.7, "conv_imp_to_order_pct": 0.46, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Big Bro Burgers", "zone": "Poltava - Center", "orders": 21, "gmv_eur": 241, "cp_margin_pct": 7.7, "conv_pct": 0.46}]}, "BON CHICKEN|Odesa": {"brand": "BON CHICKEN", "city": "Odesa", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 357, "gmv_eur": 4645, "cp_margin_pct": 12.5, "conv_imp_to_order_pct": 3.0, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Bon Chicken на Жуковського", "zone": "Odesa - Prymorskyi", "orders": 357, "gmv_eur": 4645, "cp_margin_pct": 12.5, "conv_pct": 3.0}]}, "BOOGIE PIZZA&SUSHI|Zaporizhia": {"brand": "BOOGIE PIZZA&SUSHI", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 4, "delivered_orders": 83, "gmv_eur": 1204, "cp_margin_pct": 8.4, "conv_imp_to_order_pct": 1.38, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Шашлична №1 просп. Соборний 4Б", "zone": "Zaporizhzhia - Pivdennyi", "orders": 30, "gmv_eur": 470, "cp_margin_pct": 4.9, "conv_pct": 1.83}, {"name": "Boogie Pizza&Sushi вул. Чарівна, 28", "zone": "Zaporizhzhia - Center", "orders": 26, "gmv_eur": 374, "cp_margin_pct": 10.7, "conv_pct": 1.14}, {"name": "Boogie Pizza&Sushi вул. Володимира Українця", "zone": "Zaporizhzhia - Pivdennyi", "orders": 25, "gmv_eur": 332, "cp_margin_pct": 10.5, "conv_pct": 1.76}, {"name": "Boogie Pizza&Sushi вул. Чарівна, 145В", "zone": "Zaporizhzhia - Center", "orders": 2, "gmv_eur": 28, "cp_margin_pct": 11.0, "conv_pct": 0.36}]}, "CHAS SHAURMY|Kharkiv": {"brand": "CHAS SHAURMY", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 3, "delivered_orders": 184, "gmv_eur": 2333, "cp_margin_pct": 17.6, "conv_imp_to_order_pct": 1.7, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Час Шаурми вулиця Маршала Бажанова", "zone": "Kharkiv - Center", "orders": 76, "gmv_eur": 992, "cp_margin_pct": 17.8, "conv_pct": 2.34}, {"name": "Час шаурми Петра Григоренка", "zone": "Kharkiv - Slobidska", "orders": 68, "gmv_eur": 819, "cp_margin_pct": 15.1, "conv_pct": 1.66}, {"name": "Час Шаурми вулиця Валентинівська", "zone": "Kharkiv - Saltivka", "orders": 40, "gmv_eur": 522, "cp_margin_pct": 21.2, "conv_pct": 1.12}]}, "CONFETTI|Dnipro": {"brand": "CONFETTI", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 4, "delivered_orders": 80, "gmv_eur": 1376, "cp_margin_pct": 20.0, "conv_imp_to_order_pct": 0.79, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Confetti Дафі", "zone": "Dnipro - Center 2", "orders": 27, "gmv_eur": 458, "cp_margin_pct": 17.7, "conv_pct": 0.82}, {"name": "Confetti Славутич", "zone": "Dnipro - Center 2", "orders": 27, "gmv_eur": 430, "cp_margin_pct": 20.8, "conv_pct": 0.98}, {"name": "Confetti Passage", "zone": "Dnipro - Center ", "orders": 15, "gmv_eur": 282, "cp_margin_pct": 21.4, "conv_pct": 0.62}, {"name": "Confetti Appolo", "zone": "Dnipro - Center 2", "orders": 11, "gmv_eur": 206, "cp_margin_pct": 21.5, "conv_pct": 0.69}]}, "DAVINCI ZP|Zaporizhia": {"brand": "DAVINCI ZP", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 21, "gmv_eur": 451, "cp_margin_pct": 15.2, "conv_imp_to_order_pct": 0.57, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "DaVinci", "zone": "Zaporizhzhia - Center", "orders": 21, "gmv_eur": 451, "cp_margin_pct": 15.2, "conv_pct": 0.57}]}, "DEPARTAMENT PELMENIV|Dnipro": {"brand": "DEPARTAMENT PELMENIV", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 5, "delivered_orders": 74, "gmv_eur": 1259, "cp_margin_pct": 20.4, "conv_imp_to_order_pct": 0.6, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Департамент Пельменів Виконкомівська", "zone": "Dnipro - Center ", "orders": 24, "gmv_eur": 501, "cp_margin_pct": 22.1, "conv_pct": 0.86}, {"name": "Департамент Пельменів вул. Святослава Хороброго", "zone": "Dnipro - Center 2", "orders": 19, "gmv_eur": 289, "cp_margin_pct": 20.1, "conv_pct": 0.67}, {"name": "Департамент Пельменів просп. Науки", "zone": "Dnipro - Soborna", "orders": 15, "gmv_eur": 257, "cp_margin_pct": 18.2, "conv_pct": 0.42}, {"name": "Департамент Пельменів вул. Олеся Гончара", "zone": "Dnipro - Soborna", "orders": 10, "gmv_eur": 145, "cp_margin_pct": 21.9, "conv_pct": 0.68}, {"name": "Департамент Пельменів просп. Яворницького", "zone": "Dnipro - Center ", "orders": 6, "gmv_eur": 67, "cp_margin_pct": 13.2, "conv_pct": 0.32}]}, "DEPARTAMENT PELMENIV|Lviv": {"brand": "DEPARTAMENT PELMENIV", "city": "Lviv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 10, "gmv_eur": 169, "cp_margin_pct": 20.3, "conv_imp_to_order_pct": 0.34, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Департамент Пельменів Фурманська", "zone": "Lviv - Central Zone 1", "orders": 10, "gmv_eur": 169, "cp_margin_pct": 20.3, "conv_pct": 0.34}]}, "DNIPROVSKA REBERNYA|Dnipro": {"brand": "DNIPROVSKA REBERNYA", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 349, "gmv_eur": 7585, "cp_margin_pct": 21.4, "conv_imp_to_order_pct": 1.63, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Дніпровська реберня", "zone": "Dnipro - Center ", "orders": 349, "gmv_eur": 7585, "cp_margin_pct": 21.4, "conv_pct": 1.63}]}, "DONO|Dnipro": {"brand": "DONO", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 5, "delivered_orders": 247, "gmv_eur": 3215, "cp_margin_pct": 16.5, "conv_imp_to_order_pct": 1.42, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Dono Піца проспект Науки", "zone": "Dnipro - Soborna", "orders": 77, "gmv_eur": 993, "cp_margin_pct": 13.7, "conv_pct": 1.68}, {"name": "Dono Піца Робоча", "zone": "Dnipro - Chechelivska zone", "orders": 52, "gmv_eur": 704, "cp_margin_pct": 16.7, "conv_pct": 1.63}, {"name": "Dono Піца Богдана Хмельницького", "zone": "Dnipro - Shevchenkivska", "orders": 53, "gmv_eur": 624, "cp_margin_pct": 17.6, "conv_pct": 1.61}, {"name": "Dono Піца Лівобережний", "zone": "Dnipro - Industrialna ", "orders": 34, "gmv_eur": 447, "cp_margin_pct": 18.7, "conv_pct": 1.71}, {"name": "Dono Піца Янтарна", "zone": "Dnipro - Industrialna ", "orders": 31, "gmv_eur": 446, "cp_margin_pct": 18.7, "conv_pct": 0.75}]}, "DONO|Pavlohrad": {"brand": "DONO", "city": "Pavlohrad", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 5, "delivered_orders": 65, "gmv_eur": 692, "cp_margin_pct": 6.0, "conv_imp_to_order_pct": 2.13, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Dono Піца Центральна", "zone": "Pavlohrad - Center", "orders": 38, "gmv_eur": 413, "cp_margin_pct": 10.2, "conv_pct": 3.31}, {"name": "Dono Піца Західнодонбаська", "zone": "Pavlohrad - Center", "orders": 18, "gmv_eur": 193, "cp_margin_pct": -4.7, "conv_pct": 2.04}, {"name": "Dono Піца Героїв України", "zone": "Pavlohrad - Center", "orders": 5, "gmv_eur": 54, "cp_margin_pct": 11.6, "conv_pct": 2.12}, {"name": "Dono Піца ПЗТО", "zone": "Pavlohrad - Center", "orders": 4, "gmv_eur": 32, "cp_margin_pct": 7.2, "conv_pct": 1.21}, {"name": "Dono Піца 109 вул. Челюскінців", "zone": "Pavlohrad - Center", "orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_pct": 0.0}]}, "FELLINI PIZZA|Poltava": {"brand": "FELLINI PIZZA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 34, "gmv_eur": 422, "cp_margin_pct": 11.8, "conv_imp_to_order_pct": 0.44, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Fellini Pizza", "zone": "Poltava - Center", "orders": 34, "gmv_eur": 422, "cp_margin_pct": 11.8, "conv_pct": 0.44}]}, "FITNES SHAURMA|Poltava": {"brand": "FITNES SHAURMA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 24, "gmv_eur": 253, "cp_margin_pct": 11.2, "conv_imp_to_order_pct": 0.71, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Fitnes shaurma", "zone": "Poltava - Center", "orders": 24, "gmv_eur": 253, "cp_margin_pct": 11.2, "conv_pct": 0.71}]}, "FUGU|Cherkasy": {"brand": "FUGU", "city": "Cherkasy", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 4, "delivered_orders": 147, "gmv_eur": 3099, "cp_margin_pct": 22.2, "conv_imp_to_order_pct": 0.78, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "FUGU бул. Шевченка", "zone": "Cherkasy - Kazbet Zone", "orders": 49, "gmv_eur": 1041, "cp_margin_pct": 21.4, "conv_pct": 1.44}, {"name": "FUGU вул. Г. Дніпра", "zone": "Cherkasy - Center Zone", "orders": 41, "gmv_eur": 739, "cp_margin_pct": 22.3, "conv_pct": 0.54}, {"name": "FUGU вул. Самійла Кішки", "zone": "Ckerkasy - Himselyshche Zone", "orders": 29, "gmv_eur": 677, "cp_margin_pct": 22.3, "conv_pct": 0.61}, {"name": "FUGU вул. В. Вергая", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 28, "gmv_eur": 643, "cp_margin_pct": 23.2, "conv_pct": 0.79}]}, "GALUSHKA|Poltava": {"brand": "GALUSHKA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 116, "gmv_eur": 1557, "cp_margin_pct": 20.4, "conv_imp_to_order_pct": 1.61, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Галушка", "zone": "Poltava - Center", "orders": 116, "gmv_eur": 1557, "cp_margin_pct": 20.4, "conv_pct": 1.61}]}, "GANGSTER DOG|Poltava": {"brand": "GANGSTER DOG", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 28, "gmv_eur": 314, "cp_margin_pct": 10.1, "conv_imp_to_order_pct": 0.56, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "GANGSTER DOG", "zone": "Poltava - Center", "orders": 28, "gmv_eur": 314, "cp_margin_pct": 10.1, "conv_pct": 0.56}]}, "GRILL PARK|Zaporizhia": {"brand": "GRILL PARK", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 171, "gmv_eur": 3053, "cp_margin_pct": 11.1, "conv_imp_to_order_pct": 2.5, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Grill Park", "zone": "Zaporizhzhia - Center", "orders": 171, "gmv_eur": 3053, "cp_margin_pct": 11.1, "conv_pct": 2.5}]}, "GRILL VIBE|Zaporizhia": {"brand": "GRILL VIBE", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 171, "gmv_eur": 1969, "cp_margin_pct": 9.4, "conv_imp_to_order_pct": 2.73, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Grill Vibe", "zone": "Zaporizhzhia - Center", "orders": 171, "gmv_eur": 1969, "cp_margin_pct": 9.4, "conv_pct": 2.73}]}, "HELLO BURGER CHERKASY|Cherkasy": {"brand": "HELLO BURGER CHERKASY", "city": "Cherkasy", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 165, "gmv_eur": 2915, "cp_margin_pct": 21.6, "conv_imp_to_order_pct": 1.31, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Hello Burger", "zone": "Cherkasy - Center Zone", "orders": 165, "gmv_eur": 2915, "cp_margin_pct": 21.6, "conv_pct": 1.31}]}, "HOCHY KEBAB|Zaporizhia": {"brand": "HOCHY KEBAB", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 99, "gmv_eur": 1326, "cp_margin_pct": 15.9, "conv_imp_to_order_pct": 2.03, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Хочу Кебаб", "zone": "Zaporizhzhia - Center", "orders": 99, "gmv_eur": 1326, "cp_margin_pct": 15.9, "conv_pct": 2.03}]}, "IKURA FOOD|Oleksandriia": {"brand": "IKURA FOOD", "city": "Oleksandriia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 60, "gmv_eur": 899, "cp_margin_pct": 18.0, "conv_imp_to_order_pct": 2.23, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "IKURA", "zone": "Oleksandriia - Center", "orders": 60, "gmv_eur": 899, "cp_margin_pct": 18.0, "conv_pct": 2.23}]}, "ITALIYSʹKYY KVARTAL|Odesa": {"brand": "ITALIYSʹKYY KVARTAL", "city": "Odesa", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 4, "delivered_orders": 134, "gmv_eur": 2116, "cp_margin_pct": 18.3, "conv_imp_to_order_pct": 0.97, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "\"Італійський Квартал\" вул. Святослава Караванського", "zone": "Odesa - Prymorskyi", "orders": 45, "gmv_eur": 783, "cp_margin_pct": 21.2, "conv_pct": 1.62}, {"name": "\"Італійський Квартал\" вул.  Космонавтів", "zone": "Odesa - Malynovs'ka", "orders": 47, "gmv_eur": 652, "cp_margin_pct": 13.9, "conv_pct": 0.77}, {"name": "\"Італійський Квартал\" вул. Чубаєвська", "zone": "Odesa - Arkadia", "orders": 30, "gmv_eur": 478, "cp_margin_pct": 20.7, "conv_pct": 1.21}, {"name": "\"Італійський Квартал\"  вул. Ак. Корольова", "zone": "Odesa - Panorama", "orders": 12, "gmv_eur": 203, "cp_margin_pct": 16.1, "conv_pct": 0.49}]}, "JOSPER SVINTUZ|Kryvyi Rih": {"brand": "JOSPER SVINTUZ", "city": "Kryvyi Rih", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 183, "gmv_eur": 2375, "cp_margin_pct": 6.7, "conv_imp_to_order_pct": 2.34, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Josper Svintuz проспект Металургів", "zone": "Kryvyi Rih - Myru", "orders": 183, "gmv_eur": 2375, "cp_margin_pct": 6.7, "conv_pct": 2.34}]}, "JOSPER SVINTUZ|Vinnytsia": {"brand": "JOSPER SVINTUZ", "city": "Vinnytsia", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 389, "gmv_eur": 5613, "cp_margin_pct": 9.4, "conv_imp_to_order_pct": 2.56, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Josper Svintuz вулиця Келецька", "zone": "Vinnytsia - Megamol Zone 2", "orders": 389, "gmv_eur": 5613, "cp_margin_pct": 9.4, "conv_pct": 2.56}]}, "JOSPER SVINTUZ|Zaporizhia": {"brand": "JOSPER SVINTUZ", "city": "Zaporizhia", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 12, "delivered_orders": 621, "gmv_eur": 7554, "cp_margin_pct": 4.0, "conv_imp_to_order_pct": 3.84, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Josper Svintuz вулиця Професора Толока", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 85, "gmv_eur": 1016, "cp_margin_pct": 5.9, "conv_pct": 6.33}, {"name": "Josper Svintuz Космічна вулиця", "zone": "Zaporizhzhia - Pivdennyi", "orders": 73, "gmv_eur": 949, "cp_margin_pct": 4.3, "conv_pct": 3.62}, {"name": "Josper Svintuz Прибережна автомагістраль", "zone": "Zaporizhzhia - Center", "orders": 69, "gmv_eur": 851, "cp_margin_pct": 3.4, "conv_pct": 2.78}, {"name": "Josper Svintuz Запорізька вулиця", "zone": "Zaporizhzhia - Center", "orders": 68, "gmv_eur": 751, "cp_margin_pct": 1.9, "conv_pct": 2.67}, {"name": "Josper Svintuz вулиця Чарівна, 74", "zone": "Zaporizhzhia - Center", "orders": 54, "gmv_eur": 747, "cp_margin_pct": 6.6, "conv_pct": 5.5}, {"name": "Josper Svintuz Дніпровське шосе", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 63, "gmv_eur": 739, "cp_margin_pct": 2.2, "conv_pct": 6.84}, {"name": "Josper Svintuz проспект Соборний", "zone": "Zaporizhzhia - Center", "orders": 56, "gmv_eur": 699, "cp_margin_pct": 5.2, "conv_pct": 2.49}, {"name": "Josper Svintuz Чарівна вулиця", "zone": "Zaporizhzhia - Center", "orders": 52, "gmv_eur": 622, "cp_margin_pct": 3.9, "conv_pct": 4.0}, {"name": "Josper Svintuz вулиця Павлокічкаська", "zone": "Zaporizhzhia - Center", "orders": 53, "gmv_eur": 608, "cp_margin_pct": 2.5, "conv_pct": 7.11}, {"name": "Josper Svintuz вулиця Деповська", "zone": "Zaporizhzhia - Pivdennyi", "orders": 21, "gmv_eur": 273, "cp_margin_pct": 3.0, "conv_pct": 2.65}, {"name": "Josper Svintuz вулиця Володимира Українця", "zone": "Zaporizhzhia - Pivdennyi", "orders": 19, "gmv_eur": 216, "cp_margin_pct": 4.7, "conv_pct": 2.97}, {"name": "Josper Svintuz вулиця Руставі", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 8, "gmv_eur": 83, "cp_margin_pct": -4.3, "conv_pct": 3.45}]}, "KOZATSKA BROVARNIA|Kremenchuk": {"brand": "KOZATSKA BROVARNIA", "city": "Kremenchuk", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 32, "gmv_eur": 410, "cp_margin_pct": 20.1, "conv_imp_to_order_pct": 1.58, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Козацька Броварня", "zone": "Kremenchuk - Center", "orders": 32, "gmv_eur": 410, "cp_margin_pct": 20.1, "conv_pct": 1.58}]}, "KRABSBURGER|Zaporizhia": {"brand": "KRABSBURGER", "city": "Zaporizhia", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 563, "gmv_eur": 6087, "cp_margin_pct": 10.5, "conv_imp_to_order_pct": 5.23, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Crabsburger Перемоги", "zone": "Zaporizhzhia - Center", "orders": 387, "gmv_eur": 4141, "cp_margin_pct": 12.0, "conv_pct": 5.51}, {"name": "Crabsburger пр-т Соборний", "zone": "Zaporizhzhia - Pivdennyi", "orders": 176, "gmv_eur": 1947, "cp_margin_pct": 7.3, "conv_pct": 4.7}]}, "KUMA SHAURMA|Odesa": {"brand": "KUMA SHAURMA", "city": "Odesa", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 6, "delivered_orders": 537, "gmv_eur": 5457, "cp_margin_pct": 14.5, "conv_imp_to_order_pct": 2.51, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "КУМА ШАУРМА Центр", "zone": "Odesa - Prymorskyi", "orders": 183, "gmv_eur": 1877, "cp_margin_pct": 16.0, "conv_pct": 3.5}, {"name": "КУМА ШАУРМА Аркадія", "zone": "Odesa - Arkadia", "orders": 125, "gmv_eur": 1224, "cp_margin_pct": 14.7, "conv_pct": 2.83}, {"name": "КУМА ШАУРМА Таїрова", "zone": "Odesa - Panorama", "orders": 88, "gmv_eur": 813, "cp_margin_pct": 15.7, "conv_pct": 2.68}, {"name": "КУМА ШАУРМА Черемушки", "zone": "Odesa - Malynovs'ka", "orders": 76, "gmv_eur": 774, "cp_margin_pct": 11.5, "conv_pct": 1.76}, {"name": "КУМА ШАУРМА Куликове Поле", "zone": "Odesa - Prymorskyi", "orders": 36, "gmv_eur": 441, "cp_margin_pct": 15.3, "conv_pct": 1.5}, {"name": "КУМА ШАУРМА Сахарова", "zone": "Odesa - Kotovskyi", "orders": 29, "gmv_eur": 327, "cp_margin_pct": 8.8, "conv_pct": 1.66}]}, "LA PIZZA ESPRESSO|Chernihiv": {"brand": "LA PIZZA ESPRESSO", "city": "Chernihiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 85, "gmv_eur": 1020, "cp_margin_pct": 4.2, "conv_imp_to_order_pct": 1.5, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "La Pizza Espresso Перемоги", "zone": "Chernihiv - Center", "orders": 30, "gmv_eur": 404, "cp_margin_pct": 4.2, "conv_pct": 0.98}, {"name": "La Pizza Espresso Лук'яненка", "zone": "Chernihiv - Center", "orders": 34, "gmv_eur": 375, "cp_margin_pct": 1.2, "conv_pct": 2.53}, {"name": "La Pizza Espresso вул.Івана Мазепи", "zone": "Chernihiv - Center", "orders": 21, "gmv_eur": 242, "cp_margin_pct": 8.8, "conv_pct": 1.49}]}, "LAPSHA TA RISE|Kharkiv": {"brand": "LAPSHA TA RISE", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 9, "gmv_eur": 177, "cp_margin_pct": 15.7, "conv_imp_to_order_pct": 0.35, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Lapsha ta Rise / Лапша та Рис вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 9, "gmv_eur": 177, "cp_margin_pct": 15.7, "conv_pct": 0.35}]}, "LITTLE MARIUPOL|Dnipro": {"brand": "LITTLE MARIUPOL", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 5, "delivered_orders": 299, "gmv_eur": 5372, "cp_margin_pct": 20.0, "conv_imp_to_order_pct": 0.98, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Little Mariupol Науки", "zone": "Dnipro - Soborna", "orders": 80, "gmv_eur": 1463, "cp_margin_pct": 20.3, "conv_pct": 1.0}, {"name": "Little Mariupol Яворницького", "zone": "Dnipro - Center ", "orders": 65, "gmv_eur": 1272, "cp_margin_pct": 19.2, "conv_pct": 0.96}, {"name": "Little Mariupol Виконкомівська", "zone": "Dnipro - Center ", "orders": 57, "gmv_eur": 1096, "cp_margin_pct": 21.4, "conv_pct": 0.94}, {"name": "Little Mariupol \"Дача\"", "zone": "Dnipro - Center 2", "orders": 62, "gmv_eur": 958, "cp_margin_pct": 18.5, "conv_pct": 1.06}, {"name": "Little Mariupol Гончара", "zone": "Dnipro - Soborna", "orders": 35, "gmv_eur": 584, "cp_margin_pct": 20.4, "conv_pct": 0.92}]}, "LUCIANO PIZZA BY#ARIZONA|Poltava": {"brand": "LUCIANO PIZZA BY#ARIZONA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 41, "gmv_eur": 584, "cp_margin_pct": 12.0, "conv_imp_to_order_pct": 0.84, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Luciano pizza by#AriZona", "zone": "Poltava - Center", "orders": 41, "gmv_eur": 584, "cp_margin_pct": 12.0, "conv_pct": 0.84}]}, "MAMYNY DERUNY|Dnipro": {"brand": "MAMYNY DERUNY", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 4, "delivered_orders": 6, "gmv_eur": 67, "cp_margin_pct": 17.0, "conv_imp_to_order_pct": 0.17, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Мамині Деруни просп. Науки", "zone": "Dnipro - Soborna", "orders": 3, "gmv_eur": 41, "cp_margin_pct": 21.5, "conv_pct": 0.27}, {"name": "Мамині Деруни просп. Дмитра Яворницького", "zone": "Dnipro - Center ", "orders": 3, "gmv_eur": 25, "cp_margin_pct": 9.7, "conv_pct": 0.3}, {"name": "Мамині Деруни \"Дача\"", "zone": "Dnipro - Center 2", "orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_pct": 0.0}, {"name": "Мамині Деруни вул. Олеся Гончара", "zone": "Dnipro - Soborna", "orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_pct": 0.0}]}, "MAMYNY DERUNY|Lviv": {"brand": "MAMYNY DERUNY", "city": "Lviv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 2, "gmv_eur": 31, "cp_margin_pct": 17.9, "conv_imp_to_order_pct": 0.23, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Мамині Деруни Фурманська", "zone": "Lviv - Central Zone 1", "orders": 2, "gmv_eur": 31, "cp_margin_pct": 17.9, "conv_pct": 0.23}]}, "MAVRA AZIA|Zaporizhia": {"brand": "MAVRA AZIA", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 4, "delivered_orders": 113, "gmv_eur": 2063, "cp_margin_pct": 9.1, "conv_imp_to_order_pct": 1.61, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mavra Azia вул. Петра Сагайдачного", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 34, "gmv_eur": 628, "cp_margin_pct": 7.0, "conv_pct": 2.5}, {"name": "Mavra Azia Соборний пр-т", "zone": "Zaporizhzhia - Center", "orders": 30, "gmv_eur": 512, "cp_margin_pct": 11.2, "conv_pct": 0.97}, {"name": "Mavra Azia вул. Чарівна", "zone": "Zaporizhzhia - Center", "orders": 21, "gmv_eur": 462, "cp_margin_pct": 10.6, "conv_pct": 1.97}, {"name": "Mavra Azia вул. Північно-Кільцева", "zone": "Zaporizhzhia - Pivdennyi", "orders": 28, "gmv_eur": 460, "cp_margin_pct": 8.0, "conv_pct": 1.92}]}, "MAVRA PIZZA|Kryvyi Rih": {"brand": "MAVRA PIZZA", "city": "Kryvyi Rih", "product": "Smart Promotions", "reason": "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 275, "gmv_eur": 3270, "cp_margin_pct": 14.9, "conv_imp_to_order_pct": 2.27, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mavra Pizza 200-річчя Кривого Рогу", "zone": "Kryvyi Rih - Soniacnyi", "orders": 142, "gmv_eur": 1738, "cp_margin_pct": 16.6, "conv_pct": 2.59}, {"name": "Mavra Pizza проспект Центральний", "zone": "Kryvyi Rih - Myru", "orders": 85, "gmv_eur": 1056, "cp_margin_pct": 14.6, "conv_pct": 2.72}, {"name": "Mavra Pizza проспект Героїв-Підпільників", "zone": "Kryvyi Rih - Myru", "orders": 48, "gmv_eur": 476, "cp_margin_pct": 8.9, "conv_pct": 1.38}]}, "MAVRA PIZZA|Zaporizhia": {"brand": "MAVRA PIZZA", "city": "Zaporizhia", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 9, "delivered_orders": 561, "gmv_eur": 7100, "cp_margin_pct": 5.6, "conv_imp_to_order_pct": 2.97, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mavra pizza вул. Чарівна", "zone": "Zaporizhzhia - Center", "orders": 111, "gmv_eur": 1495, "cp_margin_pct": 4.0, "conv_pct": 5.94}, {"name": "Mavra Pizza вул. Запорізька", "zone": "Zaporizhzhia - Center", "orders": 103, "gmv_eur": 1286, "cp_margin_pct": 4.1, "conv_pct": 2.45}, {"name": "Mavra Pizza Forum", "zone": "Zaporizhzhia - Center", "orders": 75, "gmv_eur": 978, "cp_margin_pct": 14.4, "conv_pct": 2.35}, {"name": "Mavra Pizza Соборний пр-т", "zone": "Zaporizhzhia - Center", "orders": 51, "gmv_eur": 787, "cp_margin_pct": 7.4, "conv_pct": 1.65}, {"name": "Mavra Pizza вул. Північно-Кільцева", "zone": "Zaporizhzhia - Pivdennyi", "orders": 60, "gmv_eur": 723, "cp_margin_pct": 3.6, "conv_pct": 3.6}, {"name": "Mavra Pizza вул. Товариська", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 64, "gmv_eur": 662, "cp_margin_pct": 4.0, "conv_pct": 5.2}, {"name": "Mavra Pizza вул. Перемоги", "zone": "Zaporizhzhia - Center", "orders": 43, "gmv_eur": 571, "cp_margin_pct": 7.2, "conv_pct": 1.86}, {"name": "Mavra Pizza вул. Володимира Українця", "zone": "Zaporizhzhia - Pivdennyi", "orders": 45, "gmv_eur": 509, "cp_margin_pct": -2.1, "conv_pct": 4.08}, {"name": "Mavra pizza вулиця Руставі", "zone": "Zaporizhzhia - Dniprovskyi", "orders": 9, "gmv_eur": 89, "cp_margin_pct": -0.0, "conv_pct": 2.39}]}, "MIAO|Dnipro": {"brand": "MIAO", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 92, "gmv_eur": 1572, "cp_margin_pct": 19.6, "conv_imp_to_order_pct": 1.72, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "МЯО", "zone": "Dnipro - Center ", "orders": 92, "gmv_eur": 1572, "cp_margin_pct": 19.6, "conv_pct": 1.72}]}, "MOLTO MEATFISH|Kharkiv": {"brand": "MOLTO MEATFISH", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 3, "delivered_orders": 110, "gmv_eur": 1871, "cp_margin_pct": 20.0, "conv_imp_to_order_pct": 1.55, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mol’to Meat&Fish Стадіонній проїзд", "zone": "Kharkiv - Slobidska", "orders": 64, "gmv_eur": 1087, "cp_margin_pct": 20.4, "conv_pct": 2.21}, {"name": "Mol’to Meat&Fish Культури", "zone": "Kharkiv - Shevchenkivska ", "orders": 39, "gmv_eur": 691, "cp_margin_pct": 19.6, "conv_pct": 1.24}, {"name": "Mol’to Meat&Fish Провулок Банний", "zone": "Kharkiv - Center", "orders": 7, "gmv_eur": 93, "cp_margin_pct": 18.0, "conv_pct": 0.78}]}, "MON AMI BURUM|Dnipro": {"brand": "MON AMI BURUM", "city": "Dnipro", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 677, "gmv_eur": 6834, "cp_margin_pct": 16.4, "conv_imp_to_order_pct": 6.12, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mon Ami Burum", "zone": "Dnipro - Soborna", "orders": 677, "gmv_eur": 6834, "cp_margin_pct": 16.4, "conv_pct": 6.12}]}, "MON CHER|Kharkiv": {"brand": "MON CHER", "city": "Kharkiv", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 461, "gmv_eur": 6964, "cp_margin_pct": 18.4, "conv_imp_to_order_pct": 3.3, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mon Cher", "zone": "Kharkiv - Center", "orders": 461, "gmv_eur": 6964, "cp_margin_pct": 18.4, "conv_pct": 3.3}]}, "MON CHER|Odesa": {"brand": "MON CHER", "city": "Odesa", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 157, "gmv_eur": 2342, "cp_margin_pct": 22.2, "conv_imp_to_order_pct": 2.01, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Mon Cher", "zone": "Odesa - Arkadia", "orders": 157, "gmv_eur": 2342, "cp_margin_pct": 22.2, "conv_pct": 2.01}]}, "NAPO|Kharkiv": {"brand": "NAPO", "city": "Kharkiv", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 13, "delivered_orders": 333, "gmv_eur": 3374, "cp_margin_pct": 14.2, "conv_imp_to_order_pct": 1.77, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "NAPO Героїв Праці", "zone": "Kharkiv - Pivnichna Saltivka", "orders": 50, "gmv_eur": 510, "cp_margin_pct": 14.3, "conv_pct": 1.94}, {"name": "NAPO 23 Серпня", "zone": "Kharkiv - Shevchenkivska ", "orders": 39, "gmv_eur": 366, "cp_margin_pct": 14.9, "conv_pct": 2.76}, {"name": "NAPO проспект Перемоги", "zone": "Kharkiv - Shevchenkivska ", "orders": 37, "gmv_eur": 362, "cp_margin_pct": 14.6, "conv_pct": 3.2}, {"name": "NAPO Валентинівська", "zone": "Kharkiv - Saltivka", "orders": 26, "gmv_eur": 312, "cp_margin_pct": 15.2, "conv_pct": 1.57}, {"name": "NAPO Полтавський Шлях", "zone": "Kharkiv - Kholodnohirska", "orders": 30, "gmv_eur": 298, "cp_margin_pct": 15.3, "conv_pct": 1.98}, {"name": "NAPO Захисників України", "zone": "Kharkiv - Slobidska", "orders": 26, "gmv_eur": 296, "cp_margin_pct": 14.3, "conv_pct": 1.24}, {"name": "NAPO проспект Людвіга Свободи", "zone": "Kharkiv - Shevchenkivska ", "orders": 30, "gmv_eur": 287, "cp_margin_pct": 11.8, "conv_pct": 2.21}, {"name": "NAPO проспект Олександрівський", "zone": "Kharkiv - Industrialna ", "orders": 23, "gmv_eur": 245, "cp_margin_pct": 14.5, "conv_pct": 0.95}, {"name": "NAPO пр-т Тракторобудівників", "zone": "Kharkiv - Pivnichna Saltivka", "orders": 17, "gmv_eur": 206, "cp_margin_pct": 15.8, "conv_pct": 1.31}, {"name": "NAPO Мед Комплекс", "zone": "Kharkiv - 602 District", "orders": 20, "gmv_eur": 190, "cp_margin_pct": 14.9, "conv_pct": 2.14}, {"name": "NAPO Бульвар Юр’єва", "zone": "Kharkiv - Slobidska", "orders": 17, "gmv_eur": 140, "cp_margin_pct": 14.8, "conv_pct": 1.21}, {"name": "NAPO Залютине", "zone": "Kharkiv - Kholodnohirska", "orders": 12, "gmv_eur": 117, "cp_margin_pct": 5.7, "conv_pct": 1.95}, {"name": "NAPO 602 Мікрорайон", "zone": "Kharkiv - 602 District", "orders": 6, "gmv_eur": 43, "cp_margin_pct": 14.4, "conv_pct": 1.42}]}, "NARESHTI ZP|Zaporizhia": {"brand": "NARESHTI ZP", "city": "Zaporizhia", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 349, "gmv_eur": 5067, "cp_margin_pct": 13.9, "conv_imp_to_order_pct": 4.34, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Нарешті", "zone": "Zaporizhzhia - Center", "orders": 349, "gmv_eur": 5067, "cp_margin_pct": 13.9, "conv_pct": 4.34}]}, "NASLEDNIKI|Dnipro": {"brand": "NASLEDNIKI", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 2, "delivered_orders": 317, "gmv_eur": 7411, "cp_margin_pct": 26.5, "conv_imp_to_order_pct": 1.26, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Nasledniki Калинова", "zone": "Dnipro - Industrialna ", "orders": 262, "gmv_eur": 6162, "cp_margin_pct": 27.0, "conv_pct": 1.6}, {"name": "Nasledniki Parkside", "zone": "Dnipro - Soborna", "orders": 55, "gmv_eur": 1249, "cp_margin_pct": 23.7, "conv_pct": 0.64}]}, "OBID TYT|Dnipro": {"brand": "OBID TYT", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 14, "gmv_eur": 210, "cp_margin_pct": 19.6, "conv_imp_to_order_pct": 0.54, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Обід Тут просп. Науки", "zone": "Dnipro - Soborna", "orders": 12, "gmv_eur": 173, "cp_margin_pct": 19.1, "conv_pct": 0.89}, {"name": "Обід Тут вул. Хороброго", "zone": "Dnipro - Center 2", "orders": 2, "gmv_eur": 37, "cp_margin_pct": 21.8, "conv_pct": 0.09}]}, "ONE GOGI|Dnipro": {"brand": "ONE GOGI", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 225, "gmv_eur": 4157, "cp_margin_pct": 26.7, "conv_imp_to_order_pct": 1.5, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "One Gogi Квітки Цісик", "zone": "Dnipro - Industrialna ", "orders": 115, "gmv_eur": 2160, "cp_margin_pct": 26.6, "conv_pct": 1.45}, {"name": "One Gogi Набережна Перемоги", "zone": "Dnipro - Soborna", "orders": 110, "gmv_eur": 1997, "cp_margin_pct": 26.7, "conv_pct": 1.55}]}, "ORIGINAL SUSHI BY #ARIZONA|Poltava": {"brand": "ORIGINAL SUSHI BY #ARIZONA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 14, "gmv_eur": 173, "cp_margin_pct": 15.0, "conv_imp_to_order_pct": 0.26, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Original sushi by #AriZona", "zone": "Poltava - Center", "orders": 14, "gmv_eur": 173, "cp_margin_pct": 15.0, "conv_pct": 0.26}]}, "PAKIMAO|Kharkiv": {"brand": "PAKIMAO", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 1, "gmv_eur": 25, "cp_margin_pct": 12.4, "conv_imp_to_order_pct": 0.06, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Pakimao вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 1, "gmv_eur": 25, "cp_margin_pct": 12.4, "conv_pct": 0.06}]}, "PANI KARTOPLA|Dnipro": {"brand": "PANI KARTOPLA", "city": "Dnipro", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 3, "delivered_orders": 17, "gmv_eur": 250, "cp_margin_pct": 19.1, "conv_imp_to_order_pct": 0.39, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Пані Картопля Святослава Хороброго", "zone": "Dnipro - Center 2", "orders": 6, "gmv_eur": 126, "cp_margin_pct": 23.5, "conv_pct": 0.4}, {"name": "Пані Картопля Науки пр-т", "zone": "Dnipro - Soborna", "orders": 8, "gmv_eur": 96, "cp_margin_pct": 16.5, "conv_pct": 0.58}, {"name": "Пані Картопля Дмитра Яворницького пр-т", "zone": "Dnipro - Center ", "orders": 3, "gmv_eur": 29, "cp_margin_pct": 8.6, "conv_pct": 0.16}]}, "PANI KARTOPLA|Lviv": {"brand": "PANI KARTOPLA", "city": "Lviv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 8, "gmv_eur": 133, "cp_margin_pct": 17.8, "conv_imp_to_order_pct": 0.46, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Пані Картопля Фурманська", "zone": "Lviv - Central Zone 1", "orders": 8, "gmv_eur": 133, "cp_margin_pct": 17.8, "conv_pct": 0.46}]}, "PINKMAN BAR|Kharkiv": {"brand": "PINKMAN BAR", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 6, "delivered_orders": 91, "gmv_eur": 1916, "cp_margin_pct": 7.3, "conv_imp_to_order_pct": 0.3, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Pinkman Bar вул. Нескорених", "zone": "Kharkiv - Pivnichna Saltivka", "orders": 20, "gmv_eur": 507, "cp_margin_pct": 7.5, "conv_pct": 0.41}, {"name": "Pinkman Bar вул.Сумська", "zone": "Kharkiv - Zhuravlivka ", "orders": 25, "gmv_eur": 431, "cp_margin_pct": 8.7, "conv_pct": 0.35}, {"name": "Pinkman Bar п-кт Григоренка", "zone": "Kharkiv - Slobidska", "orders": 26, "gmv_eur": 398, "cp_margin_pct": 8.1, "conv_pct": 0.42}, {"name": "Pinkman Bar пр-т Тракторобудівників", "zone": "Kharkiv - 602 District", "orders": 10, "gmv_eur": 321, "cp_margin_pct": 7.7, "conv_pct": 0.16}, {"name": "Pinkman Bar вул. Полтавський Шлях", "zone": "Kharkiv - Kholodnohirska", "orders": 6, "gmv_eur": 139, "cp_margin_pct": 7.2, "conv_pct": 0.12}, {"name": "Pinkman Bar пр-т Перемоги", "zone": "Kharkiv - Shevchenkivska ", "orders": 4, "gmv_eur": 119, "cp_margin_pct": -2.2, "conv_pct": 0.24}]}, "PIZZA CELENTANO|Dnipro": {"brand": "PIZZA CELENTANO", "city": "Dnipro", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 432, "gmv_eur": 5862, "cp_margin_pct": 13.8, "conv_imp_to_order_pct": 3.75, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Pizza Celentano Лесі Українки", "zone": "Dnipro - Center 2", "orders": 432, "gmv_eur": 5862, "cp_margin_pct": 13.8, "conv_pct": 3.75}]}, "PIZZA CELENTANO|Pavlohrad": {"brand": "PIZZA CELENTANO", "city": "Pavlohrad", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 2, "delivered_orders": 103, "gmv_eur": 1092, "cp_margin_pct": 10.3, "conv_imp_to_order_pct": 6.65, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Pizza Celentano Дніпровська", "zone": "Pavlohrad - Center", "orders": 69, "gmv_eur": 739, "cp_margin_pct": 9.7, "conv_pct": 6.47}, {"name": "Pizza Celentano Соборна", "zone": "Pavlohrad - Center", "orders": 34, "gmv_eur": 352, "cp_margin_pct": 11.6, "conv_pct": 6.9}]}, "PIZZA CELENTANO|Zaporizhia": {"brand": "PIZZA CELENTANO", "city": "Zaporizhia", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 192, "gmv_eur": 2464, "cp_margin_pct": 12.4, "conv_imp_to_order_pct": 3.0, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Pizza Celentano пр. Соборний", "zone": "Zaporizhzhia - Center", "orders": 192, "gmv_eur": 2464, "cp_margin_pct": 12.4, "conv_pct": 3.0}]}, "PRIMA PASTA|Poltava": {"brand": "PRIMA PASTA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 21, "gmv_eur": 231, "cp_margin_pct": 10.0, "conv_imp_to_order_pct": 0.95, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Prima Pasta", "zone": "Poltava - Center", "orders": 21, "gmv_eur": 231, "cp_margin_pct": 10.0, "conv_pct": 0.95}]}, "PURI CHVENI DN|Dnipro": {"brand": "PURI CHVENI DN", "city": "Dnipro", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 268, "gmv_eur": 5894, "cp_margin_pct": 16.5, "conv_imp_to_order_pct": 1.89, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Puri Chveni", "zone": "Dnipro - Center ", "orders": 268, "gmv_eur": 5894, "cp_margin_pct": 16.5, "conv_pct": 1.89}]}, "PURI CHVENI KH|Kharkiv": {"brand": "PURI CHVENI KH", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 176, "gmv_eur": 3425, "cp_margin_pct": 15.6, "conv_imp_to_order_pct": 2.04, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Puri Chveni вулиця Мироносицька, 52", "zone": "Kharkiv - Center", "orders": 176, "gmv_eur": 3425, "cp_margin_pct": 15.6, "conv_pct": 2.04}]}, "PURI CHVENI KR|Kryvyi Rih": {"brand": "PURI CHVENI KR", "city": "Kryvyi Rih", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 204, "gmv_eur": 3384, "cp_margin_pct": 14.7, "conv_imp_to_order_pct": 4.33, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Puri Chveni / Пурі Чвені просп. Миру", "zone": "Kryvyi Rih - Myru", "orders": 204, "gmv_eur": 3384, "cp_margin_pct": 14.7, "conv_pct": 4.33}]}, "SALAD DAY|Poltava": {"brand": "SALAD DAY", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 7, "gmv_eur": 91, "cp_margin_pct": 14.8, "conv_imp_to_order_pct": 0.26, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Salatoria", "zone": "Poltava - Center", "orders": 7, "gmv_eur": 91, "cp_margin_pct": 14.8, "conv_pct": 0.26}]}, "SALTIVSKYI CHEBUREK|Kharkiv": {"brand": "SALTIVSKYI CHEBUREK", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 120, "gmv_eur": 1695, "cp_margin_pct": 21.8, "conv_imp_to_order_pct": 1.58, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Салтівський чебурек", "zone": "Kharkiv - Saltivka", "orders": 120, "gmv_eur": 1695, "cp_margin_pct": 21.8, "conv_pct": 1.58}]}, "SAMA SUSHI|Kharkiv": {"brand": "SAMA SUSHI", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 2, "gmv_eur": 45, "cp_margin_pct": 24.3, "conv_imp_to_order_pct": 0.11, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sama Sushi вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 2, "gmv_eur": 45, "cp_margin_pct": 24.3, "conv_pct": 0.11}]}, "SANDWICH MARKET|Dnipro": {"brand": "SANDWICH MARKET", "city": "Dnipro", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 70, "gmv_eur": 829, "cp_margin_pct": 12.8, "conv_imp_to_order_pct": 4.74, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Сендвіч Маркет - Провулок Парусний", "zone": "Dnipro - Novokodatska ", "orders": 70, "gmv_eur": 829, "cp_margin_pct": 12.8, "conv_pct": 4.74}]}, "SANDWICH MARKET|Zaporizhia": {"brand": "SANDWICH MARKET", "city": "Zaporizhia", "product": "Smart Promotions", "reason": "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.", "is_top_brand": true, "locations_count": 4, "delivered_orders": 276, "gmv_eur": 3354, "cp_margin_pct": 9.4, "conv_imp_to_order_pct": 2.68, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Сендвіч Маркет (ТЦ Україна)", "zone": "Zaporizhzhia - Center", "orders": 122, "gmv_eur": 1500, "cp_margin_pct": 8.8, "conv_pct": 3.2}, {"name": "Сендвіч Маркет (Університетська)", "zone": "Zaporizhzhia - Center", "orders": 88, "gmv_eur": 1084, "cp_margin_pct": 8.9, "conv_pct": 2.28}, {"name": "Сендвіч Маркет Сталеварів", "zone": "Zaporizhzhia - Center", "orders": 34, "gmv_eur": 396, "cp_margin_pct": 12.1, "conv_pct": 2.68}, {"name": "Сендвіч Маркет (Маяковського)", "zone": "Zaporizhzhia - Center", "orders": 32, "gmv_eur": 374, "cp_margin_pct": 10.1, "conv_pct": 2.39}]}, "SHAURMA NA VUHILLI|Kryvyi Rih": {"brand": "SHAURMA NA VUHILLI", "city": "Kryvyi Rih", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 124, "gmv_eur": 1340, "cp_margin_pct": 13.4, "conv_imp_to_order_pct": 1.48, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Шаурма на вугіллі 95 квартал", "zone": "Kryvyi Rih - Myru", "orders": 49, "gmv_eur": 518, "cp_margin_pct": 17.0, "conv_pct": 1.66}, {"name": "Шаурма на вугіллі просп. Поштовий", "zone": "Kryvyi Rih - Myru", "orders": 39, "gmv_eur": 424, "cp_margin_pct": 14.4, "conv_pct": 1.6}, {"name": "Шаурма на вугіллі вул. Незалежності", "zone": "Kryvyi Rih - Soniacnyi", "orders": 36, "gmv_eur": 399, "cp_margin_pct": 7.5, "conv_pct": 1.2}]}, "SHAUROOM|Pavlohrad": {"brand": "SHAUROOM", "city": "Pavlohrad", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 92, "gmv_eur": 856, "cp_margin_pct": 11.6, "conv_imp_to_order_pct": 3.94, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "ШауRoom вул. Нова", "zone": "Pavlohrad - Center", "orders": 48, "gmv_eur": 428, "cp_margin_pct": 10.5, "conv_pct": 5.63}, {"name": "ШауRoom вул. Ганни Світличної", "zone": "Pavlohrad - Center", "orders": 32, "gmv_eur": 335, "cp_margin_pct": 12.3, "conv_pct": 3.64}, {"name": "ШауRoom вул. Івана Богуна", "zone": "Pavlohrad - Center", "orders": 12, "gmv_eur": 93, "cp_margin_pct": 13.9, "conv_pct": 1.82}]}, "SHAVA OT SHEFA|Poltava": {"brand": "SHAVA OT SHEFA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 38, "gmv_eur": 366, "cp_margin_pct": 4.8, "conv_imp_to_order_pct": 1.35, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Шава від Шефа", "zone": "Poltava - Center", "orders": 38, "gmv_eur": 366, "cp_margin_pct": 4.8, "conv_pct": 1.35}]}, "SHAVUCHA TEAM|Cherkasy": {"brand": "SHAVUCHA TEAM", "city": "Cherkasy", "product": "Smart Promotions", "reason": "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.", "is_top_brand": false, "locations_count": 3, "delivered_orders": 253, "gmv_eur": 2668, "cp_margin_pct": 14.8, "conv_imp_to_order_pct": 2.19, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Шавуха Team вул. Припортова", "zone": "Cherkasy - Mytnytsia Zone", "orders": 143, "gmv_eur": 1474, "cp_margin_pct": 15.0, "conv_pct": 3.14}, {"name": "Шавуха Team вул. Хрещатик", "zone": "Cherkasy - Center Zone", "orders": 70, "gmv_eur": 776, "cp_margin_pct": 14.4, "conv_pct": 2.37}, {"name": "Шавуха street food вул. Смілянська", "zone": "Cherkasy - Center Zone", "orders": 40, "gmv_eur": 418, "cp_margin_pct": 14.9, "conv_pct": 0.98}]}, "SHO TUT|Cherkasy": {"brand": "SHO TUT", "city": "Cherkasy", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 237, "gmv_eur": 3422, "cp_margin_pct": 20.5, "conv_imp_to_order_pct": 1.75, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Шо тут? Володимира Великого", "zone": "Cherkasy - Center Zone", "orders": 149, "gmv_eur": 2110, "cp_margin_pct": 21.5, "conv_pct": 1.92}, {"name": "Шо тут? Юність", "zone": "Cherkasy - Center Zone", "orders": 88, "gmv_eur": 1312, "cp_margin_pct": 18.9, "conv_pct": 1.51}]}, "SMARTFOOD|Sumy": {"brand": "SMARTFOOD", "city": "Sumy", "product": "Smart Promotions", "reason": "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt дозволять масштабувати замовлення без надмірного навантаження на маржу.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 147, "gmv_eur": 1413, "cp_margin_pct": 12.5, "conv_imp_to_order_pct": 5.17, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Smart Food", "zone": "Sumy - Center", "orders": 147, "gmv_eur": 1413, "cp_margin_pct": 12.5, "conv_pct": 5.17}]}, "SOYA|Cherkasy": {"brand": "SOYA", "city": "Cherkasy", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": false, "locations_count": 3, "delivered_orders": 574, "gmv_eur": 9570, "cp_margin_pct": 14.5, "conv_imp_to_order_pct": 2.46, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Soya вул.Смілянська", "zone": "Cherkasy - Center Zone", "orders": 205, "gmv_eur": 3411, "cp_margin_pct": 14.2, "conv_pct": 2.41}, {"name": "SOYA depot", "zone": "Cherkasy - Mytnytsia Zone", "orders": 208, "gmv_eur": 3328, "cp_margin_pct": 14.7, "conv_pct": 2.59}, {"name": "SOYA spicy", "zone": "Cherkasy - Kazbet Zone", "orders": 161, "gmv_eur": 2832, "cp_margin_pct": 14.7, "conv_pct": 2.38}]}, "SPRAGA|Cherkasy": {"brand": "SPRAGA", "city": "Cherkasy", "product": "Smart Promotions", "reason": "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.", "is_top_brand": false, "locations_count": 10, "delivered_orders": 431, "gmv_eur": 3925, "cp_margin_pct": 3.2, "conv_imp_to_order_pct": 2.44, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Магазин Spraga Шевченко 112", "zone": "Cherkasy - Kazbet Zone", "orders": 134, "gmv_eur": 1314, "cp_margin_pct": 2.5, "conv_pct": 1.66}, {"name": "Магазин Spraga Хіміки 30/1", "zone": "Ckerkasy - Himselyshche Zone", "orders": 68, "gmv_eur": 541, "cp_margin_pct": 2.3, "conv_pct": 5.86}, {"name": "Магазин Spraga Нарбутівська 186", "zone": "Ckerkasy - Himselyshche Zone", "orders": 56, "gmv_eur": 464, "cp_margin_pct": 3.5, "conv_pct": 4.15}, {"name": "Магазин Spraga Козацька 1", "zone": "Cherkasy - Mytnytsia Zone", "orders": 49, "gmv_eur": 460, "cp_margin_pct": 4.9, "conv_pct": 2.11}, {"name": "Магазин Spraga Чорновола 165", "zone": "Ckerkasy - Himselyshche Zone", "orders": 49, "gmv_eur": 435, "cp_margin_pct": 4.5, "conv_pct": 4.44}, {"name": "Магазин Spraga Тараскова 22", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 42, "gmv_eur": 357, "cp_margin_pct": 4.0, "conv_pct": 2.46}, {"name": "Магазин Spraga Онопрієнко 2", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 17, "gmv_eur": 199, "cp_margin_pct": 2.9, "conv_pct": 2.51}, {"name": "Магазин Spraga Кобзарська, 1", "zone": "Cherkasy - Mytnytsia Zone", "orders": 9, "gmv_eur": 74, "cp_margin_pct": -11.0, "conv_pct": 1.75}, {"name": "Магазин Spraga вул.Вячеслава Чорновола", "zone": "Ckerkasy - Himselyshche Zone", "orders": 4, "gmv_eur": 48, "cp_margin_pct": 15.4, "conv_pct": 0.72}, {"name": "Магазин Spraga Володимира Великого 24/7", "zone": "Cherkasy - Center Zone", "orders": 3, "gmv_eur": 34, "cp_margin_pct": 8.2, "conv_pct": 0.59}]}, "STAR TIMES|Kharkiv": {"brand": "STAR TIMES", "city": "Kharkiv", "product": "Smart Promotions", "reason": "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.", "is_top_brand": false, "locations_count": 2, "delivered_orders": 203, "gmv_eur": 2333, "cp_margin_pct": 12.2, "conv_imp_to_order_pct": 1.74, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "STAR Times Сумська", "zone": "Kharkiv - Center", "orders": 154, "gmv_eur": 1827, "cp_margin_pct": 14.8, "conv_pct": 1.94}, {"name": "STAR Times Героїв Праці", "zone": "Kharkiv - Pivnichna Saltivka", "orders": 49, "gmv_eur": 506, "cp_margin_pct": 3.0, "conv_pct": 1.32}]}, "STREET PIZZA|Cherkasy": {"brand": "STREET PIZZA", "city": "Cherkasy", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": false, "locations_count": 7, "delivered_orders": 423, "gmv_eur": 4921, "cp_margin_pct": 19.3, "conv_imp_to_order_pct": 1.95, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Street pizza бул. Шевченка 367", "zone": "Cherkasy - Mytnytsia Zone", "orders": 109, "gmv_eur": 1271, "cp_margin_pct": 20.7, "conv_pct": 2.33}, {"name": "Street pizza пр-т 30-річчя перемоги", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 93, "gmv_eur": 1129, "cp_margin_pct": 19.6, "conv_pct": 1.87}, {"name": "Street pizza вул. Козацька", "zone": "Cherkasy - Mytnytsia Zone", "orders": 50, "gmv_eur": 637, "cp_margin_pct": 22.1, "conv_pct": 1.68}, {"name": "Street pizza вул. Чорновола", "zone": "Ckerkasy - Himselyshche Zone", "orders": 46, "gmv_eur": 532, "cp_margin_pct": 15.2, "conv_pct": 1.77}, {"name": "Street pizza бул. Шевченка 134", "zone": "Cherkasy - Kazbet Zone", "orders": 50, "gmv_eur": 521, "cp_margin_pct": 18.5, "conv_pct": 2.39}, {"name": "Street pizza вул. Грушевського", "zone": "Cherkasy - Center Zone", "orders": 47, "gmv_eur": 490, "cp_margin_pct": 17.4, "conv_pct": 2.16}, {"name": "Street pizza вул. Смілянська", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 28, "gmv_eur": 339, "cp_margin_pct": 18.1, "conv_pct": 1.3}]}, "SUSHI CK UA|Cherkasy": {"brand": "SUSHI CK UA", "city": "Cherkasy", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 10, "gmv_eur": 163, "cp_margin_pct": 18.3, "conv_imp_to_order_pct": 0.59, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sushi.ck.ua", "zone": "Cherkasy - Mytnytsia Zone", "orders": 10, "gmv_eur": 163, "cp_margin_pct": 18.3, "conv_pct": 0.59}]}, "SUSHI LA PIEZZA|Sumy": {"brand": "SUSHI LA PIEZZA", "city": "Sumy", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 176, "gmv_eur": 2206, "cp_margin_pct": 8.4, "conv_imp_to_order_pct": 5.5, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sushi&pizza by La Spezia", "zone": "Sumy - Center", "orders": 176, "gmv_eur": 2206, "cp_margin_pct": 8.4, "conv_pct": 5.5}]}, "SUSHI MAKI MAKI|Kharkiv": {"brand": "SUSHI MAKI MAKI", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_imp_to_order_pct": 0.0, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sushi Maki Maki вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_pct": 0.0}]}, "SUSHI TOKIO|Kharkiv": {"brand": "SUSHI TOKIO", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 7, "gmv_eur": 139, "cp_margin_pct": 19.0, "conv_imp_to_order_pct": 0.31, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sushi Tokio / Суші Токіо вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 7, "gmv_eur": 139, "cp_margin_pct": 19.0, "conv_pct": 0.31}]}, "SUSHI USHI|Kharkiv": {"brand": "SUSHI USHI", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 6, "gmv_eur": 178, "cp_margin_pct": 19.2, "conv_imp_to_order_pct": 0.29, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Sushi Ushi / Суші Уші  вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 6, "gmv_eur": 178, "cp_margin_pct": 19.2, "conv_pct": 0.29}]}, "TERASA TERYTORIIA MIASA|Poltava": {"brand": "TERASA TERYTORIIA MIASA", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 60, "gmv_eur": 1105, "cp_margin_pct": 20.6, "conv_imp_to_order_pct": 0.71, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Тераса Територiя М'яса", "zone": "Poltava - Center", "orders": 60, "gmv_eur": 1105, "cp_margin_pct": 20.6, "conv_pct": 0.71}]}, "TOOMAN DELIVERY|Cherkasy": {"brand": "TOOMAN DELIVERY", "city": "Cherkasy", "product": "Sponsored Listing → Smart Promotions", "reason": "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 260, "gmv_eur": 4315, "cp_margin_pct": 23.5, "conv_imp_to_order_pct": 1.81, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Tooman Delivery", "zone": "Cherkasy - Center Zone", "orders": 260, "gmv_eur": 4315, "cp_margin_pct": 23.5, "conv_pct": 1.81}]}, "TRATTORIA|Kharkiv": {"brand": "TRATTORIA", "city": "Kharkiv", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": true, "locations_count": 3, "delivered_orders": 475, "gmv_eur": 8789, "cp_margin_pct": 8.6, "conv_imp_to_order_pct": 2.32, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Trattoria Sicilia", "zone": "Kharkiv - Shevchenkivska ", "orders": 204, "gmv_eur": 4071, "cp_margin_pct": 9.8, "conv_pct": 2.22}, {"name": "Trattoria Lombardia", "zone": "Kharkiv - Shevchenkivska ", "orders": 182, "gmv_eur": 3164, "cp_margin_pct": 7.5, "conv_pct": 2.53}, {"name": "Trattoria Sardinia", "zone": "Kharkiv - Shevchenkivska ", "orders": 89, "gmv_eur": 1554, "cp_margin_pct": 7.9, "conv_pct": 2.18}]}, "VAM DONER?|Cherkasy": {"brand": "VAM DONER?", "city": "Cherkasy", "product": "Smart Promotions + Sponsored Listing", "reason": "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) та залучення когорт (Розумні акції) для максимального ефекту.", "is_top_brand": false, "locations_count": 5, "delivered_orders": 551, "gmv_eur": 6083, "cp_margin_pct": 13.4, "conv_imp_to_order_pct": 2.58, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "ВАМ ДОНЕР? бул. Шевченка", "zone": "Cherkasy - Mytnytsia Zone", "orders": 215, "gmv_eur": 2452, "cp_margin_pct": 14.8, "conv_pct": 3.17}, {"name": "ВАМ ДОНЕР? вул. Хрещатик", "zone": "Cherkasy - Center Zone", "orders": 128, "gmv_eur": 1459, "cp_margin_pct": 12.5, "conv_pct": 2.48}, {"name": "ВАМ ДОНЕР? просп. Хіміків", "zone": "Ckerkasy - Himselyshche Zone", "orders": 93, "gmv_eur": 1032, "cp_margin_pct": 12.3, "conv_pct": 2.31}, {"name": "ВАМ ДОНЕР? Тараскова", "zone": "Cherkasy - Pivdenno-Zahidnyi Zone", "orders": 74, "gmv_eur": 756, "cp_margin_pct": 12.7, "conv_pct": 2.49}, {"name": "ВАМ ДОНЕР? вул.Пастерівська", "zone": "Ckerkasy - Himselyshche Zone", "orders": 41, "gmv_eur": 383, "cp_margin_pct": 12.4, "conv_pct": 1.76}]}, "VERDE BY LA SPEZIA|Sumy": {"brand": "VERDE BY LA SPEZIA", "city": "Sumy", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 50, "gmv_eur": 719, "cp_margin_pct": 4.2, "conv_imp_to_order_pct": 4.32, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Verde by La Spezia", "zone": "Sumy - Center", "orders": 50, "gmv_eur": 719, "cp_margin_pct": 4.2, "conv_pct": 4.32}]}, "VERTEP|Poltava": {"brand": "VERTEP", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 119, "gmv_eur": 1650, "cp_margin_pct": 20.0, "conv_imp_to_order_pct": 1.38, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Ресторація «Вертеп»", "zone": "Poltava - Center", "orders": 119, "gmv_eur": 1650, "cp_margin_pct": 20.0, "conv_pct": 1.38}]}, "VIVA OLIVA|Kremenchuk": {"brand": "VIVA OLIVA", "city": "Kremenchuk", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": true, "locations_count": 1, "delivered_orders": 42, "gmv_eur": 502, "cp_margin_pct": 21.1, "conv_imp_to_order_pct": 2.23, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Viva Oliva", "zone": "Kremenchuk - Center", "orders": 42, "gmv_eur": 502, "cp_margin_pct": 21.1, "conv_pct": 2.23}]}, "VOKA VOKA|Kharkiv": {"brand": "VOKA VOKA", "city": "Kharkiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 7, "gmv_eur": 134, "cp_margin_pct": 14.1, "conv_imp_to_order_pct": 0.27, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Voka Voka вул.Квітки-Основьяненко", "zone": "Kharkiv - Center", "orders": 7, "gmv_eur": 134, "cp_margin_pct": 14.1, "conv_pct": 0.27}]}, "WOW GRILL|Zaporizhia": {"brand": "WOW GRILL", "city": "Zaporizhia", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 99, "gmv_eur": 1220, "cp_margin_pct": 12.9, "conv_imp_to_order_pct": 2.36, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "WOW GRILL", "zone": "Zaporizhzhia - Center", "orders": 99, "gmv_eur": 1220, "cp_margin_pct": 12.9, "conv_pct": 2.36}]}, "ZOLOTIY DRAKON|Poltava": {"brand": "ZOLOTIY DRAKON", "city": "Poltava", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 22, "gmv_eur": 430, "cp_margin_pct": 11.8, "conv_imp_to_order_pct": 0.31, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": [{"name": "Золотий дракон", "zone": "Poltava - Center", "orders": 22, "gmv_eur": 430, "cp_margin_pct": 11.8, "conv_pct": 0.31}]}, "nan|Kyiv": {"brand": "nan", "city": "Kyiv", "product": "Sponsored Listing", "reason": "Середній обсяг — почніть з Sponsored Listing для підвищення показів у пошуку, далі додайте Розумні акції за результатами.", "is_top_brand": false, "locations_count": 1, "delivered_orders": 0, "gmv_eur": 0, "cp_margin_pct": null, "conv_imp_to_order_pct": 0.0, "period_start": "2026-05-11", "period_end": "2026-06-07", "locations": []}};
+const AM_NAME = "Marharyta Zhytnyk";
+
+function fmtEur(n) {
+  if (n == null || isNaN(n)) return '—';
+  return '€' + Math.round(n).toLocaleString('uk-UA');
+}
+
+function fmtPct(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toFixed(1) + '%';
+}
+
+function productDetails(product) {
+  if (product.includes('Smart Promotions') && product.includes('Sponsored')) {
+    return (
+      'Пропоную комбінований підхід:\n' +
+      '• Sponsored Listing — платне просування (125 грн/день) та/або просування у пошуку (100 грн/день) для більшої видимості.\n' +
+      '• Smart Promotions (Розумні акції) — співінвестиція 50/50 з Bolt для когорт активних, нових та «давно не замовляли» клієнтів.'
+    );
+  }
+  if (product.includes('Smart Promotions')) {
+    return (
+      'Пропоную підключити Smart Promotions (Розумні акції) на Порталі для Ресторанів:\n' +
+      '• Для активних клієнтів: −25% на меню + безкоштовна доставка до 70 грн (спліт 50/50 з Bolt).\n' +
+      '• Для нових та «давно не замовляли»: −30% + доставка до 70 грн (також 50/50).\n' +
+      '• Для клієнтів із великим чеком: −10% на меню (100% за рахунок партнера) — за бажанням.'
+    );
+  }
+  if (product.includes('Sponsored Listing')) {
+    return (
+      'Пропоную підключити Sponsored Listing (спонсоровані оголошення):\n' +
+      '• Платне просування — 125 грн/день (преміум-розміщення).\n' +
+      '• Просування у пошуку — 100 грн/день.\n' +
+      '• Знижка для гостя не обовʼязкова — це інструмент для зростання показів і замовлень.'
+    );
+  }
+  if (product.includes('операційні')) {
+    return (
+      'Перед масштабним промо рекомендую стабілізувати операційні показники (доступність, acceptance rate). ' +
+      'Після покращення — тестове Sponsored Listing для контрольованого зростання видимості.'
+    );
+  }
+  return (
+    'Пропоную почати з Sponsored Listing для видимості, далі — Smart Promotions для залучення клієнтських когорт.'
+  );
+}
+
+function buildRecommendationText(d) {
+  const locs = d.locations || [];
+  const locWord = d.locations_count === 1 ? 'локацію' : 'локації';
+  const lines = [];
+
+  lines.push('Вітаю!');
+  lines.push('');
+  lines.push('Це ' + AM_NAME + ', ваш акаунт-менеджер Bolt Food.');
+  lines.push('');
+  lines.push(
+    'Я проаналізувала показники вашого бренду **' + d.brand + '** (' + d.city + ') ' +
+    'за період ' + d.period_start + ' — ' + d.period_end + ' ' +
+    'і хочу запропонувати підключити **' + d.product + '**.'
+  );
+  lines.push('');
+  lines.push('**Чому саме зараз:**');
+  lines.push('• Доставлено замовлень: ' + d.delivered_orders.toLocaleString('uk-UA'));
+  lines.push('• GMV (до знижок): ' + fmtEur(d.gmv_eur));
+  if (d.cp_margin_pct != null) lines.push('• CP L2 маржа: ' + fmtPct(d.cp_margin_pct));
+  lines.push('• Конверсія (показ → замовлення): ' + fmtPct(d.conv_imp_to_order_pct));
+  lines.push('• ' + d.reason);
+  lines.push('');
+  lines.push('**На яких ' + locWord + ' рекомендую підключити** (' + locs.length + '):');
+
+  locs.forEach((loc, i) => {
+    let line = (i + 1) + '. ' + loc.name;
+    if (loc.zone) line += ' (' + loc.zone + ')';
+    const stats = [];
+    if (loc.orders) stats.push(loc.orders.toLocaleString('uk-UA') + ' зам.');
+    if (loc.gmv_eur) stats.push(fmtEur(loc.gmv_eur) + ' GMV');
+    if (loc.conv_pct != null) stats.push('conv. ' + fmtPct(loc.conv_pct));
+    if (stats.length) line += ' — ' + stats.join(', ');
+    lines.push(line);
+  });
+
+  if (locs.length > 1) {
+    lines.push('');
+    lines.push(
+      'Якщо у вас кілька точок, можемо стартувати з найсильнішої за GMV — «' +
+      locs[0].name + '» — і масштабувати на решту після перших результатів.'
+    );
+  }
+
+  lines.push('');
+  lines.push('**Що саме пропоную:**');
+  lines.push(productDetails(d.product));
+  lines.push('');
+  lines.push(
+    'Я допоможу з налаштуванням у Partner Portal (food.bolt.eu/partner) ' +
+    'та підберу оптимальний бюджет під ваші цілі.'
+  );
+  lines.push('');
+  lines.push('Буду рада обговорити деталі на короткому дзвінку або в месенджері.');
+  lines.push('');
+  lines.push('З повагою,');
+  lines.push(AM_NAME);
+  lines.push('Account Manager · Bolt Food Ukraine');
+
+  return lines.join('\n').replace(/\*\*/g, '');
+}
+
+function openRecommendation(key) {
+  const d = BRAND_DATA[key];
+  if (!d) { alert('Дані для цього бренду не знайдено'); return; }
+  document.getElementById('modalTitle').textContent =
+    'Рекомендація: ' + d.brand + ' · ' + d.city;
+  document.getElementById('modalText').value = buildRecommendationText(d);
+  document.getElementById('btnCopy').textContent = '📋 Скопіювати текст';
+  document.getElementById('btnCopy').classList.remove('copied');
+  document.getElementById('recModal').classList.add('open');
+}
+
+function closeRecommendation() {
+  document.getElementById('recModal').classList.remove('open');
+}
+
+function copyRecommendation() {
+  const ta = document.getElementById('modalText');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = '✓ Скопійовано';
+    btn.classList.add('copied');
+  }).catch(() => {
+    document.execCommand('copy');
+    document.getElementById('btnCopy').textContent = '✓ Скопійовано';
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeRecommendation();
+});
+</script>
 </body>
 </html>
