@@ -374,10 +374,10 @@ def build_brand_payload(
 
 
 def send_rec_button(key: str) -> str:
-    safe_key = json.dumps(key, ensure_ascii=False)
+    arg = json.dumps(key, ensure_ascii=False)
     return (
         f'<button type="button" class="btn-send-rec" '
-        f'onclick="openRecommendation({safe_key})">'
+        f"onclick='openRecommendation({arg})'>"
         f"📨 Надіслати рекомендацію підключення</button>"
     )
 
