@@ -142,6 +142,8 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
             SUM(f.delivered_orders_count) AS delivered_orders,
             SUM(f.total_gmv_before_discounts_eur) AS gmv_eur,
             SUM(f.total_contribution_profit_eur) AS cp_eur,
+            SUM(f.total_provider_price_before_discounts) AS gross_uah,
+            SUM(f.total_provider_price_after_discounts) AS net_uah,
             CASE
                 WHEN SUM(f.total_gmv_before_discounts_eur) > 0
                 THEN SUM(f.total_contribution_profit_eur)
@@ -167,6 +169,8 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
         COALESCE(m.delivered_orders, 0) AS delivered_orders,
         COALESCE(m.gmv_eur, 0) AS gmv_eur,
         COALESCE(m.cp_eur, 0) AS cp_eur,
+        COALESCE(m.gross_uah, 0) AS gross_uah,
+        COALESCE(m.net_uah, 0) AS net_uah,
         m.cp_margin_pct,
         COALESCE(m.impressions, 0) AS impressions,
         ROUND(
@@ -184,8 +188,8 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
     df = _exec_sql(sql)
     numeric_cols = [
         "is_top_brand", "has_smart_promotion", "has_sponsored_listing",
-        "delivered_orders", "gmv_eur", "cp_eur", "cp_margin_pct",
-        "impressions", "conv_imp_to_order_pct",
+        "delivered_orders", "gmv_eur", "cp_eur", "gross_uah", "net_uah",
+        "cp_margin_pct", "impressions", "conv_imp_to_order_pct",
     ]
     for col in numeric_cols:
         if col in df.columns:
@@ -199,6 +203,8 @@ def aggregate_brands(df: pd.DataFrame) -> pd.DataFrame:
     for (brand, city), grp in df.groupby(["brand_name", "city_name"], dropna=False):
         gmv = grp["gmv_eur"].sum()
         cp = grp["cp_eur"].sum()
+        gross_uah = grp["gross_uah"].sum()
+        net_uah = grp["net_uah"].sum()
         orders = grp["delivered_orders"].sum()
         impressions = grp["impressions"].sum()
         order_sessions = (
@@ -217,6 +223,8 @@ def aggregate_brands(df: pd.DataFrame) -> pd.DataFrame:
             "delivered_orders": orders,
             "gmv_eur": gmv,
             "cp_eur": cp,
+            "gross_uah": gross_uah,
+            "net_uah": net_uah,
             "cp_margin_pct": (cp / gmv * 100) if gmv > 0 else None,
             "impressions": impressions,
             "conv_imp_to_order_pct": round(conv, 2),
@@ -315,6 +323,10 @@ def brand_key(brand: str, city: str) -> str:
     return f"{brand}|{city}"
 
 
+def clean_zone(zone: str) -> str:
+    return str(zone or "").replace("\xa0", " ").strip()
+
+
 def build_brand_payload(
     df_loc: pd.DataFrame,
     df_brand: pd.DataFrame,
@@ -338,23 +350,23 @@ def build_brand_payload(
             & (df_loc["city_name"] == city)
             & (df_loc["has_smart_promotion"] == 0)
             & (df_loc["has_sponsored_listing"] == 0)
-        ].sort_values("gmv_eur", ascending=False)
+        ].sort_values("gross_uah", ascending=False)
 
         locations = []
         for _, loc in locs.iterrows():
-            cp = loc.get("cp_margin_pct")
             locations.append({
                 "name": str(loc.get("provider_name") or ""),
-                "zone": str(loc.get("zone_name") or ""),
+                "zone": clean_zone(str(loc.get("zone_name") or "")),
                 "orders": int(float(loc.get("delivered_orders") or 0)),
-                "gmv_eur": round(float(loc.get("gmv_eur") or 0)),
-                "cp_margin_pct": round(float(cp), 1) if cp is not None and pd.notna(cp) else None,
+                "gross_uah": round(float(loc.get("gross_uah") or 0)),
+                "net_uah": round(float(loc.get("net_uah") or 0)),
                 "conv_pct": round(float(loc.get("conv_imp_to_order_pct") or 0), 2)
                 if loc.get("conv_imp_to_order_pct") is not None and pd.notna(loc.get("conv_imp_to_order_pct"))
                 else None,
             })
 
-        cp = brow.get("cp_margin_pct")
+        gross_uah = round(float(locs["gross_uah"].sum() if not locs.empty else brow.get("gross_uah") or 0))
+        net_uah = round(float(locs["net_uah"].sum() if not locs.empty else brow.get("net_uah") or 0))
         payload[key] = {
             "brand": brand,
             "city": city,
@@ -363,8 +375,8 @@ def build_brand_payload(
             "is_top_brand": bool(int(brow.get("is_top_brand") or 0)),
             "locations_count": int(brow.get("locations_count") or len(locations)),
             "delivered_orders": int(float(brow.get("delivered_orders") or 0)),
-            "gmv_eur": round(float(brow.get("gmv_eur") or 0)),
-            "cp_margin_pct": round(float(cp), 1) if cp is not None and pd.notna(cp) else None,
+            "gross_uah": gross_uah,
+            "net_uah": net_uah,
             "conv_imp_to_order_pct": round(float(brow.get("conv_imp_to_order_pct") or 0), 2),
             "period_start": start_date,
             "period_end": end_date,
@@ -808,11 +820,10 @@ def build_html(
 
 <script>
 const BRAND_DATA = {brands_json};
-const AM_NAME = {json.dumps(ACCOUNT_MANAGER, ensure_ascii=False)};
 
-function fmtEur(n) {{
+function fmtUah(n) {{
   if (n == null || isNaN(n)) return '—';
-  return '€' + Math.round(n).toLocaleString('uk-UA');
+  return Math.round(n).toLocaleString('uk-UA') + ' грн';
 }}
 
 function fmtPct(n) {{
@@ -820,100 +831,106 @@ function fmtPct(n) {{
   return Number(n).toFixed(1) + '%';
 }}
 
-function productDetails(product) {{
-  if (product.includes('Smart Promotions') && product.includes('Sponsored')) {{
-    return (
-      'Пропоную комбінований підхід:\\n' +
-      '• Sponsored Listing — платне просування (125 грн/день) та/або просування у пошуку (100 грн/день) для більшої видимості.\\n' +
-      '• Smart Promotions (Розумні акції) — співінвестиція 50/50 з Bolt для когорт активних, нових та «давно не замовляли» клієнтів.'
+function offerLabel(d) {{
+  if (d.product && d.product.includes('операційні')) {{
+    return 'Sponsored Listing';
+  }}
+  return 'Smart Promotions + Sponsored Listing';
+}}
+
+function buildWhyReason(d) {{
+  const orders = d.delivered_orders || 0;
+  const conv = d.conv_imp_to_order_pct || 0;
+  const gross = d.gross_uah || 0;
+  const parts = [];
+
+  if (orders >= 400 || gross >= 400000) {{
+    parts.push(
+      'Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) ' +
+      'та залучення когорт (Розумні акції) для максимального ефекту.'
     );
   }}
-  if (product.includes('Smart Promotions')) {{
-    return (
-      'Пропоную підключити Smart Promotions (Розумні акції) на Порталі для Ресторанів:\\n' +
-      '• Для активних клієнтів: −25% на меню + безкоштовна доставка до 70 грн (спліт 50/50 з Bolt).\\n' +
-      '• Для нових та «давно не замовляли»: −30% + доставка до 70 грн (також 50/50).\\n' +
-      '• Для клієнтів із великим чеком: −10% на меню (100% за рахунок партнера) — за бажанням.'
+  if (conv < 2.5) {{
+    parts.push(
+      'Конверсія з показів у замовлення нижча за потенціал — Sponsored Listing підсилить видимість ' +
+      'у пошуку та на головному екрані, а Smart Promotions допоможуть перетворити покази на замовлення.'
+    );
+  }} else if (conv >= 3) {{
+    parts.push(
+      'Сильна конверсія показує, що гості вже обирають вас — Smart Promotions зі співінвестом Bolt ' +
+      'дозволять масштабувати цей попит, а Sponsored Listing додасть нових клієнтів у воронку.'
+    );
+  }} else {{
+    parts.push(
+      'Стабільний потік замовлень — поєднання Sponsored Listing та Розумних акцій допоможе ' +
+      'наростити обсяг без різкого збільшення витрат з вашого боку.'
     );
   }}
-  if (product.includes('Sponsored Listing')) {{
-    return (
-      'Пропоную підключити Sponsored Listing (спонсоровані оголошення):\\n' +
-      '• Платне просування — 125 грн/день (преміум-розміщення).\\n' +
-      '• Просування у пошуку — 100 грн/день.\\n' +
-      '• Знижка для гостя не обовʼязкова — це інструмент для зростання показів і замовлень.'
+  if (d.net_uah && d.gross_uah && d.net_uah / d.gross_uah >= 0.85) {{
+    parts.push(
+      'Високий чистий дохід відносно валового — є простір для контрольованого промо ' +
+      'з позитивним впливом на підсумковий результат.'
     );
   }}
-  if (product.includes('операційні')) {{
-    return (
-      'Перед масштабним промо рекомендую стабілізувати операційні показники (доступність, acceptance rate). ' +
-      'Після покращення — тестове Sponsored Listing для контрольованого зростання видимості.'
-    );
-  }}
-  return (
-    'Пропоную почати з Sponsored Listing для видимості, далі — Smart Promotions для залучення клієнтських когорт.'
-  );
+  return parts.join(' ');
+}}
+
+function locLabel(loc, city) {{
+  const zone = (loc.zone || '').trim();
+  if (zone) return loc.name + ' (' + zone + ')';
+  return loc.name + ' (' + city + ')';
+}}
+
+function productOfferBlock() {{
+  return [
+    'Пропоную комбінований підхід:',
+    '• Sponsored Listing — платне просування, зайдіть на портал для ресторанів, оберіть вкладку промоакції та оберіть Налаштувати інші акції та блок Запусти платне просування для більшої видимості.',
+    '• Smart Promotions (Розумні акції) — співінвестиція 50/50 з Bolt для когорт активних, нових та «давно не замовляли» клієнтів, запускаються теж на порталі в розділі промоакції - перший блок у розділі Розумні акції.',
+  ];
 }}
 
 function buildRecommendationText(d) {{
   const locs = d.locations || [];
-  const locWord = d.locations_count === 1 ? 'локацію' : 'локації';
   const lines = [];
 
   lines.push('Вітаю!');
   lines.push('');
-  lines.push('Це ' + AM_NAME + ', ваш акаунт-менеджер Bolt Food.');
-  lines.push('');
   lines.push(
-    'Я проаналізувала показники вашого бренду **' + d.brand + '** (' + d.city + ') ' +
-    'за період ' + d.period_start + ' — ' + d.period_end + ' ' +
-    'і хочу запропонувати підключити **' + d.product + '**.'
+    'Переглянула показники вашого бренду ' + d.brand + ' (' + d.city + ') ' +
+    'за період ' + d.period_start + ' — ' + d.period_end +
+    ' і хочу запропонувати підключити ' + offerLabel(d) + '.'
   );
   lines.push('');
-  lines.push('**Чому саме зараз:**');
+  lines.push('Чому саме зараз:');
   lines.push('• Доставлено замовлень: ' + d.delivered_orders.toLocaleString('uk-UA'));
-  lines.push('• GMV (до знижок): ' + fmtEur(d.gmv_eur));
-  if (d.cp_margin_pct != null) lines.push('• CP L2 маржа: ' + fmtPct(d.cp_margin_pct));
+  lines.push('• Валовий дохід: ' + fmtUah(d.gross_uah));
+  lines.push('• Чистий прибуток: ' + fmtUah(d.net_uah));
   lines.push('• Конверсія (показ → замовлення): ' + fmtPct(d.conv_imp_to_order_pct));
-  lines.push('• ' + d.reason);
+  lines.push('• ' + buildWhyReason(d));
   lines.push('');
-  lines.push('**На яких ' + locWord + ' рекомендую підключити** (' + locs.length + '):');
+  lines.push('На яких локації рекомендую підключити (' + locs.length + '):');
 
   locs.forEach((loc, i) => {{
-    let line = (i + 1) + '. ' + loc.name;
-    if (loc.zone) line += ' (' + loc.zone + ')';
-    const stats = [];
-    if (loc.orders) stats.push(loc.orders.toLocaleString('uk-UA') + ' зам.');
-    if (loc.gmv_eur) stats.push(fmtEur(loc.gmv_eur) + ' GMV');
+    const stats = [loc.orders.toLocaleString('uk-UA') + ' зам.', fmtUah(loc.gross_uah)];
     if (loc.conv_pct != null) stats.push('conv. ' + fmtPct(loc.conv_pct));
-    if (stats.length) line += ' — ' + stats.join(', ');
-    lines.push(line);
+    lines.push((i + 1) + '. ' + locLabel(loc, d.city) + ' — ' + stats.join(', '));
   }});
 
   if (locs.length > 1) {{
     lines.push('');
     lines.push(
-      'Якщо у вас кілька точок, можемо стартувати з найсильнішої за GMV — «' +
+      'Якщо у вас кілька точок, можемо стартувати з найсильнішої за Доходом — «' +
       locs[0].name + '» — і масштабувати на решту після перших результатів.'
     );
   }}
 
   lines.push('');
-  lines.push('**Що саме пропоную:**');
-  lines.push(productDetails(d.product));
+  lines.push('Що саме пропоную:');
+  productOfferBlock().forEach(line => lines.push(line));
   lines.push('');
-  lines.push(
-    'Я допоможу з налаштуванням у Partner Portal (food.bolt.eu/partner) ' +
-    'та підберу оптимальний бюджет під ваші цілі.'
-  );
-  lines.push('');
-  lines.push('Буду рада обговорити деталі на короткому дзвінку або в месенджері.');
-  lines.push('');
-  lines.push('З повагою,');
-  lines.push(AM_NAME);
-  lines.push('Account Manager · Bolt Food Ukraine');
+  lines.push('Буду рада відповісти на питання та допомогти з підключенням');
 
-  return lines.join('\\n').replace(/\\*\\*/g, '');
+  return lines.join('\\n');
 }}
 
 function openRecommendation(key) {{
