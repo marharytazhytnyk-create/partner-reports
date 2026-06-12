@@ -16,6 +16,7 @@ import sys
 import time
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Optional, Tuple
 
 import pandas as pd
 import requests
@@ -30,6 +31,9 @@ COUNTRY_CODE = "ua"
 REPORT_DATE = date.today().isoformat()
 OUTPUT_FILE = "Потенційне_підключення_звіт.html"
 TOP_RECOMMENDATIONS = 20
+TOP_SL_RECOMMENDATIONS = 20
+# Мінімальний прогнозований ROAS для рекомендації Sponsored Listing
+SL_ROAS_THRESHOLD = 3.0
 
 
 def get_token() -> str:
@@ -151,9 +155,24 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
                 ELSE NULL
             END AS cp_margin_pct,
             SUM(f.provider_impressions_sessions_count) AS impressions,
-            SUM(f.provider_order_placed_sessions_count) AS order_sessions
+            SUM(f.provider_order_placed_sessions_count) AS order_sessions,
+            AVG(f.provider_active_rate_value) AS provider_active_rate
         FROM ng_delivery_spark.fact_provider_weekly f
         WHERE CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
+        GROUP BY f.provider_id
+    ),
+    sl_metrics AS (
+        SELECT
+            f.provider_id,
+            SUM(f.sponsored_listing_duration_hours) AS sl_duration_hours,
+            SUM(
+                COALESCE(f.sponsored_listing_attributed_gmv_share_value, 0)
+                * COALESCE(f.total_gmv_before_discounts_eur, 0)
+            ) AS sl_attributed_gmv_eur,
+            SUM(COALESCE(f.total_portal_campaign_spend_provider_eur, 0)) AS sl_portal_spend_eur
+        FROM ng_delivery_spark.fact_provider_weekly f
+        WHERE CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
+          AND COALESCE(f.sponsored_listing_duration_hours, 0) > 0
         GROUP BY f.provider_id
     )
     SELECT
@@ -177,11 +196,16 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
             COALESCE(m.order_sessions, 0) * 100.0
             / NULLIF(COALESCE(m.impressions, 0), 0),
             2
-        ) AS conv_imp_to_order_pct
+        ) AS conv_imp_to_order_pct,
+        ROUND(COALESCE(m.provider_active_rate, 0) * 100, 1) AS provider_active_rate_pct,
+        COALESCE(sl_m.sl_attributed_gmv_eur, 0) AS sl_attributed_gmv_eur,
+        COALESCE(sl_m.sl_portal_spend_eur, 0) AS sl_portal_spend_eur,
+        COALESCE(sl_m.sl_duration_hours, 0) AS sl_duration_hours
     FROM portfolio p
     LEFT JOIN smart_active s ON p.provider_id = s.provider_id
     LEFT JOIN sl_active sl ON p.provider_id = sl.provider_id
     LEFT JOIN metrics m ON p.provider_id = m.provider_id
+    LEFT JOIN sl_metrics sl_m ON p.provider_id = sl_m.provider_id
     ORDER BY p.city_name, p.brand_name, p.provider_name
     """
     print(f"Fetching data ({start_date} — {end_date})…")
@@ -190,6 +214,8 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
         "is_top_brand", "has_smart_promotion", "has_sponsored_listing",
         "delivered_orders", "gmv_eur", "cp_eur", "gross_uah", "net_uah",
         "cp_margin_pct", "impressions", "conv_imp_to_order_pct",
+        "provider_active_rate_pct", "sl_attributed_gmv_eur", "sl_portal_spend_eur",
+        "sl_duration_hours",
     ]
     for col in numeric_cols:
         if col in df.columns:
@@ -211,13 +237,19 @@ def aggregate_brands(df: pd.DataFrame) -> pd.DataFrame:
             grp["conv_imp_to_order_pct"].fillna(0) * grp["impressions"].fillna(0) / 100
         ).sum()
         conv = (order_sessions * 100 / impressions) if impressions > 0 else 0
+        loc_count = len(grp)
+        sl_attr_gmv = grp["sl_attributed_gmv_eur"].sum()
+        sl_spend = grp["sl_portal_spend_eur"].sum()
+        active_rate = grp["provider_active_rate_pct"].mean()
         rows.append({
             "brand_name": brand,
             "city_name": city,
             "business_segment_v2": grp["business_segment_v2"].dropna().iloc[0]
             if grp["business_segment_v2"].notna().any() else "",
             "is_top_brand": int(grp["is_top_brand"].max() or 0),
-            "locations_count": len(grp),
+            "locations_count": loc_count,
+            "smart_promo_locations": int((grp["has_smart_promotion"] == 1).sum()),
+            "sl_locations": int((grp["has_sponsored_listing"] == 1).sum()),
             "has_smart_promotion": int(grp["has_smart_promotion"].max() or 0),
             "has_sponsored_listing": int(grp["has_sponsored_listing"].max() or 0),
             "delivered_orders": orders,
@@ -228,8 +260,100 @@ def aggregate_brands(df: pd.DataFrame) -> pd.DataFrame:
             "cp_margin_pct": (cp / gmv * 100) if gmv > 0 else None,
             "impressions": impressions,
             "conv_imp_to_order_pct": round(conv, 2),
+            "provider_active_rate_pct": round(float(active_rate), 1) if pd.notna(active_rate) else None,
+            "impressions_per_loc": impressions / loc_count if loc_count else 0,
+            "sl_attributed_gmv_eur": sl_attr_gmv,
+            "sl_portal_spend_eur": sl_spend,
+            "actual_roas": (sl_attr_gmv / sl_spend) if sl_spend > 0 else None,
         })
     return pd.DataFrame(rows)
+
+
+def _city_benchmarks(df_brand: pd.DataFrame) -> pd.DataFrame:
+    """Медіани по місту для конверсії та видимості (покази на локацію)."""
+    bench = (
+        df_brand.groupby("city_name", dropna=False)
+        .agg(
+            city_median_conv=("conv_imp_to_order_pct", "median"),
+            city_median_impr_per_loc=("impressions_per_loc", "median"),
+        )
+        .reset_index()
+    )
+    return df_brand.merge(bench, on="city_name", how="left")
+
+
+def _portfolio_sl_benchmark_roas(df_brand: pd.DataFrame) -> float:
+    """Еталонний ROAS: сукупний attr. GMV / portal spend по SL-брендах (стабільніше за медіану)."""
+    sl = df_brand[df_brand["has_sponsored_listing"] == 1]
+    total_gmv = sl["sl_attributed_gmv_eur"].sum()
+    total_spend = sl["sl_portal_spend_eur"].sum()
+    if total_spend > 0 and total_gmv > 0:
+        return min(float(total_gmv / total_spend), 12.0)
+    actual = sl.loc[sl["actual_roas"].notna(), "actual_roas"]
+    if not actual.empty:
+        return min(float(actual.median()), 12.0)
+    return 5.0
+
+
+def compute_predicted_roas(df_brand: pd.DataFrame) -> pd.DataFrame:
+    """
+    Прогнозований ROAS для Sponsored Listing.
+
+    Окремого поля predicted_roas у Databricks немає — модель будується з:
+      - фактичного ROAS (attr. GMV / portal spend) по брендах з активним SL у портфоліо;
+      - конверсії показ → замовлення (чим вища — тим краще монетизуються додаткові покази);
+      - видимості: низькі покази на локацію відносно медіани міста + низький active rate.
+    """
+    df = _city_benchmarks(df_brand.copy())
+    benchmark = _portfolio_sl_benchmark_roas(df)
+
+    def predict_row(row: pd.Series) -> Tuple[Optional[float], float, str]:
+        conv = float(row.get("conv_imp_to_order_pct") or 0)
+        impr_loc = float(row.get("impressions_per_loc") or 0)
+        city_conv = float(row.get("city_median_conv") or 2.5) or 2.5
+        city_impr = float(row.get("city_median_impr_per_loc") or impr_loc) or impr_loc or 1
+        active = float(row.get("provider_active_rate_pct") or 95)
+
+        visibility_gap = min(max(city_impr / max(impr_loc, 1), 1.0), 2.5)
+        conv_factor = min(max(conv / max(city_conv, 0.5), 0.7), 1.5)
+        active_factor = min(max((100 - active) / 20 + 1, 0.9), 1.2)
+
+        if int(row.get("has_sponsored_listing") or 0) and row.get("actual_roas") is not None:
+            roas = min(float(row["actual_roas"]), 15.0)
+            return round(roas, 2), visibility_gap, "фактичний"
+
+        predicted = benchmark * conv_factor * (0.7 + 0.3 * visibility_gap) * active_factor
+        return round(min(predicted, 15.0), 2), visibility_gap, "прогноз"
+
+    results = df.apply(predict_row, axis=1, result_type="expand")
+    df["predicted_roas"] = results[0]
+    df["visibility_gap"] = results[1].round(2)
+    df["roas_source"] = results[2]
+    df["benchmark_roas"] = round(benchmark, 2)
+    return df
+
+
+def is_sl_candidate(row: pd.Series) -> bool:
+    """Висока конверсія + низька видимість — ідеальний кандидат на SL."""
+    if int(row.get("has_sponsored_listing") or 0):
+        return False
+    conv = float(row.get("conv_imp_to_order_pct") or 0)
+    city_conv = float(row.get("city_median_conv") or 2.5)
+    visibility_gap = float(row.get("visibility_gap") or 1)
+    roas = float(row.get("predicted_roas") or 0)
+    cp = float(row.get("cp_margin_pct") or 0)
+
+    good_conv = conv >= max(city_conv, 2.5)
+    low_visibility = visibility_gap >= 1.25
+    return good_conv and low_visibility and roas >= SL_ROAS_THRESHOLD and cp >= 0
+
+
+def sl_priority_score(row: pd.Series) -> float:
+    roas = float(row.get("predicted_roas") or 0)
+    visibility_gap = float(row.get("visibility_gap") or 1)
+    conv = float(row.get("conv_imp_to_order_pct") or 0)
+    gmv = float(row.get("gmv_eur") or 0)
+    return roas * 0.45 + visibility_gap * 0.30 + (conv / 5) * 0.15 + min(gmv / 10000, 1) * 0.10
 
 
 def recommend_product(row: pd.Series) -> tuple[str, str]:
@@ -237,6 +361,9 @@ def recommend_product(row: pd.Series) -> tuple[str, str]:
     cp = float(row.get("cp_margin_pct") or 0)
     conv = float(row.get("conv_imp_to_order_pct") or 0)
     orders = float(row.get("delivered_orders") or 0)
+    roas = float(row.get("predicted_roas") or 0)
+    visibility_gap = float(row.get("visibility_gap") or 1)
+    city_conv = float(row.get("city_median_conv") or 2.5)
 
     if cp < 0:
         return (
@@ -244,13 +371,20 @@ def recommend_product(row: pd.Series) -> tuple[str, str]:
             "Від'ємна CP L2 маржа — перед промо варто стабілізувати якість/доступність. "
             "Після покращення — легке Sponsored Listing для тесту видимості.",
         )
+    if is_sl_candidate(row):
+        return (
+            "Sponsored Listing",
+            f"Сильна конверсія ({conv:.1f}% vs медіана міста {city_conv:.1f}%), але низька видимість "
+            f"(покази на локацію нижчі за медіану міста в {visibility_gap:.1f}×). "
+            f"Прогнозований ROAS ~{roas:.1f} — платне просування має добре окупитися.",
+        )
     if conv < 2.0 and gmv >= 3000:
         return (
             "Sponsored Listing → Smart Promotions",
             "Високий GMV, але низька конверсія з показів — спочатку підсилити видимість "
             "(платне просування / пошук), потім Розумні акції для зростання замовлень.",
         )
-    if conv >= 3.0 and cp >= 10:
+    if conv >= 3.0 and cp >= 10 and visibility_gap < 1.2:
         return (
             "Smart Promotions",
             "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt "
@@ -267,6 +401,12 @@ def recommend_product(row: pd.Series) -> tuple[str, str]:
             "Smart Promotions",
             "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів "
             "допоможуть прискорити зростання GMV.",
+        )
+    if roas >= SL_ROAS_THRESHOLD and visibility_gap >= 1.1:
+        return (
+            "Sponsored Listing",
+            f"Прогнозований ROAS ~{roas:.1f} при потенціалі зростання видимості — "
+            "почніть з платного просування в пошуку.",
         )
     return (
         "Sponsored Listing",
@@ -315,6 +455,15 @@ def fmt_eur(val, decimals=0) -> str:
 def fmt_pct(val) -> str:
     try:
         return f"{float(val):.1f}%"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def fmt_roas(val) -> str:
+    try:
+        if val is None or (isinstance(val, float) and pd.isna(val)):
+            return "—"
+        return f"{float(val):.1f}×"
     except (TypeError, ValueError):
         return "—"
 
@@ -378,6 +527,11 @@ def build_brand_payload(
             "gross_uah": gross_uah,
             "net_uah": net_uah,
             "conv_imp_to_order_pct": round(float(brow.get("conv_imp_to_order_pct") or 0), 2),
+            "predicted_roas": round(float(brow.get("predicted_roas") or 0), 2)
+            if brow.get("predicted_roas") is not None and pd.notna(brow.get("predicted_roas"))
+            else None,
+            "visibility_gap": round(float(brow.get("visibility_gap") or 1), 2),
+            "impressions": int(float(brow.get("impressions") or 0)),
             "period_start": start_date,
             "period_end": end_date,
             "locations": locations,
@@ -392,6 +546,123 @@ def send_rec_button(key: str) -> str:
         f"onclick='openRecommendation({arg})'>"
         f"📨 Надіслати рекомендацію підключення</button>"
     )
+
+
+def build_brand_table_rows(
+    df: pd.DataFrame,
+    show_actual_roas: bool = False,
+    show_predicted_roas: bool = False,
+) -> str:
+    extra_cols = int(show_actual_roas) + int(show_predicted_roas)
+    if df.empty:
+        return f'<tr><td colspan="{8 + extra_cols}" class="empty">Немає даних</td></tr>'
+    html = ""
+    for _, row in df.iterrows():
+        top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        cp = row.get("cp_margin_pct")
+        cp_class = "pos" if cp is not None and float(cp) > 0 else "neg" if cp is not None and float(cp) < 0 else ""
+        smart_locs = int(row.get("smart_promo_locations") or row.get("locations_count") or 0)
+        sl_locs = int(row.get("sl_locations") or row.get("locations_count") or 0)
+        loc_note = ""
+        if int(row.get("has_smart_promotion") or 0):
+            loc_note = f'<span class="sub">{smart_locs} лок. з Smart Promo</span>'
+        elif int(row.get("has_sponsored_listing") or 0):
+            loc_note = f'<span class="sub">{sl_locs} лок. з SL</span>'
+        roas_cell = ""
+        if show_actual_roas:
+            roas = row.get("actual_roas") or row.get("predicted_roas")
+            src = row.get("roas_source") or ""
+            roas_cell = (
+                f'<td class="num"><strong>{fmt_roas(roas)}</strong>'
+                f'<br><span class="sub">{src}</span></td>'
+                if roas is not None and pd.notna(roas) else '<td class="num">—</td>'
+            )
+        predicted_cell = ""
+        if show_predicted_roas:
+            if int(row.get("has_sponsored_listing") or 0):
+                predicted_cell = '<td class="num"><span class="sub">є SL</span></td>'
+            else:
+                vis = row.get("visibility_gap")
+                predicted_cell = (
+                    f'<td class="num"><strong>{fmt_roas(row.get("predicted_roas"))}</strong>'
+                    f'<br><span class="sub">vis. {float(vis):.1f}×</span></td>'
+                    if row.get("predicted_roas") is not None and pd.notna(row.get("predicted_roas"))
+                    else '<td class="num">—</td>'
+                )
+        html += f"""
+        <tr>
+          <td><strong>{row.get('brand_name') or '—'}</strong> {top}<br>{loc_note}</td>
+          <td>{row.get('city_name') or '—'}</td>
+          <td class="num">{int(row.get('locations_count') or 1)}</td>
+          <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
+          <td class="num">{fmt_eur(row.get('gmv_eur'))}</td>
+          <td class="num {cp_class}">{fmt_pct(cp) if cp is not None else '—'}</td>
+          <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
+          <td class="num">{fmt_num(row.get('impressions'))}</td>
+          {predicted_cell}{roas_cell}
+        </tr>"""
+    return html
+
+
+def build_no_sl_roas_rows(df: pd.DataFrame) -> str:
+    """Повний список брендів без SL з прогнозованим ROAS."""
+    if df.empty:
+        return '<tr><td colspan="12" class="empty">Немає даних</td></tr>'
+    html = ""
+    for _, row in df.iterrows():
+        top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        cp = row.get("cp_margin_pct")
+        cp_class = "pos" if cp is not None and float(cp) > 0 else "neg" if cp is not None and float(cp) < 0 else ""
+        smart_tag = (
+            '<span class="tag tag-smart">Smart Promo</span>'
+            if int(row.get("has_smart_promotion") or 0) else '<span class="muted">—</span>'
+        )
+        product, _ = recommend_product(row)
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
+        action = (
+            send_rec_button(key)
+            if int(row.get("has_smart_promotion") or 0) == 0
+            else '<span class="muted">вже є Smart Promo</span>'
+        )
+        html += f"""
+        <tr>
+          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td>{row.get('city_name') or '—'}</td>
+          <td class="num">{int(row.get('locations_count') or 1)}</td>
+          <td class="num"><strong>{fmt_roas(row.get('predicted_roas'))}</strong></td>
+          <td class="num">{float(row.get('visibility_gap') or 1):.1f}×</td>
+          <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
+          <td class="num">{fmt_num(row.get('impressions'))}</td>
+          <td class="num">{fmt_eur(row.get('gmv_eur'))}</td>
+          <td class="num {cp_class}">{fmt_pct(cp) if cp is not None else '—'}</td>
+          <td>{smart_tag}</td>
+          <td class="sub">{product}</td>
+          <td class="action-cell">{action}</td>
+        </tr>"""
+    return html
+
+
+def build_sl_recommendation_rows(df: pd.DataFrame) -> str:
+    if df.empty:
+        return '<tr><td colspan="10" class="empty">Немає кандидатів</td></tr>'
+    html = ""
+    for i, (_, row) in enumerate(df.iterrows(), 1):
+        _, reason = recommend_product(row)
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
+        top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        html += f"""
+        <tr>
+          <td class="num"><strong>#{i}</strong></td>
+          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td>{row.get('city_name') or '—'}</td>
+          <td class="num">{fmt_num(row.get('predicted_roas'), 1)}</td>
+          <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
+          <td class="num">{fmt_num(row.get('impressions'))}</td>
+          <td class="num">{float(row.get('visibility_gap') or 1):.1f}×</td>
+          <td class="sub" style="max-width:280px">{reason}</td>
+          <td class="action-cell">{send_rec_button(key)}</td>
+        </tr>"""
+    return html
 
 
 def build_table_rows(df: pd.DataFrame, show_features: bool = False) -> str:
@@ -443,6 +714,8 @@ def build_recommendation_cards(df: pd.DataFrame) -> str:
             <span>Зам. {fmt_num(row.get('delivered_orders'))}</span>
             <span>CP {fmt_pct(row.get('cp_margin_pct'))}</span>
             <span>Conv. {fmt_pct(row.get('conv_imp_to_order_pct'))}</span>
+            <span>ROAS {fmt_roas(row.get('predicted_roas'))}</span>
+            <span>Vis. {float(row.get('visibility_gap') or 1):.1f}×</span>
           </div>
           <div class="rec-product">{product}</div>
           <div class="rec-reason">{reason}</div>
@@ -456,9 +729,11 @@ def build_html(
     df_loc: pd.DataFrame,
     df_brand: pd.DataFrame,
     df_rec: pd.DataFrame,
+    df_sl_rec: pd.DataFrame,
     start_date: str,
     end_date: str,
     brand_payload: dict,
+    benchmark_roas: float,
 ) -> str:
     n_loc = len(df_loc)
     n_brands = len(df_brand)
@@ -469,18 +744,26 @@ def build_html(
         ((df_brand["has_smart_promotion"] == 0) & (df_brand["has_sponsored_listing"] == 0)).sum()
     )
 
-    df_smart = df_loc[df_loc["has_smart_promotion"] == 1].sort_values(
-        ["city_name", "brand_name", "gmv_eur"], ascending=[True, True, False]
+    df_smart_brands = df_brand[df_brand["has_smart_promotion"] == 1].sort_values(
+        ["city_name", "gmv_eur"], ascending=[True, False]
     )
-    df_sl = df_loc[df_loc["has_sponsored_listing"] == 1].sort_values(
-        ["city_name", "brand_name", "gmv_eur"], ascending=[True, True, False]
+    df_sl_brands = df_brand[df_brand["has_sponsored_listing"] == 1].sort_values(
+        ["city_name", "gmv_eur"], ascending=[True, False]
     )
+    n_smart_brands = len(df_smart_brands)
+    n_sl_brands = len(df_sl_brands)
+    df_no_sl = df_brand[df_brand["has_sponsored_listing"] == 0].sort_values(
+        "predicted_roas", ascending=False, na_position="last"
+    )
+    n_no_sl_brands = len(df_no_sl)
+    no_sl_roas_rows = build_no_sl_roas_rows(df_no_sl)
+    smart_brand_rows = build_brand_table_rows(df_smart_brands, show_predicted_roas=True)
+    sl_brand_rows = build_brand_table_rows(df_sl_brands, show_actual_roas=True)
+    sl_rec_rows = build_sl_recommendation_rows(df_sl_rec)
     df_neither = df_brand[
         (df_brand["has_smart_promotion"] == 0) & (df_brand["has_sponsored_listing"] == 0)
-    ].sort_values("gmv_eur", ascending=False)
+    ].sort_values("predicted_roas", ascending=False, na_position="last")
 
-    smart_rows = build_table_rows(df_smart)
-    sl_rows = build_table_rows(df_sl)
     neither_rows = ""
     for _, row in df_neither.iterrows():
         product, _ = recommend_product(row)
@@ -497,6 +780,8 @@ def build_html(
           <td class="num">{fmt_eur(row.get('gmv_eur'))}</td>
           <td class="num {cp_class}">{fmt_pct(cp) if cp is not None else '—'}</td>
           <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
+          <td class="num"><strong>{fmt_roas(row.get('predicted_roas'))}</strong></td>
+          <td class="num">{float(row.get('visibility_gap') or 1):.1f}×</td>
           <td><span class="tag tag-rec">{product}</span></td>
           <td class="action-cell">{send_rec_button(key)}</td>
         </tr>"""
@@ -741,7 +1026,10 @@ def build_html(
       <strong>Методологія:</strong>
       Smart Promotions — <code>delivery_smart_promotion_log</code> зі статусом <em>active</em>.
       Sponsored Listing — локації з <code>sponsored_listing_duration_hours &gt; 0</code> за останні 7 днів.
-      Рекомендації для брендів без обох функцій базуються на GMV, CP L2 маржі та конверсії (показ → замовлення) за останні 4 повні тижні.
+      <strong>Прогнозований ROAS</strong> для SL: окремого поля в Databricks немає — розраховується з фактичного ROAS
+      (attr. GMV ÷ portal spend) по брендах портфоліо з активним SL (еталон {benchmark_roas:.1f}×), з урахуванням
+      конверсії та <em>видимості</em> (покази на локацію vs медіана міста, active rate).
+      Рекомендація SL: висока конверсія + низька видимість + прогноз ROAS ≥ {SL_ROAS_THRESHOLD:.0f}.
     </div>
 
     <section class="section">
@@ -751,47 +1039,84 @@ def build_html(
     </section>
 
     <section class="section">
-      <h2>🟣 Заклади з активними Smart Promotions</h2>
-      <div class="section-sub">{len(df_smart)} локацій · Розумні акції на Порталі для Ресторанів</div>
+      <h2>📊 Прогнозований ROAS — усі бренди без Sponsored Listing</h2>
+      <div class="section-sub">{n_no_sl_brands} брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)</div>
       <table>
         <thead>
           <tr>
-            <th>Заклад / бренд</th><th>Місто</th><th>Зона</th>
-            <th class="num">Замовлення</th><th class="num">GMV</th>
-            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+            <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
+            <th class="num">Прогноз ROAS</th><th class="num">Visibility gap</th>
+            <th class="num">Конверсія</th><th class="num">Покази</th>
+            <th class="num">GMV</th><th class="num">CP L2 %</th>
+            <th>Smart Promo</th><th>Рекомендація</th><th>Дія</th>
           </tr>
         </thead>
-        <tbody>{smart_rows}</tbody>
+        <tbody>{no_sl_roas_rows}</tbody>
       </table>
     </section>
 
     <section class="section">
-      <h2>🔵 Заклади з активним Sponsored Listing</h2>
-      <div class="section-sub">{len(df_sl)} локацій · спонсоровані оголошення за останні 7 днів</div>
+      <h2>🔵 Рекомендації Sponsored Listing — висока конверсія, низька видимість</h2>
+      <div class="section-sub">Топ-{len(df_sl_rec)} кандидатів без SL · ранжування: прогнозований ROAS + visibility gap (покази нижче медіани міста)</div>
       <table>
         <thead>
           <tr>
-            <th>Заклад / бренд</th><th>Місто</th><th>Зона</th>
-            <th class="num">Замовлення</th><th class="num">GMV</th>
-            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+            <th class="num">#</th><th>Бренд</th><th>Місто</th>
+            <th class="num">Прогноз ROAS</th><th class="num">Конверсія</th>
+            <th class="num">Покази</th><th class="num">Visibility gap</th>
+            <th>Обґрунтування</th><th>Дія</th>
           </tr>
         </thead>
-        <tbody>{sl_rows}</tbody>
+        <tbody>{sl_rec_rows}</tbody>
       </table>
     </section>
 
     <section class="section">
-      <h2>📋 Бренди без Smart Promotions і Sponsored Listing</h2>
-      <div class="section-sub">{len(df_neither)} брендів · повний список з рекомендованим продуктом</div>
+      <h2>🟣 Бренди з активними Smart Promotions</h2>
+      <div class="section-sub">{n_smart_brands} брендів · {n_smart_loc} локацій · прогноз ROAS для тих, у кого ще немає SL</div>
       <table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
             <th class="num">Замовлення</th><th class="num">GMV</th>
-            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th>Рекомендація</th><th>Дія</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th class="num">Покази</th>
+            <th class="num">Прогноз ROAS</th>
           </tr>
         </thead>
-        <tbody>{neither_rows or '<tr><td colspan="9" class="empty">Немає</td></tr>'}</tbody>
+        <tbody>{smart_brand_rows}</tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>🔷 Бренди з активним Sponsored Listing</h2>
+      <div class="section-sub">{n_sl_brands} брендів · {n_sl_loc} локацій · ROAS = attr. GMV ÷ portal spend (4 тижні)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th><th class="num">Покази</th>
+            <th class="num">ROAS</th>
+          </tr>
+        </thead>
+        <tbody>{sl_brand_rows}</tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>📋 Бренди без Smart Promotions і Sponsored Listing</h2>
+      <div class="section-sub">{len(df_neither)} брендів · повний список з прогнозом ROAS та рекомендованим продуктом</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+            <th class="num">Прогноз ROAS</th><th class="num">Visibility gap</th>
+            <th>Рекомендація</th><th>Дія</th>
+          </tr>
+        </thead>
+        <tbody>{neither_rows or '<tr><td colspan="11" class="empty">Немає</td></tr>'}</tbody>
       </table>
     </section>
   </div>
@@ -842,8 +1167,18 @@ function buildWhyReason(d) {{
   const orders = d.delivered_orders || 0;
   const conv = d.conv_imp_to_order_pct || 0;
   const gross = d.gross_uah || 0;
+  const roas = d.predicted_roas;
+  const visGap = d.visibility_gap || 1;
+  const impressions = d.impressions || 0;
   const parts = [];
 
+  if (roas != null && roas >= {SL_ROAS_THRESHOLD} && visGap >= 1.25 && conv >= 2.5) {{
+    parts.push(
+      'У вас сильна конверсія (' + fmtPct(conv) + '), але покази нижчі за типовий рівень у місті ' +
+      '(visibility gap ' + visGap.toFixed(1) + '×) — Sponsored Listing підніме видимість у пошуку. ' +
+      'Прогнозований ROAS ~' + roas.toFixed(1) + '×.'
+    );
+  }}
   if (orders >= 400 || gross >= 400000) {{
     parts.push(
       'Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) ' +
@@ -906,6 +1241,15 @@ function buildRecommendationText(d) {{
   lines.push('• Валовий дохід: ' + fmtUah(d.gross_uah));
   lines.push('• Чистий прибуток: ' + fmtUah(d.net_uah));
   lines.push('• Конверсія (показ → замовлення): ' + fmtPct(d.conv_imp_to_order_pct));
+  if (d.impressions) {{
+    lines.push('• Покази (сесії): ' + d.impressions.toLocaleString('uk-UA'));
+  }}
+  if (d.predicted_roas != null && !isNaN(d.predicted_roas)) {{
+    lines.push('• Прогнозований ROAS (Sponsored Listing): ~' + Number(d.predicted_roas).toFixed(1) + '×');
+    if (d.visibility_gap != null) {{
+      lines.push('• Visibility gap (покази vs медіана міста): ' + Number(d.visibility_gap).toFixed(1) + '×');
+    }}
+  }}
   lines.push('• ' + buildWhyReason(d));
   lines.push('');
   lines.push('На яких локації рекомендую підключити (' + locs.length + '):');
@@ -979,21 +1323,31 @@ def main() -> None:
 
     df_loc, start_date, end_date = fetch_locations()
     df_brand = aggregate_brands(df_loc)
+    df_brand = compute_predicted_roas(df_brand)
+    benchmark_roas = float(df_brand["benchmark_roas"].iloc[0]) if len(df_brand) else 5.0
 
     mask_neither = (df_brand["has_smart_promotion"] == 0) & (df_brand["has_sponsored_listing"] == 0)
     df_candidates = df_brand[mask_neither].copy()
     df_candidates["priority_score"] = priority_score(df_candidates)
     df_rec = df_candidates.sort_values("priority_score", ascending=False).head(TOP_RECOMMENDATIONS)
 
+    sl_pool = df_brand[mask_neither].copy()
+    sl_pool["sl_score"] = sl_pool.apply(sl_priority_score, axis=1)
+    sl_pool = sl_pool[sl_pool.apply(is_sl_candidate, axis=1)]
+    df_sl_rec = sl_pool.sort_values("sl_score", ascending=False).head(TOP_SL_RECOMMENDATIONS)
+
     brand_payload = build_brand_payload(df_loc, df_brand, start_date, end_date)
-    html = build_html(df_loc, df_brand, df_rec, start_date, end_date, brand_payload)
+    html = build_html(
+        df_loc, df_brand, df_rec, df_sl_rec, start_date, end_date, brand_payload, benchmark_roas
+    )
     out_path = Path(__file__).resolve().parent / OUTPUT_FILE
     out_path.write_text(html, encoding="utf-8")
     print(f"\n✅ Report saved → {out_path}")
     print(
         f"   Smart Promo: {(df_loc['has_smart_promotion']==1).sum()} loc | "
         f"Sponsored Listing: {(df_loc['has_sponsored_listing']==1).sum()} loc | "
-        f"Candidates: {mask_neither.sum()} brands"
+        f"Candidates: {mask_neither.sum()} brands | "
+        f"SL recommendations: {len(df_sl_rec)}"
     )
 
 
