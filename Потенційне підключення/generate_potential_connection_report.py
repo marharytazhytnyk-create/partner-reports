@@ -725,6 +725,31 @@ def build_recommendation_cards(df: pd.DataFrame) -> str:
     return html
 
 
+def collapsible_section(
+    section_id: str,
+    title: str,
+    subtitle: str,
+    body: str,
+    open_default: bool = False,
+) -> str:
+    open_cls = " open" if open_default else ""
+    aria = "true" if open_default else "false"
+    return f"""
+    <section class="section collapsible{open_cls}" id="{section_id}">
+      <button type="button" class="section-toggle" aria-expanded="{aria}"
+        aria-controls="{section_id}-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">{title}</span>
+          <span class="toggle-sub">{subtitle}</span>
+        </span>
+      </button>
+      <div class="section-body" id="{section_id}-body">
+        {body}
+      </div>
+    </section>"""
+
+
 def build_html(
     df_loc: pd.DataFrame,
     df_brand: pd.DataFrame,
@@ -867,6 +892,44 @@ def build_html(
     gap: 8px;
   }}
   .section-sub {{ font-size: 12px; color: var(--muted); margin-bottom: 16px; }}
+  .section-toolbar {{
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 20px; padding: 14px 16px;
+    background: #fff; border-radius: 12px; box-shadow: var(--shadow);
+  }}
+  .section-toolbar-label {{
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }}
+  .section-pills {{ display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }}
+  .section-pill {{
+    background: #F5F5F5; border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+    color: var(--text); transition: border-color 0.15s, color 0.15s;
+  }}
+  .section-pill:hover {{ border-color: var(--bolt-green); color: #1A9A5A; }}
+  .btn-section-all {{
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer;
+    color: var(--muted); white-space: nowrap;
+  }}
+  .btn-section-all:hover {{ border-color: var(--bolt-green); color: var(--bolt-green); }}
+  .collapsible .section-body {{ display: none; padding-top: 14px; }}
+  .collapsible.open .section-body {{ display: block; }}
+  .collapsible .section-toggle {{
+    width: 100%; display: flex; align-items: flex-start; gap: 10px;
+    background: none; border: none; cursor: pointer; text-align: left;
+    padding: 0; font: inherit; color: inherit;
+  }}
+  .collapsible .section-toggle:hover .toggle-title {{ color: #1A9A5A; }}
+  .collapsible .toggle-chevron {{
+    font-size: 16px; line-height: 1.2; color: var(--bolt-green);
+    transition: transform 0.2s; flex-shrink: 0; margin-top: 1px;
+  }}
+  .collapsible:not(.open) .toggle-chevron {{ transform: rotate(-90deg); }}
+  .toggle-title {{ font-size: 16px; font-weight: 700; display: block; }}
+  .toggle-sub {{ font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }}
+  .table-wrap {{ overflow-x: auto; margin-top: 4px; }}
   .note {{
     background: #F0FAF4;
     border-left: 4px solid var(--bolt-green);
@@ -1032,16 +1095,33 @@ def build_html(
       Рекомендація SL: висока конверсія + низька видимість + прогноз ROAS ≥ {SL_ROAS_THRESHOLD:.0f}.
     </div>
 
-    <section class="section">
-      <h2>🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу</h2>
-      <div class="section-sub">Топ-{len(df_rec)} брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%</div>
-      {build_recommendation_cards(df_rec)}
-    </section>
+    <div class="section-toolbar">
+      <span class="section-toolbar-label">Секції звіту</span>
+      <div class="section-pills">
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-priority')">🎯 Пріоритетні</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-roas')">📊 ROAS без SL</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-sl-rec')">🔵 Рекомендації SL</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-smart')">🟣 Smart Promo</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-sl')">🔷 Sponsored Listing</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-neither')">📋 Без обох</button>
+      </div>
+      <button type="button" class="btn-section-all" onclick="expandAllSections()">Розгорнути всі</button>
+      <button type="button" class="btn-section-all" onclick="collapseAllSections()">Згорнути всі</button>
+    </div>
 
-    <section class="section">
-      <h2>📊 Прогнозований ROAS — усі бренди без Sponsored Listing</h2>
-      <div class="section-sub">{n_no_sl_brands} брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)</div>
-      <table>
+    {collapsible_section(
+        "sec-priority",
+        "🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу",
+        f"Топ-{len(df_rec)} брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%",
+        build_recommendation_cards(df_rec),
+        open_default=True,
+    )}
+
+    {collapsible_section(
+        "sec-roas",
+        "📊 Прогнозований ROAS — усі бренди без Sponsored Listing",
+        f"{n_no_sl_brands} брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)",
+        f'''<div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -1052,13 +1132,14 @@ def build_html(
           </tr>
         </thead>
         <tbody>{no_sl_roas_rows}</tbody>
-      </table>
-    </section>
+      </table></div>''',
+    )}
 
-    <section class="section">
-      <h2>🔵 Рекомендації Sponsored Listing — висока конверсія, низька видимість</h2>
-      <div class="section-sub">Топ-{len(df_sl_rec)} кандидатів без SL · ранжування: прогнозований ROAS + visibility gap (покази нижче медіани міста)</div>
-      <table>
+    {collapsible_section(
+        "sec-sl-rec",
+        "🔵 Рекомендації Sponsored Listing — висока конверсія, низька видимість",
+        f"Топ-{len(df_sl_rec)} кандидатів без SL · ранжування: прогнозований ROAS + visibility gap",
+        f'''<div class="table-wrap"><table>
         <thead>
           <tr>
             <th class="num">#</th><th>Бренд</th><th>Місто</th>
@@ -1068,13 +1149,14 @@ def build_html(
           </tr>
         </thead>
         <tbody>{sl_rec_rows}</tbody>
-      </table>
-    </section>
+      </table></div>''',
+    )}
 
-    <section class="section">
-      <h2>🟣 Бренди з активними Smart Promotions</h2>
-      <div class="section-sub">{n_smart_brands} брендів · {n_smart_loc} локацій · прогноз ROAS для тих, у кого ще немає SL</div>
-      <table>
+    {collapsible_section(
+        "sec-smart",
+        "🟣 Бренди з активними Smart Promotions",
+        f"{n_smart_brands} брендів · {n_smart_loc} локацій · прогноз ROAS для тих, у кого ще немає SL",
+        f'''<div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -1084,13 +1166,14 @@ def build_html(
           </tr>
         </thead>
         <tbody>{smart_brand_rows}</tbody>
-      </table>
-    </section>
+      </table></div>''',
+    )}
 
-    <section class="section">
-      <h2>🔷 Бренди з активним Sponsored Listing</h2>
-      <div class="section-sub">{n_sl_brands} брендів · {n_sl_loc} локацій · ROAS = attr. GMV ÷ portal spend (4 тижні)</div>
-      <table>
+    {collapsible_section(
+        "sec-sl",
+        "🔷 Бренди з активним Sponsored Listing",
+        f"{n_sl_brands} брендів · {n_sl_loc} локацій · ROAS = attr. GMV ÷ portal spend (4 тижні)",
+        f'''<div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -1100,13 +1183,14 @@ def build_html(
           </tr>
         </thead>
         <tbody>{sl_brand_rows}</tbody>
-      </table>
-    </section>
+      </table></div>''',
+    )}
 
-    <section class="section">
-      <h2>📋 Бренди без Smart Promotions і Sponsored Listing</h2>
-      <div class="section-sub">{len(df_neither)} брендів · повний список з прогнозом ROAS та рекомендованим продуктом</div>
-      <table>
+    {collapsible_section(
+        "sec-neither",
+        "📋 Бренди без Smart Promotions і Sponsored Listing",
+        f"{len(df_neither)} брендів · повний список з прогнозом ROAS та рекомендованим продуктом",
+        f'''<div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -1117,8 +1201,8 @@ def build_html(
           </tr>
         </thead>
         <tbody>{neither_rows or '<tr><td colspan="11" class="empty">Немає</td></tr>'}</tbody>
-      </table>
-    </section>
+      </table></div>''',
+    )}
   </div>
 
   <div id="recModal" class="modal-overlay" onclick="if(event.target===this)closeRecommendation()">
@@ -1308,6 +1392,38 @@ function copyRecommendation() {{
 document.addEventListener('keydown', e => {{
   if (e.key === 'Escape') closeRecommendation();
 }});
+
+function toggleSection(btn) {{
+  const section = btn.closest('.collapsible');
+  if (!section) return;
+  section.classList.toggle('open');
+  btn.setAttribute('aria-expanded', section.classList.contains('open'));
+}}
+
+function expandAllSections() {{
+  document.querySelectorAll('.collapsible').forEach(section => {{
+    section.classList.add('open');
+    const btn = section.querySelector('.section-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+  }});
+}}
+
+function collapseAllSections() {{
+  document.querySelectorAll('.collapsible').forEach(section => {{
+    section.classList.remove('open');
+    const btn = section.querySelector('.section-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }});
+}}
+
+function jumpToSection(id) {{
+  const section = document.getElementById(id);
+  if (!section) return;
+  section.classList.add('open');
+  const btn = section.querySelector('.section-toggle');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+  section.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+}}
 </script>
 </body>
 </html>"""

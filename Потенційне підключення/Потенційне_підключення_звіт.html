@@ -77,6 +77,44 @@
     gap: 8px;
   }
   .section-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .section-toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    margin-bottom: 20px; padding: 14px 16px;
+    background: #fff; border-radius: 12px; box-shadow: var(--shadow);
+  }
+  .section-toolbar-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap;
+  }
+  .section-pills { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+  .section-pill {
+    background: #F5F5F5; border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+    color: var(--text); transition: border-color 0.15s, color 0.15s;
+  }
+  .section-pill:hover { border-color: var(--bolt-green); color: #1A9A5A; }
+  .btn-section-all {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer;
+    color: var(--muted); white-space: nowrap;
+  }
+  .btn-section-all:hover { border-color: var(--bolt-green); color: var(--bolt-green); }
+  .collapsible .section-body { display: none; padding-top: 14px; }
+  .collapsible.open .section-body { display: block; }
+  .collapsible .section-toggle {
+    width: 100%; display: flex; align-items: flex-start; gap: 10px;
+    background: none; border: none; cursor: pointer; text-align: left;
+    padding: 0; font: inherit; color: inherit;
+  }
+  .collapsible .section-toggle:hover .toggle-title { color: #1A9A5A; }
+  .collapsible .toggle-chevron {
+    font-size: 16px; line-height: 1.2; color: var(--bolt-green);
+    transition: transform 0.2s; flex-shrink: 0; margin-top: 1px;
+  }
+  .collapsible:not(.open) .toggle-chevron { transform: rotate(-90deg); }
+  .toggle-title { font-size: 16px; font-weight: 700; display: block; }
+  .toggle-sub { font-size: 12px; color: var(--muted); display: block; margin-top: 4px; }
+  .table-wrap { overflow-x: auto; margin-top: 4px; }
   .note {
     background: #F0FAF4;
     border-left: 4px solid var(--bolt-green);
@@ -242,10 +280,32 @@
       Рекомендація SL: висока конверсія + низька видимість + прогноз ROAS ≥ 3.
     </div>
 
-    <section class="section">
-      <h2>🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу</h2>
-      <div class="section-sub">Топ-20 брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%</div>
-      <div class="rec-grid">
+    <div class="section-toolbar">
+      <span class="section-toolbar-label">Секції звіту</span>
+      <div class="section-pills">
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-priority')">🎯 Пріоритетні</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-roas')">📊 ROAS без SL</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-sl-rec')">🔵 Рекомендації SL</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-smart')">🟣 Smart Promo</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-sl')">🔷 Sponsored Listing</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-neither')">📋 Без обох</button>
+      </div>
+      <button type="button" class="btn-section-all" onclick="expandAllSections()">Розгорнути всі</button>
+      <button type="button" class="btn-section-all" onclick="collapseAllSections()">Згорнути всі</button>
+    </div>
+
+    
+    <section class="section collapsible open" id="sec-priority">
+      <button type="button" class="section-toggle" aria-expanded="true"
+        aria-controls="sec-priority-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу</span>
+          <span class="toggle-sub">Топ-20 брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-priority-body">
+        <div class="rec-grid">
         <div class="rec-card">
           <div class="rec-rank">#1</div>
           <div class="rec-title">APPETITO <span class="badge-top">TOP</span></div>
@@ -566,12 +626,21 @@
           <div class="rec-reason">Високий GMV, але низька конверсія з показів — спочатку підсилити видимість (платне просування / пошук), потім Розумні акції для зростання замовлень.</div>
           <div class="rec-actions"><button type="button" class="btn-send-rec" onclick='openRecommendation("STREET PIZZA|Cherkasy")'>📨 Надіслати рекомендацію підключення</button></div>
         </div></div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>📊 Прогнозований ROAS — усі бренди без Sponsored Listing</h2>
-      <div class="section-sub">133 брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)</div>
-      <table>
+    
+    <section class="section collapsible" id="sec-roas">
+      <button type="button" class="section-toggle" aria-expanded="false"
+        aria-controls="sec-roas-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">📊 Прогнозований ROAS — усі бренди без Sponsored Listing</span>
+          <span class="toggle-sub">133 брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-roas-body">
+        <div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -2444,13 +2513,22 @@
           <td class="sub">Sponsored Listing</td>
           <td class="action-cell"><button type="button" class="btn-send-rec" onclick='openRecommendation("DEPARTAMENT PELMENIV|Lviv")'>📨 Надіслати рекомендацію підключення</button></td>
         </tr></tbody>
-      </table>
+      </table></div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>🔵 Рекомендації Sponsored Listing — висока конверсія, низька видимість</h2>
-      <div class="section-sub">Топ-5 кандидатів без SL · ранжування: прогнозований ROAS + visibility gap (покази нижче медіани міста)</div>
-      <table>
+    
+    <section class="section collapsible" id="sec-sl-rec">
+      <button type="button" class="section-toggle" aria-expanded="false"
+        aria-controls="sec-sl-rec-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">🔵 Рекомендації Sponsored Listing — висока конверсія, низька видимість</span>
+          <span class="toggle-sub">Топ-5 кандидатів без SL · ранжування: прогнозований ROAS + visibility gap</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-sl-rec-body">
+        <div class="table-wrap"><table>
         <thead>
           <tr>
             <th class="num">#</th><th>Бренд</th><th>Місто</th>
@@ -2515,13 +2593,22 @@
           <td class="sub" style="max-width:280px">Сильна конверсія (2.6% vs медіана міста 1.8%), але низька видимість (покази на локацію нижчі за медіану міста в 1.4×). Прогнозований ROAS ~15.0 — платне просування має добре окупитися.</td>
           <td class="action-cell"><button type="button" class="btn-send-rec" onclick='openRecommendation("VAM DONER?|Cherkasy")'>📨 Надіслати рекомендацію підключення</button></td>
         </tr></tbody>
-      </table>
+      </table></div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>🟣 Бренди з активними Smart Promotions</h2>
-      <div class="section-sub">28 брендів · 52 локацій · прогноз ROAS для тих, у кого ще немає SL</div>
-      <table>
+    
+    <section class="section collapsible" id="sec-smart">
+      <button type="button" class="section-toggle" aria-expanded="false"
+        aria-controls="sec-smart-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">🟣 Бренди з активними Smart Promotions</span>
+          <span class="toggle-sub">28 брендів · 52 локацій · прогноз ROAS для тих, у кого ще немає SL</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-smart-body">
+        <div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -2839,13 +2926,22 @@
           <td class="num">9 034</td>
           <td class="num"><strong>10.1×</strong><br><span class="sub">vis. 1.0×</span></td>
         </tr></tbody>
-      </table>
+      </table></div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>🔷 Бренди з активним Sponsored Listing</h2>
-      <div class="section-sub">11 брендів · 11 локацій · ROAS = attr. GMV ÷ portal spend (4 тижні)</div>
-      <table>
+    
+    <section class="section collapsible" id="sec-sl">
+      <button type="button" class="section-toggle" aria-expanded="false"
+        aria-controls="sec-sl-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">🔷 Бренди з активним Sponsored Listing</span>
+          <span class="toggle-sub">11 брендів · 11 локацій · ROAS = attr. GMV ÷ portal spend (4 тижні)</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-sl-body">
+        <div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -2976,13 +3072,22 @@
           <td class="num">14 798</td>
           <td class="num">—</td>
         </tr></tbody>
-      </table>
+      </table></div>
+      </div>
     </section>
 
-    <section class="section">
-      <h2>📋 Бренди без Smart Promotions і Sponsored Listing</h2>
-      <div class="section-sub">106 брендів · повний список з прогнозом ROAS та рекомендованим продуктом</div>
-      <table>
+    
+    <section class="section collapsible" id="sec-neither">
+      <button type="button" class="section-toggle" aria-expanded="false"
+        aria-controls="sec-neither-body" onclick="toggleSection(this)">
+        <span class="toggle-chevron" aria-hidden="true">▾</span>
+        <span class="toggle-label">
+          <span class="toggle-title">📋 Бренди без Smart Promotions і Sponsored Listing</span>
+          <span class="toggle-sub">106 брендів · повний список з прогнозом ROAS та рекомендованим продуктом</span>
+        </span>
+      </button>
+      <div class="section-body" id="sec-neither-body">
+        <div class="table-wrap"><table>
         <thead>
           <tr>
             <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
@@ -4371,7 +4476,8 @@
           <td><span class="tag tag-rec">Sponsored Listing</span></td>
           <td class="action-cell"><button type="button" class="btn-send-rec" onclick='openRecommendation("BARANCHIK|Cherkasy")'>📨 Надіслати рекомендацію підключення</button></td>
         </tr></tbody>
-      </table>
+      </table></div>
+      </div>
     </section>
   </div>
 
@@ -4562,6 +4668,38 @@ function copyRecommendation() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeRecommendation();
 });
+
+function toggleSection(btn) {
+  const section = btn.closest('.collapsible');
+  if (!section) return;
+  section.classList.toggle('open');
+  btn.setAttribute('aria-expanded', section.classList.contains('open'));
+}
+
+function expandAllSections() {
+  document.querySelectorAll('.collapsible').forEach(section => {
+    section.classList.add('open');
+    const btn = section.querySelector('.section-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+  });
+}
+
+function collapseAllSections() {
+  document.querySelectorAll('.collapsible').forEach(section => {
+    section.classList.remove('open');
+    const btn = section.querySelector('.section-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function jumpToSection(id) {
+  const section = document.getElementById(id);
+  if (!section) return;
+  section.classList.add('open');
+  const btn = section.querySelector('.section-toggle');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 </script>
 </body>
 </html>
