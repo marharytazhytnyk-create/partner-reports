@@ -179,6 +179,40 @@ jobs:
           TEST_MODE: "true"
         run: python Marharyta_Portfolio/send_red_flag_emails.py
 
+  # ── BAD ORDERS WEEKLY (every Monday 14:00 EEST) ─────────────────────────────
+  generate-bad-orders-weekly:
+    name: Bad Orders Weekly — Marharyta Portfolio
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '0 11 * * 1'
+    steps:
+      - uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Generate Bad Orders weekly report
+        env:
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: python "Bad Orders analys weekly/generate_bad_orders_weekly.py"
+
+      - name: Commit and push Bad Orders report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Bad Orders analys weekly/"
+          git diff --staged --quiet || git commit -m "Bad Orders weekly — Marharyta Portfolio $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
+
   # ── ПОТЕНЦІЙНЕ ПІДКЛЮЧЕННЯ (every Monday 14:00 EEST) ───────────────────────
   generate-potential-connection:
     name: Потенційне підключення — Smart Promo & Sponsored Listing

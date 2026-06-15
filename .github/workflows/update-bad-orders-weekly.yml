@@ -1,9 +1,6 @@
 name: Bad Orders Weekly — Marharyta Portfolio
 
 on:
-  schedule:
-    # Понеділок 11:00 UTC = 14:00 за Києвом (UTC+3)
-    - cron: '0 11 * * 1'
   workflow_dispatch:
     inputs:
       week_start:
@@ -11,6 +8,7 @@ on:
         required: false
         default: ''
 
+# Щопонеділкове автооновлення — через update-reports.yml (той самий cron 14:00 Київ)
 jobs:
   generate-bad-orders-weekly:
     name: Marharyta Portfolio — Bad Orders HTML
