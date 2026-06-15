@@ -91,6 +91,29 @@ def _to_df(data: dict) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=cols)
 
 
+def _exec_sql_paginated(sql_template: str, timeout: int = 300, page_size: int = 1000) -> pd.DataFrame:
+    """
+    Execute a SQL query with LIMIT/OFFSET pagination to bypass the 1000-row API limit.
+    sql_template must contain {limit} and {offset} placeholders.
+    """
+    ctx = _create_context()
+    all_frames = []
+    offset = 0
+    while True:
+        sql = sql_template.format(limit=page_size, offset=offset)
+        result = _exec_sql(ctx, sql, timeout=timeout)
+        df_page = _to_df(result)
+        if df_page.empty:
+            break
+        all_frames.append(df_page)
+        fetched = len(df_page)
+        print(f"    page offset={offset}: {fetched} rows")
+        if fetched < page_size:
+            break
+        offset += page_size
+    return pd.concat(all_frames, ignore_index=True) if all_frames else pd.DataFrame()
+
+
 # ─── DATA FETCH ────────────────────────────────────────────────────────────────
 
 def fetch_data() -> pd.DataFrame:
@@ -216,12 +239,59 @@ def fetch_provider_summary() -> pd.DataFrame:
     return df
 
 
-def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
-    """Fetch week-by-week brand metrics for the last N full weeks (for trend charts)."""
+def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
+    """
+    Fetch portfolio-level weekly aggregation (all brands summed).
+    Returns only ~N rows — no pagination needed, used for the Overview tab.
+    """
     start_date, end_date = get_last_n_full_weeks(n_weeks)
     ctx = _create_context()
 
     sql = f"""
+    SELECT
+        DATE_FORMAT(DATE_TRUNC('week', f.metric_timestamp_local), 'yyyy-MM-dd') AS week_start,
+        SUM(f.delivered_orders_count)                          AS delivered_orders,
+        SUM(f.failed_orders_count)                             AS failed_orders,
+        SUM(f.total_gmv_before_discounts_eur)                  AS gmv_eur,
+        SUM(f.total_contribution_profit_eur)                   AS contribution_profit_eur,
+        ROUND(SUM(f.failed_order_rate_value   * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS failed_order_rate_pct,
+        ROUND(SUM(f.bad_order_rate_value      * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS bad_order_rate_pct,
+        ROUND(SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
+        ROUND(SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct,
+        COUNT(DISTINCT p.provider_id)                          AS active_locations
+    FROM ng_delivery_spark.dim_provider_v2 p
+    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+        ON p.provider_id = f.provider_id
+    WHERE
+        p.account_manager_name = '{ACCOUNT_MANAGER}'
+        AND p.country_code      = '{COUNTRY_CODE}'
+        AND p.provider_status   = 'active'
+        AND CAST(f.metric_timestamp_local AS DATE) BETWEEN '{start_date}' AND '{end_date}'
+    GROUP BY DATE_TRUNC('week', f.metric_timestamp_local)
+    ORDER BY week_start
+    """
+
+    print(f"Running portfolio-weekly query ({n_weeks} weeks)...")
+    result = _exec_sql(ctx, sql, timeout=120)
+    df = _to_df(result)
+    for col in ["delivered_orders", "failed_orders", "gmv_eur", "contribution_profit_eur",
+                "failed_order_rate_pct", "bad_order_rate_pct",
+                "acceptance_rate_pct", "late_delivery_rate_pct", "active_locations"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    print(f"Fetched {len(df):,} portfolio-week rows")
+    return df
+
+
+def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
+    """Fetch week-by-week brand metrics for the last N full weeks (for trend charts)."""
+    start_date, end_date = get_last_n_full_weeks(n_weeks)
+
+    sql_tpl = f"""
     SELECT
         p.brand_name,
         p.city_name,
@@ -256,12 +326,12 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
         p.city_name,
         DATE_TRUNC('week', f.metric_timestamp_local)
     ORDER BY p.brand_name, p.city_name, week_start
+    LIMIT {{limit}} OFFSET {{offset}}
     """
 
-    print(f"Running weekly trends query ({n_weeks} weeks)...")
-    result = _exec_sql(ctx, sql, timeout=300)
-    df = _to_df(result)
-    print(f"Fetched {len(df):,} weekly trend rows")
+    print(f"Running weekly trends query ({n_weeks} weeks, paginated)...")
+    df = _exec_sql_paginated(sql_tpl, timeout=300)
+    print(f"Fetched {len(df):,} weekly trend rows total")
     return df
 
 
@@ -1743,37 +1813,25 @@ def build_provider_table(providers: pd.DataFrame, city_id: str, gmv_wow_map: dic
     <script>{sort_js}</script>"""
 
 
-def build_overview_section(df_trends: pd.DataFrame) -> str:
+def build_overview_section(df_portfolio: pd.DataFrame) -> str:
     """
     Build the portfolio overview section comparing last week vs previous week.
-    Returns HTML string.
+    Uses pre-aggregated portfolio-level weekly data (no brand-level aggregation needed).
     """
     import math
 
-    if df_trends.empty:
+    if df_portfolio.empty:
         return '<div class="no-data">Немає трендових даних для аналізу</div>'
 
-    for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
-                "cp_l2_margin_pct", "failed_order_rate_pct",
-                "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct"]:
-        if col in df_trends.columns:
-            df_trends[col] = pd.to_numeric(df_trends[col], errors="coerce")
-
-    # Aggregate to portfolio level per week
-    portfolio_weekly = (
-        df_trends.groupby("week_start", sort=True)
-        .agg(
-            gmv=("gmv_eur", "sum"),
-            orders=("delivered_orders", "sum"),
-            cp=("contribution_profit_eur", "sum"),
-            failed_rate=("failed_order_rate_pct", "mean"),
-            bad_rate=("bad_order_rate_pct", "mean"),
-            acceptance=("acceptance_rate_pct", "mean"),
-            late_rate=("late_delivery_rate_pct", "mean"),
-        )
-        .reset_index()
-        .sort_values("week_start")
-    )
+    portfolio_weekly = df_portfolio.rename(columns={
+        "gmv_eur": "gmv",
+        "delivered_orders": "orders",
+        "contribution_profit_eur": "cp",
+        "failed_order_rate_pct": "failed_rate",
+        "bad_order_rate_pct": "bad_rate",
+        "acceptance_rate_pct": "acceptance",
+        "late_delivery_rate_pct": "late_rate",
+    }).sort_values("week_start")
 
     if len(portfolio_weekly) < 2:
         return '<div class="no-data">Недостатньо даних для порівняння тижнів</div>'
@@ -1801,11 +1859,18 @@ def build_overview_section(df_trends: pd.DataFrame) -> str:
     cp_margin_prev = (float(prev["cp"]) / float(prev["gmv"]) * 100) if float(prev["gmv"]) > 0 else 0
 
     # ── Trend chart data (all weeks, portfolio level) ──────────────────────────
-    weeks_labels = [w for w in portfolio_weekly["week_start"].tolist()]
+    def safe_val(v):
+        try:
+            f = float(v)
+            return None if math.isnan(f) or math.isinf(f) else round(f, 2)
+        except (TypeError, ValueError):
+            return None
+
+    weeks_labels = portfolio_weekly["week_start"].tolist()
     weeks_js = json.dumps(weeks_labels)
-    gmv_series    = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["gmv"]])
-    orders_series = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["orders"]])
-    cp_series     = json.dumps([round(float(v), 2) if not math.isnan(float(v)) else None for v in portfolio_weekly["cp"]])
+    gmv_series    = json.dumps([safe_val(v) for v in portfolio_weekly["gmv"]])
+    orders_series = json.dumps([safe_val(v) for v in portfolio_weekly["orders"]])
+    cp_series     = json.dumps([safe_val(v) for v in portfolio_weekly["cp"]])
 
     def kpi_card(icon, title, value_str, wow_pct, sub, analysis_html=""):
         if wow_pct is None:
@@ -1985,7 +2050,8 @@ def build_overview_section(df_trends: pd.DataFrame) -> str:
     </div>"""
 
 
-def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, df_loc: pd.DataFrame, start_date: str, end_date: str) -> str:
+def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, df_loc: pd.DataFrame,
+               df_portfolio: pd.DataFrame, start_date: str, end_date: str) -> str:
     """Build full HTML report from DataFrame."""
     if df.empty:
         return "<html><body><h1>Немає даних</h1></body></html>"
@@ -2004,8 +2070,8 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, df_loc: pd.DataFrame, 
     # Compute week-over-week GMV change from trends
     gmv_wow_map = compute_gmv_wow(df_trends)
 
-    # Build overview section
-    overview_section = build_overview_section(df_trends.copy() if not df_trends.empty else df_trends)
+    # Build overview section from pre-aggregated portfolio data (accurate, no row limit)
+    overview_section = build_overview_section(df_portfolio)
 
     city_tabs_html = (
         '<div class="city-tab active" id="tab-overview" onclick="showCity(\'overview\')">'
@@ -2155,10 +2221,16 @@ def main():
         print(f"WARNING: Could not fetch location trends: {exc}")
         df_loc = pd.DataFrame()
 
+    try:
+        df_portfolio = fetch_portfolio_weekly(n_weeks=12)
+    except Exception as exc:
+        print(f"WARNING: Could not fetch portfolio weekly data: {exc}")
+        df_portfolio = pd.DataFrame()
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(base_dir, OUTPUT_FILE)
 
-    html = build_html(df, df_trends, df_loc, start_date, end_date)
+    html = build_html(df, df_trends, df_loc, df_portfolio, start_date, end_date)
 
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
