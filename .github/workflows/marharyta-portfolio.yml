@@ -46,5 +46,7 @@ jobs:
           GMAIL_APP_PASSWORD:    ${{ secrets.GMAIL_APP_PASSWORD }}
           AM_EMAIL:              ${{ secrets.AM_EMAIL }}
           TEST_MODE: "true"
+        # Пропускаємо якщо GMAIL_USER не задано
+        if: ${{ secrets.GMAIL_USER != '' }}
         run: python Marharyta_Portfolio/send_red_flag_emails.py
-        continue-on-error: true   # не ламати workflow якщо email не налаштовано
+        continue-on-error: true
