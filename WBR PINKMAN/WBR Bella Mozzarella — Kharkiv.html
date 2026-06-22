@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>BELLA MOZZARELLA — WBR · Харків · 27.04 – 03.05.2026 — 15.06 – 21.06.2026</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --green:#34D186; --green-darker:#0d8a52;
@@ -36,11 +35,26 @@
       box-shadow:0 1px 4px rgba(0,0,0,.06)}
     .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}
     .kpi-value{font-size:22px;font-weight:700}
-    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px;margin-bottom:12px}
-    .trend-card canvas{max-height:200px}
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;margin-bottom:12px}
     .chart-card{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .chart-card h3{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}
-    .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:8px}
+    .chart-card h3{font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:4px}
+    .metric-desc{font-size:12px;color:var(--gray-700);margin-bottom:6px;line-height:1.45}
+    .chart-card .unit{font-size:10px;color:var(--gray-400);margin-bottom:10px}
+    .brand-bars-scroll{overflow-x:auto;padding-bottom:6px}
+    .brand-bars{display:flex;gap:10px;align-items:flex-end;min-height:130px;padding-top:8px}
+    .brand-bar-col{display:flex;flex-direction:column;align-items:center;min-width:52px;flex-shrink:0;height:120px;justify-content:flex-end}
+    .brand-bar-val{font-size:9px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center;max-width:64px;line-height:1.2}
+    .brand-bar-week{font-size:9px;color:var(--gray-400);margin-top:4px;text-align:center}
+    .hist-bar.brand-bar{width:36px;background:linear-gradient(180deg,var(--green) 0%,var(--green-darker) 100%)}
+    .loc-collapse{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:28px 0}
+    .loc-collapse summary{list-style:none;cursor:pointer;padding:18px 24px;font-size:14px;font-weight:700;
+      color:var(--gray-700);display:flex;align-items:center;gap:10px;user-select:none}
+    .loc-collapse summary::-webkit-details-marker{display:none}
+    .loc-collapse[open] summary .collapse-icon{transform:rotate(90deg)}
+    .collapse-icon{color:var(--green-darker);transition:transform .2s;font-size:11px}
+    .collapse-hint{font-size:11px;font-weight:400;color:var(--gray-400);margin-left:auto}
+    .loc-collapse-body{padding:8px 24px 28px;border-top:1px solid #eee}
+    .subsection{margin-top:20px}
     .loc-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:12px;flex-wrap:wrap}
     .loc-legend .leg{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}
     .loc-legend .leg.m1{background:var(--green-darker)}
@@ -102,7 +116,7 @@
   <div class="header-meta">
     <div>Період: <strong>27.04 – 03.05.2026 — 15.06 – 21.06.2026</strong></div>
     <div>Локацій: <strong>6 точок</strong></div>
-    <div>Оновлено: <strong>22.06.2026 17:14</strong></div>
+    <div>Оновлено: <strong>22.06.2026 17:33</strong></div>
   </div>
 </header>
 
@@ -113,12 +127,12 @@
     <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній повний тиждень: 15.06 – 21.06.2026</span>
   </div>
 
-  <div class="section-title">Огляд мережі — 15.06 – 21.06.2026</div>
+  <div class="section-title">Огляд бренду — 15.06 – 21.06.2026</div>
   
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Gross Sales (останній тиждень)</div>
+      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній тиждень)</div>
         <div class="kpi-value">35 731 ₴</div></div>
-      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
+      <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div>
         <div class="kpi-value">28</div></div>
       <div class="kpi-card"><div class="kpi-label">Тижнів на платформі</div>
         <div class="kpi-value">8</div></div>
@@ -126,235 +140,835 @@
         <div class="kpi-value">6 / 6</div></div>
     </div>
 
-  <div class="section-title">Динаміка по тижнях (вся історія)</div>
-  <p class="section-hint">Ключові метрики мережі з моменту запуску на платформі</p>
-  <div class="charts-grid">
-    <div class="chart-card trend-card">
-      <h3>Gross Sales</h3>
-      <p class="unit">UAH · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-gross" height="120"></canvas>
+  <div class="section-title">1. Продажі</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-gross">
+      <h3>Загальні продажі</h3>
+      <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 923 ₴</div>
+          <div class="hist-bar brand-bar" style="height:7%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">38 321 ₴</div>
+          <div class="hist-bar brand-bar" style="height:45%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">84 623 ₴</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">67 386 ₴</div>
+          <div class="hist-bar brand-bar" style="height:80%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">72 023 ₴</div>
+          <div class="hist-bar brand-bar" style="height:85%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">63 515 ₴</div>
+          <div class="hist-bar brand-bar" style="height:75%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">42 963 ₴</div>
+          <div class="hist-bar brand-bar" style="height:51%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">35 731 ₴</div>
+          <div class="hist-bar brand-bar" style="height:42%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div>
-    <div class="chart-card trend-card">
-      <h3>Delivered Orders</h3>
-      <p class="unit">замовлення · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-orders" height="120"></canvas>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-orders">
+      <h3>Доставлені замовлення</h3>
+      <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
+      <p class="unit">Одиниця: шт. · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7</div>
+          <div class="hist-bar brand-bar" style="height:9%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">33</div>
+          <div class="hist-bar brand-bar" style="height:42%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">78</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">72</div>
+          <div class="hist-bar brand-bar" style="height:92%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">73</div>
+          <div class="hist-bar brand-bar" style="height:94%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">62</div>
+          <div class="hist-bar brand-bar" style="height:79%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">38</div>
+          <div class="hist-bar brand-bar" style="height:49%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">28</div>
+          <div class="hist-bar brand-bar" style="height:36%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div>
-    <div class="chart-card trend-card">
-      <h3>AOV</h3>
-      <p class="unit">UAH · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-aov" height="120"></canvas>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-aov">
+      <h3>Середній чек</h3>
+      <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">846 ₴</div>
+          <div class="hist-bar brand-bar" style="height:66%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1 161 ₴</div>
+          <div class="hist-bar brand-bar" style="height:91%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1 085 ₴</div>
+          <div class="hist-bar brand-bar" style="height:85%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">936 ₴</div>
+          <div class="hist-bar brand-bar" style="height:73%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">987 ₴</div>
+          <div class="hist-bar brand-bar" style="height:77%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1 024 ₴</div>
+          <div class="hist-bar brand-bar" style="height:80%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1 131 ₴</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1 276 ₴</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-avail">
+      <h3>Доступність на платформі</h3>
+      <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
+      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">90.93%</div>
+          <div class="hist-bar brand-bar" style="height:91%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">91.46%</div>
+          <div class="hist-bar brand-bar" style="height:91%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">99.87%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">99.05%</div>
+          <div class="hist-bar brand-bar" style="height:99%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">98.52%</div>
+          <div class="hist-bar brand-bar" style="height:99%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div>
-    <div class="chart-card trend-card">
-      <h3>Availability</h3>
-      <p class="unit">% · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-avail" height="120"></canvas>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-accept">
+      <h3>Прийняття замовлень</h3>
+      <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
+      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">94.91%</div>
+          <div class="hist-bar brand-bar" style="height:95%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">98.15%</div>
+          <div class="hist-bar brand-bar" style="height:98%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">100.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div>
-    <div class="chart-card trend-card">
-      <h3>Acceptance Rate</h3>
-      <p class="unit">% · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-accept" height="120"></canvas>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-refunds">
+      <h3>Замовлення з компенсаціями</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
+      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.00%</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.00%</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.49%</div>
+          <div class="hist-bar brand-bar" style="height:24%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.74%</div>
+          <div class="hist-bar brand-bar" style="height:36%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">2.08%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.93%</div>
+          <div class="hist-bar brand-bar" style="height:45%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.00%</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0.00%</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div>
-    <div class="chart-card trend-card">
-      <h3>Rating</h3>
-      <p class="unit">0–5 · динаміка по тижнях</p>
-      <canvas id="bella-mozzarella-kharkiv-trend-rating" height="120"></canvas>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-prep_time">
+      <h3>Час приготування</h3>
+      <p class="metric-desc">Середній час приготування замовлення на кухні</p>
+      <p class="unit">Одиниця: хв · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">24.30 хв</div>
+          <div class="hist-bar brand-bar" style="height:49%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">41.20 хв</div>
+          <div class="hist-bar brand-bar" style="height:84%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">41.30 хв</div>
+          <div class="hist-bar brand-bar" style="height:84%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">42.50 хв</div>
+          <div class="hist-bar brand-bar" style="height:87%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">49.10 хв</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">41.60 хв</div>
+          <div class="hist-bar brand-bar" style="height:85%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">43.80 хв</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">46.80 хв</div>
+          <div class="hist-bar brand-bar" style="height:95%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-active_users">
+      <h3>Активні користувачі</h3>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7</div>
+          <div class="hist-bar brand-bar" style="height:10%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">33</div>
+          <div class="hist-bar brand-bar" style="height:46%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">72</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">66</div>
+          <div class="hist-bar brand-bar" style="height:92%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">65</div>
+          <div class="hist-bar brand-bar" style="height:90%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">58</div>
+          <div class="hist-bar brand-bar" style="height:81%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">35</div>
+          <div class="hist-bar brand-bar" style="height:49%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">27</div>
+          <div class="hist-bar brand-bar" style="height:38%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-freq">
+      <h3>Частота замовлень</h3>
+      <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
+      <p class="unit">Одиниця: зам./корист. · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.08</div>
+          <div class="hist-bar brand-bar" style="height:96%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.09</div>
+          <div class="hist-bar brand-bar" style="height:97%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.12</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.07</div>
+          <div class="hist-bar brand-bar" style="height:96%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.09</div>
+          <div class="hist-bar brand-bar" style="height:97%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">1.04</div>
+          <div class="hist-bar brand-bar" style="height:93%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-new_users">
+      <h3>Нові користувачі</h3>
+      <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7</div>
+          <div class="hist-bar brand-bar" style="height:10%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">31</div>
+          <div class="hist-bar brand-bar" style="height:46%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">67</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">64</div>
+          <div class="hist-bar brand-bar" style="height:96%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">51</div>
+          <div class="hist-bar brand-bar" style="height:76%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">44</div>
+          <div class="hist-bar brand-bar" style="height:66%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">25</div>
+          <div class="hist-bar brand-bar" style="height:37%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">13</div>
+          <div class="hist-bar brand-bar" style="height:19%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-sessions">
+      <h3>Перегляди закладу</h3>
+      <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
+      <p class="unit">Одиниця: сесій · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">751</div>
+          <div class="hist-bar brand-bar" style="height:6%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4 433</div>
+          <div class="hist-bar brand-bar" style="height:36%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">12 208</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">9 523</div>
+          <div class="hist-bar brand-bar" style="height:78%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7 622</div>
+          <div class="hist-bar brand-bar" style="height:62%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6 921</div>
+          <div class="hist-bar brand-bar" style="height:57%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 426</div>
+          <div class="hist-bar brand-bar" style="height:44%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4 643</div>
+          <div class="hist-bar brand-bar" style="height:38%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-imp_menu">
+      <h3>Конверсія: перегляд → меню</h3>
+      <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
+      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6.79%</div>
+          <div class="hist-bar brand-bar" style="height:87%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7.78%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6.81%</div>
+          <div class="hist-bar brand-bar" style="height:88%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6.98%</div>
+          <div class="hist-bar brand-bar" style="height:90%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">7.45%</div>
+          <div class="hist-bar brand-bar" style="height:96%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6.95%</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6.08%</div>
+          <div class="hist-bar brand-bar" style="height:78%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5.84%</div>
+          <div class="hist-bar brand-bar" style="height:75%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-menu_prod">
+      <h3>Конверсія: меню → кошик</h3>
+      <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
+      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">600.00%</div>
+          <div class="hist-bar brand-bar" style="height:5%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">3800.00%</div>
+          <div class="hist-bar brand-bar" style="height:31%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">12200.00%</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">10900.00%</div>
+          <div class="hist-bar brand-bar" style="height:89%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">11500.00%</div>
+          <div class="hist-bar brand-bar" style="height:94%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">9200.00%</div>
+          <div class="hist-bar brand-bar" style="height:75%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6300.00%</div>
+          <div class="hist-bar brand-bar" style="height:52%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4400.00%</div>
+          <div class="hist-bar brand-bar" style="height:36%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-rating">
+      <h3>Рейтинг закладу</h3>
+      <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
+      <p class="unit">Одиниця: з 5 · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 з 5</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 з 5</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4.80 з 5</div>
+          <div class="hist-bar brand-bar" style="height:96%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4.89 з 5</div>
+          <div class="hist-bar brand-bar" style="height:98%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">3.40 з 5</div>
+          <div class="hist-bar brand-bar" style="height:68%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">3.09 з 5</div>
+          <div class="hist-bar brand-bar" style="height:62%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">4.67 з 5</div>
+          <div class="hist-bar brand-bar" style="height:93%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 з 5</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-discounts">
+      <h3>Загальна сума знижок</h3>
+      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6 536 ₴</div>
+          <div class="hist-bar brand-bar" style="height:39%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">16 931 ₴</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">13 246 ₴</div>
+          <div class="hist-bar brand-bar" style="height:78%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">14 943 ₴</div>
+          <div class="hist-bar brand-bar" style="height:88%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">13 034 ₴</div>
+          <div class="hist-bar brand-bar" style="height:77%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 056 ₴</div>
+          <div class="hist-bar brand-bar" style="height:30%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">2 921 ₴</div>
+          <div class="hist-bar brand-bar" style="height:17%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-camp_bolt">
+      <h3>Витрати Bolt на знижки</h3>
+      <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">6 536 ₴</div>
+          <div class="hist-bar brand-bar" style="height:39%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">16 931 ₴</div>
+          <div class="hist-bar brand-bar" style="height:100%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">13 246 ₴</div>
+          <div class="hist-bar brand-bar" style="height:78%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">14 943 ₴</div>
+          <div class="hist-bar brand-bar" style="height:88%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">13 034 ₴</div>
+          <div class="hist-bar brand-bar" style="height:77%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">5 056 ₴</div>
+          <div class="hist-bar brand-bar" style="height:30%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">2 921 ₴</div>
+          <div class="hist-bar brand-bar" style="height:17%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
+    </div>
+    <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-camp_merch">
+      <h3>Витрати партнера на знижки</h3>
+      <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">27.04</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">04.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">11.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">18.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">25.05</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">01.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">08.06</div>
+        </div>
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">0 ₴</div>
+          <div class="hist-bar brand-bar" style="height:4%"></div>
+          <div class="brand-bar-week">15.06</div>
+        </div></div>
+      </div>
     </div></div>
 
-  <div class="section-title">Таблиця по тижнях</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Тиждень</th>
-          <th class="num">Gross Sales</th>
-          <th class="num">Orders</th>
-          <th class="num">AOV</th>
-          <th class="num">Availability</th>
-          <th class="num">Acceptance</th>
-          <th class="num">Rating</th>
-          <th class="num">Refunds</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-          <td class="week-label">27.04 – 03.05.2026</td>
-          <td class="num">5 923 ₴</td>
-          <td class="num">7</td>
-          <td class="num">846 ₴</td>
-          <td class="num">90.93%</td>
-          <td class="num">100.00%</td>
-          <td class="num">5</td>
-          <td class="num">0.00%</td>
-        </tr><tr>
-          <td class="week-label">04.05 – 10.05.2026</td>
-          <td class="num">38 321 ₴</td>
-          <td class="num">33</td>
-          <td class="num">1 161 ₴</td>
-          <td class="num">91.46%</td>
-          <td class="num">100.00%</td>
-          <td class="num">5</td>
-          <td class="num">0.00%</td>
-        </tr><tr>
-          <td class="week-label">11.05 – 17.05.2026</td>
-          <td class="num">84 623 ₴</td>
-          <td class="num">78</td>
-          <td class="num">1 085 ₴</td>
-          <td class="num">100.00%</td>
-          <td class="num">100.00%</td>
-          <td class="num">4.80</td>
-          <td class="num">0.49%</td>
-        </tr><tr>
-          <td class="week-label">18.05 – 24.05.2026</td>
-          <td class="num">67 386 ₴</td>
-          <td class="num">72</td>
-          <td class="num">936 ₴</td>
-          <td class="num">100.00%</td>
-          <td class="num">100.00%</td>
-          <td class="num">4.89</td>
-          <td class="num">0.74%</td>
-        </tr><tr>
-          <td class="week-label">25.05 – 31.05.2026</td>
-          <td class="num">72 023 ₴</td>
-          <td class="num">73</td>
-          <td class="num">987 ₴</td>
-          <td class="num">99.87%</td>
-          <td class="num">94.91%</td>
-          <td class="num">3.40</td>
-          <td class="num">2.08%</td>
-        </tr><tr>
-          <td class="week-label">01.06 – 07.06.2026</td>
-          <td class="num">63 515 ₴</td>
-          <td class="num">62</td>
-          <td class="num">1 024 ₴</td>
-          <td class="num">100.00%</td>
-          <td class="num">98.15%</td>
-          <td class="num">3.09</td>
-          <td class="num">0.93%</td>
-        </tr><tr>
-          <td class="week-label">08.06 – 14.06.2026</td>
-          <td class="num">42 963 ₴</td>
-          <td class="num">38</td>
-          <td class="num">1 131 ₴</td>
-          <td class="num">99.05%</td>
-          <td class="num">100.00%</td>
-          <td class="num">4.67</td>
-          <td class="num">0.00%</td>
-        </tr><tr>
-          <td class="week-label">15.06 – 21.06.2026</td>
-          <td class="num">35 731 ₴</td>
-          <td class="num">28</td>
-          <td class="num">1 276 ₴</td>
-          <td class="num">98.52%</td>
-          <td class="num">100.00%</td>
-          <td class="num">5</td>
-          <td class="num">0.00%</td>
-        </tr></tbody>
-    </table>
-  </div>
-
-  <div class="section-title">Клієнти, конверсії та кампанії по тижнях</div>
-  <p class="section-hint">Мережа в цілому · UAH (₴)</p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Тиждень</th>
-          <th class="num">Active Users</th>
-          <th class="num">Order Frequency</th>
-          <th class="num">New Users</th>
-          <th class="num">Sessions with Impressions</th>
-          <th class="num">Impression → Menu (%)</th>
-          <th class="num">Menu → Product Added (%)</th>
-          <th class="num">Campaigns Spend Bolt</th>
-          <th class="num">Campaigns Spend Merchant</th>
-        </tr>
-      </thead>
-      <tbody><tr>
-          <td class="week-label">27.04 – 03.05.2026</td>
-          <td class="num">7</td>
-          <td class="num">1</td>
-          <td class="num">7</td>
-          <td class="num">751</td>
-          <td class="num">6.79%</td>
-          <td class="num">600.00%</td>
-          <td class="num">0 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">04.05 – 10.05.2026</td>
-          <td class="num">33</td>
-          <td class="num">1</td>
-          <td class="num">31</td>
-          <td class="num">4433</td>
-          <td class="num">7.78%</td>
-          <td class="num">3800.00%</td>
-          <td class="num">6 536 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">11.05 – 17.05.2026</td>
-          <td class="num">72</td>
-          <td class="num">1.08</td>
-          <td class="num">67</td>
-          <td class="num">12208</td>
-          <td class="num">6.81%</td>
-          <td class="num">12200.00%</td>
-          <td class="num">16 931 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">18.05 – 24.05.2026</td>
-          <td class="num">66</td>
-          <td class="num">1.09</td>
-          <td class="num">64</td>
-          <td class="num">9523</td>
-          <td class="num">6.98%</td>
-          <td class="num">10900.00%</td>
-          <td class="num">13 246 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">25.05 – 31.05.2026</td>
-          <td class="num">65</td>
-          <td class="num">1.12</td>
-          <td class="num">51</td>
-          <td class="num">7622</td>
-          <td class="num">7.45%</td>
-          <td class="num">11500.00%</td>
-          <td class="num">14 943 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">01.06 – 07.06.2026</td>
-          <td class="num">58</td>
-          <td class="num">1.07</td>
-          <td class="num">44</td>
-          <td class="num">6921</td>
-          <td class="num">6.95%</td>
-          <td class="num">9200.00%</td>
-          <td class="num">13 034 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">08.06 – 14.06.2026</td>
-          <td class="num">35</td>
-          <td class="num">1.09</td>
-          <td class="num">25</td>
-          <td class="num">5426</td>
-          <td class="num">6.08%</td>
-          <td class="num">6300.00%</td>
-          <td class="num">5 056 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr><tr>
-          <td class="week-label">15.06 – 21.06.2026</td>
-          <td class="num">27</td>
-          <td class="num">1.04</td>
-          <td class="num">13</td>
-          <td class="num">4643</td>
-          <td class="num">5.84%</td>
-          <td class="num">4400.00%</td>
-          <td class="num">2 921 ₴</td>
-          <td class="num">0 ₴</td>
-        </tr></tbody>
-    </table>
-  </div>
-
-  <div class="section-title">⚠️ Проблемні локації</div>
-  <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
-  <p class="section-hint" style="margin-top:-8px">Порівняння: 08.06 – 14.06.2026 vs 15.06 – 21.06.2026</p><div class="problem-locs-grid">
+  
+  <details class="loc-collapse">
+    <summary>
+      <span class="collapse-icon">▶</span>
+      Деталізація по окремих локаціях
+      <span class="collapse-hint">натисніть, щоб розгорнути</span>
+    </summary>
+    <div class="loc-collapse-body">
+      <div class="section-title">⚠️ Проблемні локації</div>
+      <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
+      <p class="section-hint" style="margin-top:-8px">Порівняння: 08.06 – 14.06.2026 vs 15.06 – 21.06.2026</p><div class="problem-locs-grid">
         <div class="problem-loc-card">
           <div class="problem-loc-header">
             <span class="problem-badge">⚠️ Потребує уваги</span>
@@ -427,11 +1041,11 @@
           </div>
           <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 11 (було 12 тижнем раніше).</li><li>Мало переходів у меню — лише 5.5% переглядів.</li></ul>
         </div></div>
-
-  <div class="section-title">1. Продажі</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) по кожній локації</p><div class="charts-grid loc-charts-grid">
+      <div class="section-title subsection">1. Продажі</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
-      <h3>Gross Sales (загальні продажі)</h3>
-      <p class="unit">UAH до знижок · по кожній локації</p>
+      <h3>Загальні продажі</h3>
+      <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
+      <p class="unit">Одиниця: ₴ · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -520,8 +1134,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Delivered Orders</h3>
-      <p class="unit">доставлені замовлення · по кожній локації</p>
+      <h3>Доставлені замовлення</h3>
+      <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
+      <p class="unit">Одиниця: шт. · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -610,8 +1225,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>AOV (середній чек)</h3>
-      <p class="unit">UAH / замовлення · по кожній локації</p>
+      <h3>Середній чек</h3>
+      <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
+      <p class="unit">Одиниця: ₴ · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -698,10 +1314,11 @@
               <div class="loc-bar-month">15.06</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">2. Операційні показники</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
-      <h3>Availability Rate</h3>
-      <p class="unit">доступність · % · по кожній локації</p>
+      <h3>Доступність на платформі</h3>
+      <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
+      <p class="unit">Одиниця: % · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -790,8 +1407,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Acceptance Rate</h3>
-      <p class="unit">прийняття · % · по кожній локації</p>
+      <h3>Прийняття замовлень</h3>
+      <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
+      <p class="unit">Одиниця: % · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -880,8 +1498,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Orders with Refunds</h3>
-      <p class="unit">повернення · % · по кожній локації</p>
+      <h3>Замовлення з компенсаціями</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
+      <p class="unit">Одиниця: % · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -970,8 +1589,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Avg. Preparation Time</h3>
-      <p class="unit">приготування · хв · по кожній локації</p>
+      <h3>Час приготування</h3>
+      <p class="metric-desc">Середній час приготування замовлення на кухні</p>
+      <p class="unit">Одиниця: хв · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1058,10 +1678,11 @@
               <div class="loc-bar-month">15.06</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
-      <h3>Active Users</h3>
-      <p class="unit">активні користувачі · по кожній локації</p>
+      <h3>Активні користувачі</h3>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
+      <p class="unit">Одиниця: осіб · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1150,8 +1771,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Order Frequency</h3>
-      <p class="unit">замовлень / користувач · по кожній локації</p>
+      <h3>Частота замовлень</h3>
+      <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
+      <p class="unit">Одиниця: зам./корист. · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1240,8 +1862,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>New Users</h3>
-      <p class="unit">нові користувачі бренду · по кожній локації</p>
+      <h3>Нові користувачі</h3>
+      <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
+      <p class="unit">Одиниця: осіб · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1330,8 +1953,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Sessions with Impressions</h3>
-      <p class="unit">перегляди закладу · по кожній локації</p>
+      <h3>Перегляди закладу</h3>
+      <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
+      <p class="unit">Одиниця: сесій · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1420,8 +2044,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Impression-to-Menu Viewed Conversion</h3>
-      <p class="unit">конверсія · % · по кожній локації</p>
+      <h3>Конверсія: перегляд → меню</h3>
+      <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
+      <p class="unit">Одиниця: % · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1510,8 +2135,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Menu Viewed-to-Product Added Conversion</h3>
-      <p class="unit">конверсія · % · по кожній локації</p>
+      <h3>Конверсія: меню → кошик</h3>
+      <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
+      <p class="unit">Одиниця: % · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1600,8 +2226,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Average Merchant Rating</h3>
-      <p class="unit">рейтинг 0–5 · по кожній локації</p>
+      <h3>Рейтинг закладу</h3>
+      <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
+      <p class="unit">Одиниця: з 5 · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1688,10 +2315,11 @@
               <div class="loc-bar-month">15.06</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">4. Знижки</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
-      <h3>Total Discounts for Users</h3>
-      <p class="unit">UAH · по кожній локації</p>
+      <h3>Загальна сума знижок</h3>
+      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
+      <p class="unit">Одиниця: ₴ · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1780,8 +2408,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Campaigns Spend by Bolt (Local Currency)</h3>
-      <p class="unit">UAH · витрати Bolt · по кожній локації</p>
+      <h3>Витрати Bolt на знижки</h3>
+      <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
+      <p class="unit">Одиниця: ₴ · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1870,8 +2499,9 @@
         </div></div>
     </div>
     <div class="chart-card loc-chart-card">
-      <h3>Campaigns Spend by Merchant</h3>
-      <p class="unit">UAH · витрати партнера · по кожній локації</p>
+      <h3>Витрати партнера на знижки</h3>
+      <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
+      <p class="unit">Одиниця: ₴ · по кожній локації</p>
       <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
@@ -1959,9 +2589,11 @@
             </div></div>
         </div></div>
     </div></div>
+    </div>
+  </details>
 
   <div class="section-title">ТОП-10 позицій меню</div>
-  <p class="section-hint">За весь період на платформі · Order Item Report</p>
+  <p class="section-hint">За весь період на платформі · найпопулярніші страви</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -2006,16 +2638,16 @@
           <td class="num">199 ₴</td>
         </tr><tr>
           <td class="rank">7</td>
-          <td><strong>French fries</strong></td>
-          <td class="num">26</td>
-          <td class="num">3 531.0 ₴</td>
-          <td class="num">129 ₴</td>
-        </tr><tr>
-          <td class="rank">8</td>
           <td><strong>Carbonara Pasta</strong></td>
           <td class="num">26</td>
           <td class="num">6 214.0 ₴</td>
           <td class="num">239 ₴</td>
+        </tr><tr>
+          <td class="rank">8</td>
+          <td><strong>French fries</strong></td>
+          <td class="num">26</td>
+          <td class="num">3 531.0 ₴</td>
+          <td class="num">129 ₴</td>
         </tr><tr>
           <td class="rank">9</td>
           <td><strong>Carbonara Pizza</strong></td>
@@ -2051,199 +2683,5 @@
   <span>Bolt Food</span> · WBR BELLA MOZZARELLA · Харків · Автооновлення: щопонеділка о 14:00 (Київ) ·
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/WBR%20PINKMAN" style="color:var(--green)">GitHub</a>
 </footer>
-<script>
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-gross');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'Gross Sales',
-            data: [5923.0, 38321.0, 84623.0, 67386.0, 72023.0, 63515.0, 42963.0, 35731.0],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-orders');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'Delivered Orders',
-            data: [7.0, 33.0, 78.0, 72.0, 73.0, 62.0, 38.0, 28.0],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-aov');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'AOV',
-            data: [846.0, 1161.0, 1085.0, 936.0, 987.0, 1024.0, 1131.0, 1276.0],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-avail');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'Availability',
-            data: [90.93, 91.46, 100.0, 100.0, 99.87, 100.0, 99.05, 98.52],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-accept');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'Acceptance Rate',
-            data: [100.0, 100.0, 100.0, 100.0, 94.91, 98.15, 100.0, 100.0],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-
-    (function() {
-      const ctx = document.getElementById('bella-mozzarella-kharkiv-trend-rating');
-      if (!ctx) return;
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ["27.04", "04.05", "11.05", "18.05", "25.05", "01.06", "08.06", "15.06"],
-          datasets: [{
-            label: 'Rating',
-            data: [5.0, 5.0, 4.8, 4.89, 3.4, 3.09, 4.67, 5.0],
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: 8 > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            title: { display: false }
-          },
-          scales: {
-            x: { ticks: { maxRotation: 45, font: { size: 9 } } },
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    })();
-</script>
 </body>
 </html>

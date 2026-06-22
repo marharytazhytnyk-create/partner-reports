@@ -8,7 +8,6 @@ WBR (Weekly Business Review) — Pinkman Bar / Bella Mozzarella.
 from __future__ import annotations
 
 import datetime
-import json
 import os
 import re
 import sys
@@ -69,42 +68,107 @@ MAX_POLL_S = 600
 
 HEADERS = {"Authorization": f"Bearer {DATABRICKS_TOKEN}", "Content-Type": "application/json"}
 
-LOCATION_CHART_SECTIONS: list[tuple[str, list[tuple[str, str, str, str]]]] = [
-    ("1. Продажі", [
-        ("loc-gross", "Gross Sales (загальні продажі)", "UAH до знижок", "gross"),
-        ("loc-orders", "Delivered Orders", "доставлені замовлення", "orders"),
-        ("loc-aov", "AOV (середній чек)", "UAH / замовлення", "aov"),
-    ]),
-    ("2. Операційні показники", [
-        ("loc-avail", "Availability Rate", "доступність · %", "avail"),
-        ("loc-accept", "Acceptance Rate", "прийняття · %", "accept"),
-        ("loc-refunds", "Orders with Refunds", "повернення · %", "refunds"),
-        ("loc-prep", "Avg. Preparation Time", "приготування · хв", "prep_time"),
-    ]),
+# Секції метрик: (заголовок секції, список ключів)
+CHART_SECTIONS: list[tuple[str, list[str]]] = [
+    ("1. Продажі", ["gross", "orders", "aov"]),
+    ("2. Операційні показники", ["avail", "accept", "refunds", "prep_time"]),
     ("3. Клієнти та їх поведінка", [
-        ("loc-active", "Active Users", "активні користувачі", "active_users"),
-        ("loc-freq", "Order Frequency", "замовлень / користувач", "freq"),
-        ("loc-new", "New Users", "нові користувачі бренду", "new_users"),
-        ("loc-sess", "Sessions with Impressions", "перегляди закладу", "sessions"),
-        ("loc-imp", "Impression-to-Menu Viewed Conversion", "конверсія · %", "imp_menu"),
-        ("loc-menu", "Menu Viewed-to-Product Added Conversion", "конверсія · %", "menu_prod"),
-        ("loc-rating", "Average Merchant Rating", "рейтинг 0–5", "rating"),
+        "active_users", "freq", "new_users", "sessions", "imp_menu", "menu_prod", "rating",
     ]),
-    ("4. Знижки", [
-        ("loc-disc", "Total Discounts for Users", "UAH", "discounts"),
-        ("loc-bolt", "Campaigns Spend by Bolt (Local Currency)", "UAH · витрати Bolt", "camp_bolt"),
-        ("loc-merch", "Campaigns Spend by Merchant", "UAH · витрати партнера", "camp_merch"),
-    ]),
+    ("4. Знижки", ["discounts", "camp_bolt", "camp_merch"]),
 ]
 
-TREND_METRICS: list[tuple[str, str, str]] = [
-    ("trend-gross", "Gross Sales", "UAH", "gross"),
-    ("trend-orders", "Delivered Orders", "замовлення", "orders"),
-    ("trend-aov", "AOV", "UAH", "aov"),
-    ("trend-avail", "Availability", "%", "avail"),
-    ("trend-accept", "Acceptance Rate", "%", "accept"),
-    ("trend-rating", "Rating", "0–5", "rating"),
-]
+# Українські назви та розшифровки метрик: ключ → (назва, опис, одиниця)
+METRIC_UK: dict[str, tuple[str, str, str]] = {
+    "gross": (
+        "Загальні продажі",
+        "Сума вартості доставлених замовлень до застосування знижок",
+        "₴",
+    ),
+    "orders": (
+        "Доставлені замовлення",
+        "Кількість замовлень, успішно доставлених клієнтам",
+        "шт.",
+    ),
+    "aov": (
+        "Середній чек",
+        "Середня сума одного доставленого замовлення до знижок",
+        "₴",
+    ),
+    "avail": (
+        "Доступність на платформі",
+        "Частка часу, коли заклад був онлайн і доступний для замовлення",
+        "%",
+    ),
+    "accept": (
+        "Прийняття замовлень",
+        "Частка замовлень, які партнер прийняв вчасно",
+        "%",
+    ),
+    "refunds": (
+        "Замовлення з компенсаціями",
+        "Частка замовлень, за які клієнту надано компенсацію або повернення",
+        "%",
+    ),
+    "prep_time": (
+        "Час приготування",
+        "Середній час приготування замовлення на кухні",
+        "хв",
+    ),
+    "active_users": (
+        "Активні користувачі",
+        "Унікальні клієнти з хоча б одним доставленим замовленням за тиждень",
+        "осіб",
+    ),
+    "freq": (
+        "Частота замовлень",
+        "Середня кількість замовлень на одного активного користувача",
+        "зам./корист.",
+    ),
+    "new_users": (
+        "Нові користувачі",
+        "Клієнти, які вперше зробили замовлення в цьому бренді",
+        "осіб",
+    ),
+    "sessions": (
+        "Перегляди закладу",
+        "Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті",
+        "сесій",
+    ),
+    "imp_menu": (
+        "Конверсія: перегляд → меню",
+        "Частка переглядів закладу, з яких клієнт відкрив меню",
+        "%",
+    ),
+    "menu_prod": (
+        "Конверсія: меню → кошик",
+        "Частка переглядів меню, з яких клієнт додав страву в кошик",
+        "%",
+    ),
+    "rating": (
+        "Рейтинг закладу",
+        "Середня оцінка від клієнтів після доставки",
+        "з 5",
+    ),
+    "discounts": (
+        "Загальна сума знижок",
+        "Усі знижки для клієнтів за тиждень (Bolt + партнер)",
+        "₴",
+    ),
+    "camp_bolt": (
+        "Витрати Bolt на знижки",
+        "Сума, яку Bolt профінансував на знижки та промо для клієнтів",
+        "₴",
+    ),
+    "camp_merch": (
+        "Витрати партнера на знижки",
+        "Сума, яку партнер профінансував на знижки та промо для клієнтів",
+        "₴",
+    ),
+}
+
+# Ключі для гістограм по локаціях (останні 2 тижні)
+LOCATION_CHART_SECTIONS: list[tuple[str, list[str]]] = CHART_SECTIONS
 
 
 # ─── DATE HELPERS ──────────────────────────────────────────────────────────────
@@ -705,11 +769,46 @@ def _metric_opts(key: str) -> dict:
     return {}
 
 
+def _metric_label(key: str) -> tuple[str, str, str]:
+    return METRIC_UK.get(key, (key, "", ""))
+
+
+def _brand_histogram_chart(key: str, weeks: list[dict], slug: str = "") -> str:
+    title, desc, unit = _metric_label(key)
+    opts = _metric_opts(key)
+    vals = [float(w.get(key, 0)) for w in weeks]
+    max_v = max(vals) if vals and max(vals) > 0 else 1.0
+
+    bars = ""
+    for w, val in zip(weeks, vals):
+        h_pct = max(4, round(val / max_v * 100))
+        short_lbl = w["label"].split(" – ")[0]
+        suffix = f" {unit}" if unit in ("₴", "хв", "з 5") else ""
+        bars += f"""
+        <div class="brand-bar-col">
+          <div class="brand-bar-val">{_fmt_chart_value(val, opts)}{suffix}</div>
+          <div class="hist-bar brand-bar" style="height:{h_pct}%"></div>
+          <div class="brand-bar-week">{short_lbl}</div>
+        </div>"""
+
+    cid = f"{slug}-brand-{key}" if slug else f"brand-{key}"
+    return f"""
+    <div class="chart-card brand-chart-card" id="{cid}">
+      <h3>{title}</h3>
+      <p class="metric-desc">{desc}</p>
+      <p class="unit">Одиниця: {unit} · увесь бренд · по тижнях</p>
+      <div class="brand-bars-scroll">
+        <div class="brand-bars">{bars}</div>
+      </div>
+    </div>"""
+
+
 def _location_grouped_chart(
-    cid: str, title: str, unit: str, key: str,
+    key: str,
     locations: list[dict], week_labels: list[str], slug: str = "",
 ) -> str:
-    cid = f"{slug}-{cid}" if slug else cid
+    title, desc, unit = _metric_label(key)
+    cid = f"{slug}-loc-{key}" if slug else f"loc-{key}"
     opts = _metric_opts(key)
     all_vals = [
         float(loc["weeks"][i].get(key, 0))
@@ -745,7 +844,8 @@ def _location_grouped_chart(
     return f"""
     <div class="chart-card loc-chart-card">
       <h3>{title}</h3>
-      <p class="unit">{unit} · по кожній локації</p>
+      <p class="metric-desc">{desc}</p>
+      <p class="unit">Одиниця: {unit} · по кожній локації</p>
       <div class="loc-legend">{legend}</div>
       <div class="loc-chart">{rows_html}</div>
     </div>"""
@@ -791,60 +891,6 @@ def _insight_html(insights: list[dict]) -> str:
     )
 
 
-def _trend_charts_js(weeks: list[dict], slug: str) -> str:
-    labels = [w["label"].split(" – ")[0] for w in weeks]
-    labels_json = json.dumps(labels, ensure_ascii=False)
-    scripts = []
-    for cid, title, unit, key in TREND_METRICS:
-        values = [float(w.get(key, 0)) for w in weeks]
-        values_json = json.dumps(values)
-        chart_id = f"{slug}-{cid}"
-        scripts.append(f"""
-    (function() {{
-      const ctx = document.getElementById('{chart_id}');
-      if (!ctx) return;
-      new Chart(ctx, {{
-        type: 'line',
-        data: {{
-          labels: {labels_json},
-          datasets: [{{
-            label: '{title}',
-            data: {values_json},
-            borderColor: '#0d8a52',
-            backgroundColor: 'rgba(52,209,134,0.15)',
-            fill: true,
-            tension: 0.25,
-            pointRadius: weeks_count > 20 ? 2 : 4,
-            pointBackgroundColor: '#34D186'
-          }}]
-        }},
-        options: {{
-          responsive: true,
-          plugins: {{
-            legend: {{ display: false }},
-            title: {{ display: false }}
-          }},
-          scales: {{
-            x: {{ ticks: {{ maxRotation: 45, font: {{ size: 9 }} }} }},
-            y: {{ beginAtZero: true }}
-          }}
-        }}
-      }});
-    }})();""".replace("weeks_count", str(len(weeks))))
-
-    charts_html = ""
-    for cid, title, unit, _key in TREND_METRICS:
-        chart_id = f"{slug}-{cid}"
-        charts_html += f"""
-    <div class="chart-card trend-card">
-      <h3>{title}</h3>
-      <p class="unit">{unit} · динаміка по тижнях</p>
-      <canvas id="{chart_id}" height="120"></canvas>
-    </div>"""
-
-    return charts_html, "\n".join(scripts)
-
-
 def generate_html(data: dict, cfg: dict) -> str:
     weeks = data["weeks"]
     locations = data["locations"]
@@ -864,46 +910,42 @@ def generate_html(data: dict, cfg: dict) -> str:
         loc["_problem"] = loc["name"] in problem_names
 
     insights = build_insights(weeks, problems)
-    trend_html, trend_js = _trend_charts_js(weeks, slug)
 
-    charts_html = ""
-    for section_title, chart_defs in LOCATION_CHART_SECTIONS:
-        charts_html += f'<div class="section-title">{section_title}</div>'
-        cmp_hint = " · ".join(compare_labels) if compare_labels else "останні 2 тижні"
-        charts_html += f'<p class="section-hint">Порівняння останніх двох повних тижнів ({cmp_hint}) по кожній локації</p>'
-        charts_html += '<div class="charts-grid loc-charts-grid">'
-        for cid, title, unit, key in chart_defs:
-            charts_html += _location_grouped_chart(
-                cid, title, unit, key, locations, compare_labels, slug
-            )
-        charts_html += "</div>"
+    brand_charts_html = ""
+    for section_title, metric_keys in CHART_SECTIONS:
+        brand_charts_html += f'<div class="section-title">{section_title}</div>'
+        brand_charts_html += '<p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p>'
+        brand_charts_html += '<div class="charts-grid brand-charts-grid">'
+        for key in metric_keys:
+            brand_charts_html += _brand_histogram_chart(key, weeks, slug)
+        brand_charts_html += "</div>"
 
-    weekly_rows = ""
-    for w in weeks:
-        weekly_rows += f"""<tr>
-          <td class="week-label">{w['label']}</td>
-          <td class="num">{_fmt_chart_value(float(w['gross']))} ₴</td>
-          <td class="num">{w['orders']}</td>
-          <td class="num">{_fmt_chart_value(float(w['aov']), {'dec': True})} ₴</td>
-          <td class="num">{_fmt_chart_value(float(w['avail']), {'pct': True})}</td>
-          <td class="num">{_fmt_chart_value(float(w['accept']), {'pct': True})}</td>
-          <td class="num">{_fmt_chart_value(float(w['rating']), {'dec': True})}</td>
-          <td class="num">{_fmt_chart_value(float(w['refunds']), {'pct': True})}</td>
-        </tr>"""
+    loc_charts_html = ""
+    cmp_hint = " · ".join(compare_labels) if compare_labels else "останні 2 тижні"
+    for section_title, metric_keys in LOCATION_CHART_SECTIONS:
+        loc_charts_html += f'<div class="section-title subsection">{section_title}</div>'
+        loc_charts_html += (
+            f'<p class="section-hint">Порівняння останніх двох повних тижнів ({cmp_hint}) · по кожній локації</p>'
+        )
+        loc_charts_html += '<div class="charts-grid loc-charts-grid">'
+        for key in metric_keys:
+            loc_charts_html += _location_grouped_chart(key, locations, compare_labels, slug)
+        loc_charts_html += "</div>"
 
-    customer_rows = ""
-    for w in weeks:
-        customer_rows += f"""<tr>
-          <td class="week-label">{w['label']}</td>
-          <td class="num">{w['active_users']}</td>
-          <td class="num">{_fmt_chart_value(float(w['freq']), {'dec': True})}</td>
-          <td class="num">{w['new_users']}</td>
-          <td class="num">{w['sessions']}</td>
-          <td class="num">{_fmt_chart_value(float(w['imp_menu']), {'pct': True})}</td>
-          <td class="num">{_fmt_chart_value(float(w['menu_prod']), {'pct': True})}</td>
-          <td class="num">{_fmt_chart_value(float(w['camp_bolt']))} ₴</td>
-          <td class="num">{_fmt_chart_value(float(w['camp_merch']))} ₴</td>
-        </tr>"""
+    loc_collapsible = f"""
+  <details class="loc-collapse">
+    <summary>
+      <span class="collapse-icon">▶</span>
+      Деталізація по окремих локаціях
+      <span class="collapse-hint">натисніть, щоб розгорнути</span>
+    </summary>
+    <div class="loc-collapse-body">
+      <div class="section-title">⚠️ Проблемні локації</div>
+      <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
+      {_problem_locations_html(problems, compare_labels)}
+      {loc_charts_html}
+    </div>
+  </details>"""
 
     items_rows = "".join(
         f"""<tr>
@@ -919,9 +961,9 @@ def generate_html(data: dict, cfg: dict) -> str:
     last = weeks[-1] if weeks else {}
     kpi_block = f"""
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Gross Sales (останній тиждень)</div>
+      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній тиждень)</div>
         <div class="kpi-value">{last.get('gross',0):,.0f} ₴</div></div>
-      <div class="kpi-card"><div class="kpi-label">Delivered Orders</div>
+      <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div>
         <div class="kpi-value">{last.get('orders',0)}</div></div>
       <div class="kpi-card"><div class="kpi-label">Тижнів на платформі</div>
         <div class="kpi-value">{data['total_weeks']}</div></div>
@@ -935,7 +977,6 @@ def generate_html(data: dict, cfg: dict) -> str:
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>{header_title} — WBR · {city_uk} · {period}</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     :root {{
       --green:#34D186; --green-darker:#0d8a52;
@@ -967,11 +1008,26 @@ def generate_html(data: dict, cfg: dict) -> str:
       box-shadow:0 1px 4px rgba(0,0,0,.06)}}
     .kpi-label{{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}}
     .kpi-value{{font-size:22px;font-weight:700}}
-    .charts-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:20px;margin-bottom:12px}}
-    .trend-card canvas{{max-height:200px}}
+    .charts-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;margin-bottom:12px}}
     .chart-card{{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}}
-    .chart-card h3{{font-size:12px;font-weight:700;color:var(--gray-700);margin-bottom:2px}}
-    .chart-card .unit{{font-size:10px;color:var(--gray-400);margin-bottom:8px}}
+    .chart-card h3{{font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:4px}}
+    .metric-desc{{font-size:12px;color:var(--gray-700);margin-bottom:6px;line-height:1.45}}
+    .chart-card .unit{{font-size:10px;color:var(--gray-400);margin-bottom:10px}}
+    .brand-bars-scroll{{overflow-x:auto;padding-bottom:6px}}
+    .brand-bars{{display:flex;gap:10px;align-items:flex-end;min-height:130px;padding-top:8px}}
+    .brand-bar-col{{display:flex;flex-direction:column;align-items:center;min-width:52px;flex-shrink:0;height:120px;justify-content:flex-end}}
+    .brand-bar-val{{font-size:9px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center;max-width:64px;line-height:1.2}}
+    .brand-bar-week{{font-size:9px;color:var(--gray-400);margin-top:4px;text-align:center}}
+    .hist-bar.brand-bar{{width:36px;background:linear-gradient(180deg,var(--green) 0%,var(--green-darker) 100%)}}
+    .loc-collapse{{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:28px 0}}
+    .loc-collapse summary{{list-style:none;cursor:pointer;padding:18px 24px;font-size:14px;font-weight:700;
+      color:var(--gray-700);display:flex;align-items:center;gap:10px;user-select:none}}
+    .loc-collapse summary::-webkit-details-marker{{display:none}}
+    .loc-collapse[open] summary .collapse-icon{{transform:rotate(90deg)}}
+    .collapse-icon{{color:var(--green-darker);transition:transform .2s;font-size:11px}}
+    .collapse-hint{{font-size:11px;font-weight:400;color:var(--gray-400);margin-left:auto}}
+    .loc-collapse-body{{padding:8px 24px 28px;border-top:1px solid #eee}}
+    .subsection{{margin-top:20px}}
     .loc-legend{{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:12px;flex-wrap:wrap}}
     .loc-legend .leg{{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}}
     .loc-legend .leg.m1{{background:var(--green-darker)}}
@@ -1044,61 +1100,15 @@ def generate_html(data: dict, cfg: dict) -> str:
     <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній повний тиждень: {last.get('label','')}</span>
   </div>
 
-  <div class="section-title">Огляд мережі — {last.get('label','')}</div>
+  <div class="section-title">Огляд бренду — {last.get('label','')}</div>
   {kpi_block}
 
-  <div class="section-title">Динаміка по тижнях (вся історія)</div>
-  <p class="section-hint">Ключові метрики мережі з моменту запуску на платформі</p>
-  <div class="charts-grid">{trend_html}</div>
+  {brand_charts_html}
 
-  <div class="section-title">Таблиця по тижнях</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Тиждень</th>
-          <th class="num">Gross Sales</th>
-          <th class="num">Orders</th>
-          <th class="num">AOV</th>
-          <th class="num">Availability</th>
-          <th class="num">Acceptance</th>
-          <th class="num">Rating</th>
-          <th class="num">Refunds</th>
-        </tr>
-      </thead>
-      <tbody>{weekly_rows}</tbody>
-    </table>
-  </div>
-
-  <div class="section-title">Клієнти, конверсії та кампанії по тижнях</div>
-  <p class="section-hint">Мережа в цілому · UAH (₴)</p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Тиждень</th>
-          <th class="num">Active Users</th>
-          <th class="num">Order Frequency</th>
-          <th class="num">New Users</th>
-          <th class="num">Sessions with Impressions</th>
-          <th class="num">Impression → Menu (%)</th>
-          <th class="num">Menu → Product Added (%)</th>
-          <th class="num">Campaigns Spend Bolt</th>
-          <th class="num">Campaigns Spend Merchant</th>
-        </tr>
-      </thead>
-      <tbody>{customer_rows}</tbody>
-    </table>
-  </div>
-
-  <div class="section-title">⚠️ Проблемні локації</div>
-  <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
-  {_problem_locations_html(problems, compare_labels)}
-
-  {charts_html}
+  {loc_collapsible}
 
   <div class="section-title">ТОП-10 позицій меню</div>
-  <p class="section-hint">За весь період на платформі · Order Item Report</p>
+  <p class="section-hint">За весь період на платформі · найпопулярніші страви</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -1117,9 +1127,6 @@ def generate_html(data: dict, cfg: dict) -> str:
   <span>Bolt Food</span> · WBR {header_title} · {city_uk} · Автооновлення: щопонеділка о 14:00 (Київ) ·
   <a href="https://github.com/marharytazhytnyk-create/partner-reports/tree/main/WBR%20PINKMAN" style="color:var(--green)">GitHub</a>
 </footer>
-<script>
-{trend_js}
-</script>
 </body>
 </html>"""
 
