@@ -82,11 +82,18 @@ LOCATION_CHART_SECTIONS: list[tuple[str, list[tuple[str, str, str, str]]]] = [
         ("loc-prep", "Avg. Preparation Time", "приготування · хв", "prep_time"),
     ]),
     ("3. Клієнти та їх поведінка", [
+        ("loc-active", "Active Users", "активні користувачі", "active_users"),
+        ("loc-freq", "Order Frequency", "замовлень / користувач", "freq"),
+        ("loc-new", "New Users", "нові користувачі бренду", "new_users"),
+        ("loc-sess", "Sessions with Impressions", "перегляди закладу", "sessions"),
+        ("loc-imp", "Impression-to-Menu Viewed Conversion", "конверсія · %", "imp_menu"),
+        ("loc-menu", "Menu Viewed-to-Product Added Conversion", "конверсія · %", "menu_prod"),
         ("loc-rating", "Average Merchant Rating", "рейтинг 0–5", "rating"),
-        ("loc-imp", "Impression → Menu Viewed", "конверсія · %", "imp_menu"),
     ]),
     ("4. Знижки", [
         ("loc-disc", "Total Discounts for Users", "UAH", "discounts"),
+        ("loc-bolt", "Campaigns Spend by Bolt (Local Currency)", "UAH · витрати Bolt", "camp_bolt"),
+        ("loc-merch", "Campaigns Spend by Merchant", "UAH · витрати партнера", "camp_merch"),
     ]),
 ]
 
@@ -245,7 +252,7 @@ def _parse_week_row(row: list) -> dict:
     }
 
 
-def _parse_location_row(row: list) -> dict:
+def _parse_location_row(row: list, active_users: int = 0) -> dict:
     ws = week_start_from_iso(str(row[2]))
     orders = int(row[3] or 0)
     gross = float(row[4] or 0)
@@ -257,10 +264,16 @@ def _parse_location_row(row: list) -> dict:
     prep = round(float(row[10] or 0), 1)
     acc_time = round(float(row[11] or 0), 1)
     discounts = round(float(row[12] or 0), 0)
-    sessions = int(row[13] or 0)
-    menu_viewed = int(row[14] or 0)
+    camp_bolt = round(float(row[13] or 0), 0)
+    camp_merch = round(float(row[14] or 0), 0)
+    new_users = int(row[15] or 0)
+    sessions = int(row[16] or 0)
+    menu_viewed = int(row[17] or 0)
+    menu_prod = round(float(row[18] or 0) * 100, 2)
     imp_menu = round(menu_viewed / sessions * 100, 2) if sessions else 0
     aov = round(gross / orders, 0) if orders else 0
+    au = active_users or orders
+    freq = round(orders / au, 2) if au else 0
 
     return {
         "week_key": week_key(ws),
@@ -276,7 +289,14 @@ def _parse_location_row(row: list) -> dict:
         "prep_time": prep,
         "acc_time": acc_time,
         "discounts": discounts,
+        "camp_bolt": camp_bolt,
+        "camp_merch": camp_merch,
+        "new_users": new_users,
+        "active_users": au,
+        "freq": freq,
+        "sessions": sessions,
         "imp_menu": imp_menu,
+        "menu_prod": menu_prod,
     }
 
 
@@ -372,8 +392,12 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
             AVG(f.provider_preparation_minutes_per_order_value) AS prep_time,
             AVG(f.provider_acceptance_minutes_per_order_value) AS acc_time,
             SUM(f.total_campaign_discount) AS discounts,
+            SUM(f.total_campaign_spend_bolt) AS camp_bolt,
+            SUM(f.total_campaign_spend_provider) AS camp_merch,
+            SUM(f.users_activated_vendor_count) AS new_users,
             SUM(f.provider_impressions_sessions_count) AS sessions,
-            SUM(f.provider_menu_viewed_sessions_count) AS menu_viewed
+            SUM(f.provider_menu_viewed_sessions_count) AS menu_viewed,
+            AVG(f.provider_product_added_from_menu_viewed_rate_value) AS menu_prod_rate
         FROM ng_delivery_spark.fact_provider_weekly f
         JOIN ng_delivery_spark.dim_provider_v2 d ON f.provider_id = d.provider_id
         WHERE f.provider_id IN ({pids_sql})
@@ -382,6 +406,18 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
         GROUP BY 1, 2, 3 ORDER BY d.provider_name, 3
         """
         loc_rows = run_query(ctx, loc_sql)
+
+        loc_users_sql = f"""
+        SELECT entity_id AS provider_id,
+               DATE_TRUNC('week', metric_timestamp_partition) AS week,
+               SUM(provider_deliveries_unique_user_count) AS active_users
+        FROM ng_delivery_spark.int_provider_metrics_non_additive
+        WHERE entity_id IN ({pids_str}) AND timeframe_name = 'week'
+          AND metric_timestamp_partition >= '{global_start}'
+          AND metric_timestamp_partition < '{global_end}'
+        GROUP BY 1, 2 ORDER BY 1, 2
+        """
+        loc_users_rows = run_query(ctx, loc_users_sql)
 
         items_sql = f"""
         SELECT TRIM(bi.name) AS item_name,
@@ -406,6 +442,12 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
     for row in users_rows:
         ws = week_start_from_iso(str(row[0]))
         active_by_week[week_key(ws)] = int(row[1] or 0)
+
+    active_by_pid_week: dict[tuple[int, str], int] = {}
+    for row in loc_users_rows:
+        pid = int(row[0])
+        wk = week_key(week_start_from_iso(str(row[1])))
+        active_by_pid_week[(pid, wk)] = int(row[2] or 0)
 
     by_week_key: dict[str, dict] = {}
     for row in main_rows:
@@ -443,7 +485,9 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
     by_pid: dict[int, dict] = {}
     for row in loc_rows:
         pid = int(row[0])
-        rec = _parse_location_row(row)
+        wk = week_key(week_start_from_iso(str(row[2])))
+        au = active_by_pid_week.get((pid, wk), 0)
+        rec = _parse_location_row(row, au)
         if pid not in by_pid:
             by_pid[pid] = {
                 "provider_id": pid,
@@ -463,7 +507,10 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
                 "label": compare_labels[compare_keys.index(wk)],
                 "orders": 0, "gross": 0, "net": 0, "aov": 0,
                 "avail": 0, "accept": 0, "refunds": 0, "rating": 0,
-                "prep_time": 0, "acc_time": 0, "discounts": 0, "imp_menu": 0,
+                "prep_time": 0, "acc_time": 0, "discounts": 0,
+                "camp_bolt": 0, "camp_merch": 0,
+                "new_users": 0, "active_users": 0, "freq": 0,
+                "sessions": 0, "imp_menu": 0, "menu_prod": 0,
             }))
         loc["weeks"] = weeks_vals
         locations.append(loc)
@@ -651,9 +698,9 @@ def _fmt_chart_value(val: float, opts: dict | None = None) -> str:
 
 
 def _metric_opts(key: str) -> dict:
-    if key in ("avail", "accept", "refunds", "imp_menu"):
+    if key in ("avail", "accept", "refunds", "imp_menu", "menu_prod"):
         return {"pct": True}
-    if key in ("rating", "prep_time", "acc_time", "aov"):
+    if key in ("rating", "prep_time", "acc_time", "aov", "freq"):
         return {"dec": True}
     return {}
 
@@ -844,6 +891,20 @@ def generate_html(data: dict, cfg: dict) -> str:
           <td class="num">{_fmt_chart_value(float(w['refunds']), {'pct': True})}</td>
         </tr>"""
 
+    customer_rows = ""
+    for w in weeks:
+        customer_rows += f"""<tr>
+          <td class="week-label">{w['label']}</td>
+          <td class="num">{w['active_users']}</td>
+          <td class="num">{_fmt_chart_value(float(w['freq']), {'dec': True})}</td>
+          <td class="num">{w['new_users']}</td>
+          <td class="num">{w['sessions']}</td>
+          <td class="num">{_fmt_chart_value(float(w['imp_menu']), {'pct': True})}</td>
+          <td class="num">{_fmt_chart_value(float(w['menu_prod']), {'pct': True})}</td>
+          <td class="num">{_fmt_chart_value(float(w['camp_bolt']))} ₴</td>
+          <td class="num">{_fmt_chart_value(float(w['camp_merch']))} ₴</td>
+        </tr>"""
+
     items_rows = "".join(
         f"""<tr>
           <td class="rank">{it['rank']}</td>
@@ -1006,6 +1067,27 @@ def generate_html(data: dict, cfg: dict) -> str:
         </tr>
       </thead>
       <tbody>{weekly_rows}</tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Клієнти, конверсії та кампанії по тижнях</div>
+  <p class="section-hint">Мережа в цілому · UAH (₴)</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Тиждень</th>
+          <th class="num">Active Users</th>
+          <th class="num">Order Frequency</th>
+          <th class="num">New Users</th>
+          <th class="num">Sessions with Impressions</th>
+          <th class="num">Impression → Menu (%)</th>
+          <th class="num">Menu → Product Added (%)</th>
+          <th class="num">Campaigns Spend Bolt</th>
+          <th class="num">Campaigns Spend Merchant</th>
+        </tr>
+      </thead>
+      <tbody>{customer_rows}</tbody>
     </table>
   </div>
 
