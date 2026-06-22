@@ -229,7 +229,7 @@ def _parse_month_row(row: list, month_labels: list[str]) -> dict:
     camp_merch = round(float(row[17] or 0), 0)
     sessions = int(row[18] or 0)
     menu_view = int(row[19] or 0)
-    menu_prod_conv = round(float(row[20] or 0) * 100, 2)
+    menu_prod_conv = round(float(row[21] or 0) * 100, 2)
     imp_menu = round(menu_view / sessions * 100, 2) if sessions else 0
     aov = round(gross / delivered, 0) if delivered else 0
 
