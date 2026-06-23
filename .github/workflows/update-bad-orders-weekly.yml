@@ -1,6 +1,9 @@
 name: Bad Orders Weekly — Marharyta Portfolio
 
 on:
+  schedule:
+    # Понеділок 10:30 UTC = 13:30 за Києвом (разом з іншими weekly-звітами)
+    - cron: '30 10 * * 1'
   workflow_dispatch:
     inputs:
       week_start:

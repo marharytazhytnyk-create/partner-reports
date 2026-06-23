@@ -1047,6 +1047,24 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
 """
 
 
+def weeks_to_fetch(existing: dict[str, dict]) -> list[date]:
+    """Усі пропущені повні тижні (пн) від останнього в звіті до останнього завершеного."""
+    if os.environ.get("BAD_ORDERS_WEEK_START"):
+        return [date.fromisoformat(os.environ["BAD_ORDERS_WEEK_START"])]
+
+    last_complete_start, _ = week_bounds()
+    if not existing:
+        return [last_complete_start]
+
+    latest_in_report = max(date.fromisoformat(k) for k in existing)
+    ws = latest_in_report + timedelta(days=7)
+    weeks: list[date] = []
+    while ws <= last_complete_start:
+        weeks.append(ws)
+        ws += timedelta(days=7)
+    return weeks
+
+
 def main() -> None:
     if os.environ.get("BAD_ORDERS_HTML_ONLY"):
         existing = load_existing_weeks(OUTPUT_HTML)
@@ -1058,14 +1076,17 @@ def main() -> None:
         return
 
     week_start_env = os.environ.get("BAD_ORDERS_WEEK_START")
-    if week_start_env:
-        weeks_to_fetch = [date.fromisoformat(week_start_env)]
-    else:
-        ws, _ = week_bounds()
-        weeks_to_fetch = [ws]
-
     existing = load_existing_weeks(OUTPUT_HTML)
     print(f"Existing weeks in report: {list(existing.keys())}")
+
+    to_fetch = weeks_to_fetch(existing)
+    if not to_fetch:
+        print("No new weeks to fetch — report is up to date.")
+        generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+        OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
+        return
+
+    print(f"Weeks to fetch: {[w.isoformat() for w in to_fetch]}")
 
     conn = sql.connect(
         server_hostname=SERVER_HOSTNAME,
@@ -1073,7 +1094,7 @@ def main() -> None:
         access_token=get_token(),
     )
     try:
-        for ws in weeks_to_fetch:
+        for ws in to_fetch:
             key = ws.isoformat()
             if key in existing and not os.environ.get("BAD_ORDERS_FORCE_REFRESH"):
                 print(f"  Week {key} already present — skip (set BAD_ORDERS_FORCE_REFRESH=1 to overwrite)")

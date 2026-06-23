@@ -3,7 +3,8 @@ name: Update Partner Reports
 on:
   schedule:
     - cron: '0 10 * * *'      # 13:00 EEST (UTC+3) every day — existing daily reports
-    - cron: '30 10 * * 1'     # 13:30 EEST (UTC+3) every Monday — Шавуха/Baranchik
+    - cron: '30 10 * * 1'     # 13:30 EEST (UTC+3) every Monday — Шавуха/Baranchik/Bad Orders
+    - cron: '0 11 * * 1'      # 14:00 EEST (UTC+3) every Monday — Потенційне підключення
   workflow_dispatch:            # manual trigger (runs all jobs)
 
 permissions:
@@ -130,13 +131,13 @@ jobs:
           git diff --staged --quiet || git commit -m "🐑 BARANCHIK report — $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push
 
-  # ── BAD ORDERS WEEKLY (every Monday 14:00 EEST) ─────────────────────────────
+  # ── BAD ORDERS WEEKLY (every Monday 13:30 EEST) ─────────────────────────────
   generate-bad-orders-weekly:
     name: Bad Orders Weekly — Marharyta Portfolio
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
-      github.event.schedule == '0 11 * * 1'
+      github.event.schedule == '30 10 * * 1'
     steps:
       - uses: actions/checkout@v4
         env:
