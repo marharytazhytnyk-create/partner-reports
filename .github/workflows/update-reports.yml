@@ -4,7 +4,6 @@ on:
   schedule:
     - cron: '0 10 * * *'      # 13:00 EEST (UTC+3) every day — existing daily reports
     - cron: '30 10 * * 1'     # 13:30 EEST (UTC+3) every Monday — Шавуха/Baranchik/Bad Orders
-    - cron: '0 11 * * 1'      # 14:00 EEST (UTC+3) every Monday — Потенційне підключення
   workflow_dispatch:            # manual trigger (runs all jobs)
 
 permissions:
@@ -163,40 +162,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "Bad Orders analys weekly/"
           git diff --staged --quiet || git commit -m "Bad Orders weekly — Marharyta Portfolio $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push
-
-  # ── ПОТЕНЦІЙНЕ ПІДКЛЮЧЕННЯ (every Monday 14:00 EEST) ───────────────────────
-  generate-potential-connection:
-    name: Потенційне підключення — Smart Promo & Sponsored Listing
-    runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.schedule == '0 11 * * 1'
-    steps:
-      - uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-      - uses: actions/setup-python@v5
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: pip install requests pandas
-
-      - name: Generate Потенційне підключення report
-        env:
-          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
-          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
-        run: python "Потенційне підключення/generate_potential_connection_report.py"
-
-      - name: Commit and push Потенційне підключення report
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "Потенційне підключення/"
-          git diff --staged --quiet || git commit -m "🎯 Потенційне підключення — Smart Promo & Sponsored Listing $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push

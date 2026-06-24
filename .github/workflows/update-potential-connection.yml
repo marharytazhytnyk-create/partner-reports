@@ -1,0 +1,38 @@
+name: Потенційне підключення — Weekly Report
+
+on:
+  schedule:
+    - cron: '0 11 * * 1'   # Щопонеділка 14:00 EEST (11:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Потенційне підключення — Smart Promo & Sponsored Listing
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests pandas
+
+      - name: Generate Потенційне підключення report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python "Потенційне підключення/generate_potential_connection_report.py"
+
+      - name: Commit and push Потенційне підключення report
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "Потенційне підключення/"
+          git diff --staged --quiet || git commit -m "🎯 Потенційне підключення — Smart Promo & Sponsored Listing $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
