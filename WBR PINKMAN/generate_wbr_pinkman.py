@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-WBR (Weekly Business Review) — Pinkman Bar / Bella Mozzarella.
-Дані з Databricks, HTML українською, UAH.
+WBR — Pinkman Bar / Bella Mozzarella.
+Дані з Databricks за 2 останні повні місяці, HTML українською, UAH.
 Автооновлення: щопонеділка о 14:00 (Київ).
 """
 
@@ -61,8 +61,6 @@ REPORT_CONFIGS: list[dict] = [
     },
 ]
 
-WEEK_COLORS = ["#0d8a52", "#34D186"]
-
 POLL_INTERVAL_S = 5
 MAX_POLL_S = 600
 
@@ -117,7 +115,7 @@ METRIC_UK: dict[str, tuple[str, str, str]] = {
     ),
     "active_users": (
         "Активні користувачі",
-        "Унікальні клієнти з хоча б одним доставленим замовленням за тиждень",
+        "Унікальні клієнти з хоча б одним доставленим замовленням за місяць",
         "осіб",
     ),
     "freq": (
@@ -152,7 +150,7 @@ METRIC_UK: dict[str, tuple[str, str, str]] = {
     ),
     "discounts": (
         "Загальна сума знижок",
-        "Усі знижки для клієнтів за тиждень (Bolt + партнер)",
+        "Усі знижки для клієнтів за місяць (Bolt + партнер)",
         "₴",
     ),
     "camp_bolt": (
@@ -167,36 +165,48 @@ METRIC_UK: dict[str, tuple[str, str, str]] = {
     ),
 }
 
-# Ключі для гістограм по локаціях (останні 2 тижні)
+# Ключі для гістограм по локаціях (2 місяці)
 LOCATION_CHART_SECTIONS: list[tuple[str, list[str]]] = CHART_SECTIONS
+
+UK_MONTHS = [
+    "", "січень", "лютий", "березень", "квітень", "травень", "червень",
+    "липень", "серпень", "вересень", "жовтень", "листопад", "грудень",
+]
+
+MONTH_COLORS = ["#0d8a52", "#34D186"]
 
 
 # ─── DATE HELPERS ──────────────────────────────────────────────────────────────
 
-def last_complete_week_start(ref: datetime.date | None = None) -> datetime.date:
-    """Понеділок останнього повного тижня (Пн–Нд, що завершився перед поточним)."""
+def last_n_full_months(n: int = 2, ref: datetime.date | None = None) -> list[tuple[int, int]]:
+    """Останні n повних календарних місяців (без поточного незавершеного)."""
     d = ref or datetime.date.today()
-    this_monday = d - datetime.timedelta(days=d.weekday())
-    return this_monday - datetime.timedelta(days=7)
+    first_current = d.replace(day=1)
+    cur = first_current
+    months: list[tuple[int, int]] = []
+    for _ in range(n):
+        last_day_prev = cur - datetime.timedelta(days=1)
+        months.append((last_day_prev.year, last_day_prev.month))
+        cur = last_day_prev.replace(day=1)
+    return list(reversed(months))
 
 
-def week_start_from_iso(dt_key: str) -> datetime.date:
-    return datetime.date.fromisoformat(str(dt_key)[:10])
+def month_label(year: int, month: int) -> str:
+    return f"{UK_MONTHS[month]} {year}"
 
 
-def week_label(week_start: datetime.date) -> str:
-    end = week_start + datetime.timedelta(days=6)
-    if week_start.year == end.year:
-        return f"{week_start.strftime('%d.%m')} – {end.strftime('%d.%m.%Y')}"
-    return f"{week_start.strftime('%d.%m.%Y')} – {end.strftime('%d.%m.%Y')}"
+def month_key(year: int, month: int) -> str:
+    return f"{year:04d}-{month:02d}"
 
 
-def week_key(week_start: datetime.date) -> str:
-    return week_start.isoformat()
+def month_range_sql(year: int, month: int) -> tuple[str, str]:
+    start = datetime.date(year, month, 1)
+    end = datetime.date(year + 1, 1, 1) if month == 12 else datetime.date(year, month + 1, 1)
+    return start.isoformat(), end.isoformat()
 
 
-def week_range_end(week_start: datetime.date) -> datetime.date:
-    return week_start + datetime.timedelta(days=7)
+def month_key_from_iso(dt_key: str) -> str:
+    return str(dt_key)[:7]
 
 
 def short_location_name(full_name: str, name_strip: list[str] | None = None) -> str:
@@ -204,15 +214,6 @@ def short_location_name(full_name: str, name_strip: list[str] | None = None) -> 
     for pattern in name_strip or []:
         n = re.sub(rf"(?i)^{pattern}\s*", "", n)
     return n.strip() or full_name
-
-
-def build_week_list(start: datetime.date, end: datetime.date) -> list[datetime.date]:
-    weeks: list[datetime.date] = []
-    cur = start
-    while cur <= end:
-        weeks.append(cur)
-        cur += datetime.timedelta(days=7)
-    return weeks
 
 
 # ─── DATABRICKS ────────────────────────────────────────────────────────────────
@@ -263,8 +264,9 @@ def destroy_context(ctx_id: str) -> None:
         pass
 
 
-def _parse_week_row(row: list) -> dict:
-    ws = week_start_from_iso(str(row[0]))
+def _parse_month_row(row: list) -> dict:
+    dt_key = str(row[0])[:10]
+    y, m = int(dt_key[:4]), int(dt_key[5:7])
     delivered = int(row[1] or 0)
     gross = float(row[2] or 0)
     net = float(row[3] or 0)
@@ -289,9 +291,9 @@ def _parse_week_row(row: list) -> dict:
     aov = round(gross / delivered, 0) if delivered else 0
 
     return {
-        "week_start": ws,
-        "week_key": week_key(ws),
-        "label": week_label(ws),
+        "year": y, "month": m,
+        "month_key": month_key(y, m),
+        "label": month_label(y, m),
         "gross": round(gross, 0),
         "net": round(net, 0),
         "orders": delivered,
@@ -317,7 +319,8 @@ def _parse_week_row(row: list) -> dict:
 
 
 def _parse_location_row(row: list, active_users: int = 0) -> dict:
-    ws = week_start_from_iso(str(row[2]))
+    dt_key = str(row[2])[:10]
+    y, m = int(dt_key[:4]), int(dt_key[5:7])
     orders = int(row[3] or 0)
     gross = float(row[4] or 0)
     net = float(row[5] or 0)
@@ -340,8 +343,8 @@ def _parse_location_row(row: list, active_users: int = 0) -> dict:
     freq = round(orders / au, 2) if au else 0
 
     return {
-        "week_key": week_key(ws),
-        "label": week_label(ws),
+        "month_key": month_key(y, m),
+        "label": month_label(y, m),
         "orders": orders,
         "gross": round(gross, 0),
         "net": round(net, 0),
@@ -372,35 +375,20 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
 
     pids_sql = ", ".join(str(p) for p in provider_ids)
     pids_str = ", ".join(f"'{p}'" for p in provider_ids)
-    last_week = last_complete_week_start()
-    global_end = (last_week + datetime.timedelta(days=7)).isoformat()
+    months_range = last_n_full_months(2)
+
+    y0, m0 = months_range[0]
+    y1, m1 = months_range[-1]
+    global_start, _ = month_range_sql(y0, m0)
+    _, global_end = month_range_sql(y1, m1)
+    compare_keys = [month_key(y, m) for y, m in months_range]
+    compare_labels = [month_label(y, m) for y, m in months_range]
 
     ctx = create_context()
     try:
-        min_sql = f"""
-        SELECT MIN(DATE_TRUNC('week', metric_timestamp_partition)) AS min_week
-        FROM ng_delivery_spark.fact_provider_weekly
-        WHERE provider_id IN ({pids_sql})
-          AND delivered_orders_count > 0
-        """
-        min_row = run_query(ctx, min_sql)
-        if not min_row or not min_row[0][0]:
-            min_sql2 = f"""
-            SELECT MIN(DATE_TRUNC('week', metric_timestamp_partition)) AS min_week
-            FROM ng_delivery_spark.fact_provider_weekly
-            WHERE provider_id IN ({pids_sql})
-            """
-            min_row = run_query(ctx, min_sql2)
-        if not min_row or not min_row[0][0]:
-            raise RuntimeError("Немає даних для вказаних provider_id")
-
-        global_start = str(min_row[0][0])[:10]
-        start_date = week_start_from_iso(global_start)
-        weeks_range = build_week_list(start_date, last_week)
-
         main_sql = f"""
         SELECT
-            DATE_TRUNC('week', metric_timestamp_partition) AS week,
+            DATE_TRUNC('month', metric_timestamp_partition) AS month,
             SUM(delivered_orders_count) AS delivered_orders,
             SUM(total_gmv_before_discounts) AS gross_sales,
             SUM(total_gmv_after_discounts) AS net_sales,
@@ -431,7 +419,7 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
         main_rows = run_query(ctx, main_sql)
 
         users_sql = f"""
-        SELECT DATE_TRUNC('week', metric_timestamp_partition) AS week,
+        SELECT DATE_TRUNC('month', metric_timestamp_partition) AS month,
                SUM(provider_deliveries_unique_user_count) AS active_users
         FROM ng_delivery_spark.int_provider_metrics_non_additive
         WHERE entity_id IN ({pids_str}) AND timeframe_name = 'week'
@@ -445,7 +433,7 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
         SELECT
             f.provider_id,
             d.provider_name,
-            DATE_TRUNC('week', f.metric_timestamp_partition) AS week,
+            DATE_TRUNC('month', f.metric_timestamp_partition) AS month,
             SUM(f.delivered_orders_count) AS orders,
             SUM(f.total_gmv_before_discounts) AS gross,
             SUM(f.total_gmv_after_discounts) AS net,
@@ -473,7 +461,7 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
 
         loc_users_sql = f"""
         SELECT entity_id AS provider_id,
-               DATE_TRUNC('week', metric_timestamp_partition) AS week,
+               DATE_TRUNC('month', metric_timestamp_partition) AS month,
                SUM(provider_deliveries_unique_user_count) AS active_users
         FROM ng_delivery_spark.int_provider_metrics_non_additive
         WHERE entity_id IN ({pids_str}) AND timeframe_name = 'week'
@@ -502,73 +490,69 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
     finally:
         destroy_context(ctx)
 
-    active_by_week: dict[str, int] = {}
+    active_by_month: dict[str, int] = {}
     for row in users_rows:
-        ws = week_start_from_iso(str(row[0]))
-        active_by_week[week_key(ws)] = int(row[1] or 0)
+        mk = month_key_from_iso(str(row[0]))
+        active_by_month[mk] = int(row[1] or 0)
 
-    active_by_pid_week: dict[tuple[int, str], int] = {}
+    active_by_pid_month: dict[tuple[int, str], int] = {}
     for row in loc_users_rows:
         pid = int(row[0])
-        wk = week_key(week_start_from_iso(str(row[1])))
-        active_by_pid_week[(pid, wk)] = int(row[2] or 0)
+        mk = month_key_from_iso(str(row[1]))
+        active_by_pid_month[(pid, mk)] = int(row[2] or 0)
 
-    by_week_key: dict[str, dict] = {}
+    by_month_key: dict[str, dict] = {}
     for row in main_rows:
-        rec = _parse_week_row(row)
-        rec["active_users"] = active_by_week.get(rec["week_key"], rec["orders"])
+        rec = _parse_month_row(row)
+        rec["active_users"] = active_by_month.get(rec["month_key"], rec["orders"])
         rec["freq"] = round(rec["orders"] / rec["active_users"], 2) if rec["active_users"] else 0
-        by_week_key[rec["week_key"]] = rec
+        by_month_key[rec["month_key"]] = rec
 
-    empty_week = {
+    empty_month = {
         "gross": 0, "net": 0, "orders": 0, "aov": 0,
         "avail": 0, "accept": 0, "refunds": 0, "rating": 0,
         "prep_time": 0, "acc_time": 0, "discounts": 0, "imp_menu": 0,
         "new_users": 0, "active_users": 0, "freq": 0,
-        "del_time": 0, "acc_time": 0, "wait_time": 0,
         "sessions": 0, "menu_prod": 0, "camp_bolt": 0, "camp_merch": 0,
     }
 
-    week_data: list[dict] = []
-    for ws in weeks_range:
-        wk = week_key(ws)
-        if wk in by_week_key:
-            week_data.append(by_week_key[wk])
+    month_data: list[dict] = []
+    for y, m in months_range:
+        mk = month_key(y, m)
+        if mk in by_month_key:
+            month_data.append(by_month_key[mk])
         else:
-            week_data.append({
-                **empty_week,
-                "week_start": ws,
-                "week_key": wk,
-                "label": week_label(ws),
+            month_data.append({
+                **empty_month,
+                "year": y, "month": m,
+                "month_key": mk,
+                "label": month_label(y, m),
             })
-
-    compare_weeks = weeks_range[-2:] if len(weeks_range) >= 2 else weeks_range
-    compare_keys = [week_key(w) for w in compare_weeks]
-    compare_labels = [week_label(w) for w in compare_weeks]
 
     by_pid: dict[int, dict] = {}
     for row in loc_rows:
         pid = int(row[0])
-        wk = week_key(week_start_from_iso(str(row[2])))
-        au = active_by_pid_week.get((pid, wk), 0)
+        mk = month_key_from_iso(str(row[2]))
+        au = active_by_pid_month.get((pid, mk), 0)
         rec = _parse_location_row(row, au)
         if pid not in by_pid:
             by_pid[pid] = {
                 "provider_id": pid,
                 "name": row[1],
                 "short_name": short_location_name(str(row[1]), name_strip),
-                "by_week": {},
+                "by_month": {},
             }
-        by_pid[pid]["by_week"][rec["week_key"]] = rec
+        by_pid[pid]["by_month"][rec["month_key"]] = rec
 
     locations: list[dict] = []
     for pid in sorted(by_pid.keys(), key=lambda p: by_pid[p]["name"]):
         loc = by_pid[pid]
-        weeks_vals = []
-        for wk in compare_keys:
-            weeks_vals.append(loc["by_week"].get(wk, {
-                "week_key": wk,
-                "label": compare_labels[compare_keys.index(wk)],
+        months_vals = []
+        for mk in compare_keys:
+            y, m = int(mk[:4]), int(mk[5:7])
+            months_vals.append(loc["by_month"].get(mk, {
+                "month_key": mk,
+                "label": month_label(y, m),
                 "orders": 0, "gross": 0, "net": 0, "aov": 0,
                 "avail": 0, "accept": 0, "refunds": 0, "rating": 0,
                 "prep_time": 0, "acc_time": 0, "discounts": 0,
@@ -576,7 +560,7 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
                 "new_users": 0, "active_users": 0, "freq": 0,
                 "sessions": 0, "imp_menu": 0, "menu_prod": 0,
             }))
-        loc["weeks"] = weeks_vals
+        loc["months"] = months_vals
         locations.append(loc)
 
     items = [
@@ -586,14 +570,12 @@ def fetch_metrics(provider_ids: list[int], name_strip: list[str]) -> dict:
     ]
 
     return {
-        "weeks": week_data,
+        "months": month_data,
         "locations": locations,
-        "week_labels_all": [w["label"] for w in week_data],
         "compare_labels": compare_labels,
         "top_items": items,
-        "period_label": f"{week_data[0]['label']} — {week_data[-1]['label']}" if week_data else "",
+        "period_label": f"{compare_labels[0]} — {compare_labels[-1]}",
         "generated_at": datetime.datetime.now().strftime("%d.%m.%Y %H:%M"),
-        "total_weeks": len(week_data),
     }
 
 
@@ -608,74 +590,74 @@ def _pct_change(old: float, new: float) -> float | None:
 def analyze_problem_locations(locations: list[dict]) -> list[dict]:
     problems: list[dict] = []
     for loc in locations:
-        if len(loc["weeks"]) < 2:
+        if len(loc["months"]) < 2:
             continue
-        prev_w, last_w = loc["weeks"][0], loc["weeks"][1]
+        prev_m, last_m = loc["months"][0], loc["months"][1]
         issues: list[str] = []
         severity = 0
 
-        o_chg = _pct_change(prev_w["orders"], last_w["orders"])
-        if last_w["orders"] < 15:
+        o_chg = _pct_change(prev_m["orders"], last_m["orders"])
+        if last_m["orders"] < 50:
             issues.append(
-                f"Дуже мало замовлень у останньому тижні — лише {last_w['orders']} "
-                f"(було {prev_w['orders']} тижнем раніше)."
+                f"Дуже мало замовлень у останньому місяці — лише {last_m['orders']} "
+                f"(було {prev_m['orders']} місяцем раніше)."
             )
             severity += 3
         elif o_chg is not None and o_chg <= -20:
             issues.append(
-                f"Різке падіння замовлень: {prev_w['orders']} → {last_w['orders']} ({o_chg:.0f}%)."
+                f"Різке падіння замовлень: {prev_m['orders']} → {last_m['orders']} ({o_chg:.0f}%)."
             )
             severity += 2
         elif o_chg is not None and o_chg <= -10:
             issues.append(
-                f"Зменшення замовлень: {prev_w['orders']} → {last_w['orders']} ({o_chg:.0f}%)."
+                f"Зменшення замовлень: {prev_m['orders']} → {last_m['orders']} ({o_chg:.0f}%)."
             )
             severity += 1
 
-        if last_w["avail"] < 88:
+        if last_m["avail"] < 88:
             issues.append(
-                f"Низька доступність — {last_w['avail']:.1f}% "
+                f"Низька доступність — {last_m['avail']:.1f}% "
                 f"(клієнти часто не бачать заклад онлайн)."
             )
             severity += 2
-        elif last_w["avail"] < 92 and prev_w["avail"] < 92:
+        elif last_m["avail"] < 92 and prev_m["avail"] < 92:
             issues.append(
-                f"Доступність нижче 92% обидва тижні "
-                f"({prev_w['avail']:.1f}% → {last_w['avail']:.1f}%)."
+                f"Доступність нижче 92% обидва місяці "
+                f"({prev_m['avail']:.1f}% → {last_m['avail']:.1f}%)."
             )
             severity += 1
 
-        if last_w["accept"] < 97:
-            issues.append(f"Не всі замовлення приймаються вчасно — {last_w['accept']:.1f}%.")
+        if last_m["accept"] < 97:
+            issues.append(f"Не всі замовлення приймаються вчасно — {last_m['accept']:.1f}%.")
             severity += 2
 
-        if last_w["refunds"] >= 4:
+        if last_m["refunds"] >= 4:
             issues.append(
-                f"Висока частка замовлень з компенсаціями — {last_w['refunds']:.1f}%."
+                f"Висока частка замовлень з компенсаціями — {last_m['refunds']:.1f}%."
             )
             severity += 2
-        elif last_w["refunds"] >= 2.5 and last_w["refunds"] > prev_w["refunds"] + 1:
+        elif last_m["refunds"] >= 2.5 and last_m["refunds"] > prev_m["refunds"] + 1:
             issues.append(
-                f"Зростання повернень: {prev_w['refunds']:.1f}% → {last_w['refunds']:.1f}%."
+                f"Зростання повернень: {prev_m['refunds']:.1f}% → {last_m['refunds']:.1f}%."
             )
             severity += 1
 
-        if last_w["rating"] < 4.5 and last_w["rating"] > 0:
-            issues.append(f"Низький рейтинг — {last_w['rating']:.2f} з 5.")
+        if last_m["rating"] < 4.5 and last_m["rating"] > 0:
+            issues.append(f"Низький рейтинг — {last_m['rating']:.2f} з 5.")
             severity += 2
 
-        if last_w["prep_time"] >= 32:
-            issues.append(f"Довгий час приготування — {last_w['prep_time']:.1f} хв у середньому.")
+        if last_m["prep_time"] >= 32:
+            issues.append(f"Довгий час приготування — {last_m['prep_time']:.1f} хв у середньому.")
             severity += 1
 
-        if last_w["acc_time"] >= 3:
+        if last_m["acc_time"] >= 3:
             issues.append(
-                f"Повільне прийняття замовлень — {last_w['acc_time']:.1f} хв."
+                f"Повільне прийняття замовлень — {last_m['acc_time']:.1f} хв."
             )
             severity += 2
 
-        if last_w["imp_menu"] < 10 and last_w.get("sessions", 0) > 200:
-            issues.append(f"Мало переходів у меню — лише {last_w['imp_menu']:.1f}% переглядів.")
+        if last_m["imp_menu"] < 10 and last_m.get("sessions", 0) > 500:
+            issues.append(f"Мало переходів у меню — лише {last_m['imp_menu']:.1f}% переглядів.")
             severity += 1
 
         if issues and severity >= 1:
@@ -684,21 +666,21 @@ def analyze_problem_locations(locations: list[dict]) -> list[dict]:
                 "short_name": loc["short_name"],
                 "severity": severity,
                 "issues": issues,
-                "prev": prev_w,
-                "last": last_w,
+                "prev": prev_m,
+                "last": last_m,
             })
 
     problems.sort(key=lambda x: -x["severity"])
     return problems
 
 
-def build_insights(weeks: list[dict], problem_locations: list[dict]) -> list[dict]:
-    if len(weeks) < 2:
+def build_insights(months: list[dict], problem_locations: list[dict]) -> list[dict]:
+    if len(months) < 2:
         return [{"type": "info", "title": "Недостатньо даних",
-                 "text": "Для порівняння потрібні щонайменше два повні тижні."}]
+                 "text": "Для порівняння потрібні щонайменше два повні місяці."}]
 
-    a, b = weeks[-2], weeks[-1]
-    w1, w2 = a["label"], b["label"]
+    a, b = months[0], months[1]
+    m1, m2 = a["label"], b["label"]
     insights: list[dict] = []
 
     def add(kind: str, title: str, text: str):
@@ -708,7 +690,7 @@ def build_insights(weeks: list[dict], problem_locations: list[dict]) -> list[dic
     o_chg = _pct_change(a["orders"], b["orders"])
     if g_chg is not None and g_chg > 5:
         add("positive", "Продажі зростають",
-            f"Загальний оборот мережі зріс на {g_chg:.0f}% ({w1} → {w2}). "
+            f"Загальний оборот мережі зріс на {g_chg:.0f}% ({m1} → {m2}). "
             f"Доставлених замовлень: {o_chg:.0f}%.")
 
     if b["avail"] - a["avail"] >= 3:
@@ -773,30 +755,36 @@ def _metric_label(key: str) -> tuple[str, str, str]:
     return METRIC_UK.get(key, (key, "", ""))
 
 
-def _brand_histogram_chart(key: str, weeks: list[dict], slug: str = "") -> str:
+def _brand_histogram_chart(key: str, months: list[dict], slug: str = "") -> str:
     title, desc, unit = _metric_label(key)
     opts = _metric_opts(key)
-    vals = [float(w.get(key, 0)) for w in weeks]
+    vals = [float(m.get(key, 0)) for m in months]
     max_v = max(vals) if vals and max(vals) > 0 else 1.0
 
     bars = ""
-    for w, val in zip(weeks, vals):
+    for i, (m, val) in enumerate(zip(months, vals)):
         h_pct = max(4, round(val / max_v * 100))
-        short_lbl = w["label"].split(" – ")[0]
+        cls = f"m{i + 1}"
+        short_lbl = UK_MONTHS[m["month"]][:3]
         suffix = f" {unit}" if unit in ("₴", "хв", "з 5") else ""
         bars += f"""
         <div class="brand-bar-col">
           <div class="brand-bar-val">{_fmt_chart_value(val, opts)}{suffix}</div>
-          <div class="hist-bar brand-bar" style="height:{h_pct}%"></div>
+          <div class="hist-bar brand-bar {cls}" style="height:{h_pct}%"></div>
           <div class="brand-bar-week">{short_lbl}</div>
         </div>"""
 
     cid = f"{slug}-brand-{key}" if slug else f"brand-{key}"
+    legend = "".join(
+        f'<span><i class="leg m{i+1}"></i> {m["label"]}</span>'
+        for i, m in enumerate(months)
+    )
     return f"""
     <div class="chart-card brand-chart-card" id="{cid}">
       <h3>{title}</h3>
       <p class="metric-desc">{desc}</p>
-      <p class="unit">Одиниця: {unit} · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: {unit} · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend">{legend}</div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">{bars}</div>
       </div>
@@ -805,25 +793,25 @@ def _brand_histogram_chart(key: str, weeks: list[dict], slug: str = "") -> str:
 
 def _location_grouped_chart(
     key: str,
-    locations: list[dict], week_labels: list[str], slug: str = "",
+    locations: list[dict], period_labels: list[str], slug: str = "",
 ) -> str:
     title, desc, unit = _metric_label(key)
     cid = f"{slug}-loc-{key}" if slug else f"loc-{key}"
     opts = _metric_opts(key)
     all_vals = [
-        float(loc["weeks"][i].get(key, 0))
-        for loc in locations for i in range(len(week_labels))
+        float(loc["months"][i].get(key, 0))
+        for loc in locations for i in range(len(period_labels))
     ]
     max_v = max(all_vals) if all_vals and max(all_vals) > 0 else 1.0
 
     rows_html = ""
     for loc in locations:
         bars = ""
-        for i, wlabel in enumerate(week_labels):
-            val = float(loc["weeks"][i].get(key, 0))
+        for i, plabel in enumerate(period_labels):
+            val = float(loc["months"][i].get(key, 0))
             h_pct = max(4, round(val / max_v * 100))
             cls = f"m{i + 1}"
-            short_lbl = wlabel.split(" – ")[0] if " – " in wlabel else wlabel[:5]
+            short_lbl = plabel.split()[0][:3]
             bars += f"""
             <div class="loc-bar-col">
               <div class="loc-bar-val">{_fmt_chart_value(val, opts)}</div>
@@ -838,7 +826,7 @@ def _location_grouped_chart(
         </div>"""
 
     legend = ""
-    for i, lbl in enumerate(week_labels):
+    for i, lbl in enumerate(period_labels):
         legend += f'<span><i class="leg m{i+1}"></i> {lbl}</span>'
 
     return f"""
@@ -856,7 +844,7 @@ def _problem_locations_html(problems: list[dict], compare_labels: list[str]) -> 
         return """
         <div class="problem-none">
           ✅ За ключовими показниками жодна локація не має критичних відхилень
-          у останньому повному тижні. Продовжуйте тримати якість та доступність.
+          у останньому повному місяці. Продовжуйте тримати якість та доступність.
         </div>"""
 
     cards = ""
@@ -876,7 +864,7 @@ def _problem_locations_html(problems: list[dict], compare_labels: list[str]) -> 
           </div>
           <ul class="problem-list">{issues_li}</ul>
         </div>"""
-    hint = " vs ".join(compare_labels) if len(compare_labels) == 2 else "останні 2 тижні"
+    hint = " vs ".join(compare_labels) if len(compare_labels) == 2 else "останні 2 місяці"
     return f'<p class="section-hint" style="margin-top:-8px">Порівняння: {hint}</p><div class="problem-locs-grid">{cards}</div>'
 
 
@@ -892,7 +880,7 @@ def _insight_html(insights: list[dict]) -> str:
 
 
 def generate_html(data: dict, cfg: dict) -> str:
-    weeks = data["weeks"]
+    months = data["months"]
     locations = data["locations"]
     compare_labels = data["compare_labels"]
     items = data["top_items"]
@@ -909,23 +897,23 @@ def generate_html(data: dict, cfg: dict) -> str:
     for loc in locations:
         loc["_problem"] = loc["name"] in problem_names
 
-    insights = build_insights(weeks, problems)
+    insights = build_insights(months, problems)
 
     brand_charts_html = ""
     for section_title, metric_keys in CHART_SECTIONS:
         brand_charts_html += f'<div class="section-title">{section_title}</div>'
-        brand_charts_html += '<p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p>'
+        brand_charts_html += '<p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p>'
         brand_charts_html += '<div class="charts-grid brand-charts-grid">'
         for key in metric_keys:
-            brand_charts_html += _brand_histogram_chart(key, weeks, slug)
+            brand_charts_html += _brand_histogram_chart(key, months, slug)
         brand_charts_html += "</div>"
 
     loc_charts_html = ""
-    cmp_hint = " · ".join(compare_labels) if compare_labels else "останні 2 тижні"
+    cmp_hint = " · ".join(compare_labels) if compare_labels else "останні 2 місяці"
     for section_title, metric_keys in LOCATION_CHART_SECTIONS:
         loc_charts_html += f'<div class="section-title subsection">{section_title}</div>'
         loc_charts_html += (
-            f'<p class="section-hint">Порівняння останніх двох повних тижнів ({cmp_hint}) · по кожній локації</p>'
+            f'<p class="section-hint">Порівняння двох повних місяців ({cmp_hint}) · по кожній локації</p>'
         )
         loc_charts_html += '<div class="charts-grid loc-charts-grid">'
         for key in metric_keys:
@@ -941,7 +929,7 @@ def generate_html(data: dict, cfg: dict) -> str:
     </summary>
     <div class="loc-collapse-body">
       <div class="section-title">⚠️ Проблемні локації</div>
-      <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
+      <p class="section-hint">Точки з відхиленнями в останньому повному місяці порівняно з попереднім</p>
       {_problem_locations_html(problems, compare_labels)}
       {loc_charts_html}
     </div>
@@ -958,15 +946,15 @@ def generate_html(data: dict, cfg: dict) -> str:
         for it in items
     )
 
-    last = weeks[-1] if weeks else {}
+    last = months[-1] if months else {}
     kpi_block = f"""
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній тиждень)</div>
+      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній місяць)</div>
         <div class="kpi-value">{last.get('gross',0):,.0f} ₴</div></div>
       <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div>
         <div class="kpi-value">{last.get('orders',0)}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Тижнів на платформі</div>
-        <div class="kpi-value">{data['total_weeks']}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Період звіту</div>
+        <div class="kpi-value" style="font-size:16px">{period}</div></div>
       <div class="kpi-card"><div class="kpi-label">Локацій / під увагою</div>
         <div class="kpi-value">{n_locations} / {len(problems)}</div></div>
     </div>""".replace(",", "\u202f")
@@ -1018,7 +1006,13 @@ def generate_html(data: dict, cfg: dict) -> str:
     .brand-bar-col{{display:flex;flex-direction:column;align-items:center;min-width:52px;flex-shrink:0;height:120px;justify-content:flex-end}}
     .brand-bar-val{{font-size:9px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center;max-width:64px;line-height:1.2}}
     .brand-bar-week{{font-size:9px;color:var(--gray-400);margin-top:4px;text-align:center}}
-    .hist-bar.brand-bar{{width:36px;background:linear-gradient(180deg,var(--green) 0%,var(--green-darker) 100%)}}
+    .hist-bar.brand-bar{{width:48px}}
+    .hist-bar.brand-bar.m1{{background:var(--green-darker)}}
+    .hist-bar.brand-bar.m2{{background:var(--green)}}
+    .brand-legend{{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:10px;flex-wrap:wrap}}
+    .brand-legend .leg{{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}}
+    .brand-legend .leg.m1{{background:var(--green-darker)}}
+    .brand-legend .leg.m2{{background:var(--green)}}
     .loc-collapse{{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:28px 0}}
     .loc-collapse summary{{list-style:none;cursor:pointer;padding:18px 24px;font-size:14px;font-weight:700;
       color:var(--gray-700);display:flex;align-items:center;gap:10px;user-select:none}}
@@ -1083,7 +1077,7 @@ def generate_html(data: dict, cfg: dict) -> str:
     </div>
     <div class="header-title">
       <h1>{header_title} · {city_uk}</h1>
-      <p>Bolt Food · Щотижневий звіт (WBR)</p>
+      <p>Bolt Food · Звіт за 2 місяці (WBR)</p>
     </div>
   </div>
   <div class="header-meta">
@@ -1095,9 +1089,9 @@ def generate_html(data: dict, cfg: dict) -> str:
 
 <div class="container">
   <div class="period-bar">
-    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Динаміка:</span>
-    <span style="font-size:12px;color:var(--gray-700)">{data['total_weeks']} повних тижнів · валюта UAH (₴)</span>
-    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній повний тиждень: {last.get('label','')}</span>
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Період:</span>
+    <span style="font-size:12px;color:var(--gray-700)">2 останні повні місяці · валюта UAH (₴)</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній місяць: {last.get('label','')}</span>
   </div>
 
   <div class="section-title">Огляд бренду — {last.get('label','')}</div>
@@ -1108,7 +1102,7 @@ def generate_html(data: dict, cfg: dict) -> str:
   {loc_collapsible}
 
   <div class="section-title">ТОП-10 позицій меню</div>
-  <p class="section-hint">За весь період на платформі · найпопулярніші страви</p>
+  <p class="section-hint">За 2 останні повні місяці · найпопулярніші страви</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -1143,8 +1137,8 @@ def generate_reports_index() -> None:
   body{{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px}}
   h1{{font-size:1.4rem}} ul{{line-height:2}} a{{color:#0d8a52;font-weight:600}}
 </style></head><body>
-<h1>Щотижневі звіти (WBR) — Pinkman / Bella Mozzarella</h1>
-<p>Оновлення: щопонеділка о 14:00 (Київ)</p>
+<h1>Звіти за 2 місяці (WBR) — Pinkman / Bella Mozzarella</h1>
+<p>Оновлення: щопонеділка о 14:00 (Київ) · дані за 2 останні повні місяці</p>
 <ul>{links}</ul>
 </body></html>"""
     (SCRIPT_DIR / "index.html").write_text(html, encoding="utf-8")
@@ -1155,8 +1149,9 @@ def main() -> None:
         print("ERROR: DATABRICKS_TOKEN не задано.", file=sys.stderr)
         sys.exit(1)
 
-    last_w = last_complete_week_start()
-    print(f"WBR batch — останній повний тиждень з {last_w} (Пн)\n")
+    months_range = last_n_full_months(2)
+    period = f"{month_label(*months_range[0])} — {month_label(*months_range[-1])}"
+    print(f"WBR batch — 2 останні повні місяці: {period}\n")
 
     for cfg in REPORT_CONFIGS:
         title = f"{cfg['header_title']} · {cfg['city_uk']}"
@@ -1164,7 +1159,7 @@ def main() -> None:
         try:
             data = fetch_metrics(cfg["provider_ids"], cfg["name_strip"])
             problems = analyze_problem_locations(data["locations"])
-            print(f"  тижнів: {data['total_weeks']}, проблемних точок: {len(problems)}")
+            print(f"  місяців: {len(data['months'])}, проблемних точок: {len(problems)}")
             out = SCRIPT_DIR / cfg["output"]
             out.write_text(generate_html(data, cfg), encoding="utf-8")
             print(f"  → {out.name}")
