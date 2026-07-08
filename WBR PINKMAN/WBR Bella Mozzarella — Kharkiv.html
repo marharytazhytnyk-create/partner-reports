@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>BELLA MOZZARELLA — WBR · Харків · 27.04 – 03.05.2026 — 15.06 – 21.06.2026</title>
+  <title>BELLA MOZZARELLA — WBR · Харків · травень 2026 — червень 2026</title>
   <style>
     :root {
       --green:#34D186; --green-darker:#0d8a52;
@@ -45,7 +45,13 @@
     .brand-bar-col{display:flex;flex-direction:column;align-items:center;min-width:52px;flex-shrink:0;height:120px;justify-content:flex-end}
     .brand-bar-val{font-size:9px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center;max-width:64px;line-height:1.2}
     .brand-bar-week{font-size:9px;color:var(--gray-400);margin-top:4px;text-align:center}
-    .hist-bar.brand-bar{width:36px;background:linear-gradient(180deg,var(--green) 0%,var(--green-darker) 100%)}
+    .hist-bar.brand-bar{width:48px}
+    .hist-bar.brand-bar.m1{background:var(--green-darker)}
+    .hist-bar.brand-bar.m2{background:var(--green)}
+    .brand-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:10px;flex-wrap:wrap}
+    .brand-legend .leg{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}
+    .brand-legend .leg.m1{background:var(--green-darker)}
+    .brand-legend .leg.m2{background:var(--green)}
     .loc-collapse{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:28px 0}
     .loc-collapse summary{list-style:none;cursor:pointer;padding:18px 24px;font-size:14px;font-weight:700;
       color:var(--gray-700);display:flex;align-items:center;gap:10px;user-select:none}
@@ -110,850 +116,357 @@
     </div>
     <div class="header-title">
       <h1>BELLA MOZZARELLA · Харків</h1>
-      <p>Bolt Food · Щотижневий звіт (WBR)</p>
+      <p>Bolt Food · Звіт за 2 місяці (WBR)</p>
     </div>
   </div>
   <div class="header-meta">
-    <div>Період: <strong>27.04 – 03.05.2026 — 15.06 – 21.06.2026</strong></div>
+    <div>Період: <strong>травень 2026 — червень 2026</strong></div>
     <div>Локацій: <strong>6 точок</strong></div>
-    <div>Оновлено: <strong>22.06.2026 17:33</strong></div>
+    <div>Оновлено: <strong>08.07.2026 19:58</strong></div>
   </div>
 </header>
 
 <div class="container">
   <div class="period-bar">
-    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Динаміка:</span>
-    <span style="font-size:12px;color:var(--gray-700)">8 повних тижнів · валюта UAH (₴)</span>
-    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній повний тиждень: 15.06 – 21.06.2026</span>
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Період:</span>
+    <span style="font-size:12px;color:var(--gray-700)">2 останні повні місяці · валюта UAH (₴)</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній місяць: червень 2026</span>
   </div>
 
-  <div class="section-title">Огляд бренду — 15.06 – 21.06.2026</div>
+  <div class="section-title">Огляд бренду — червень 2026</div>
   
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній тиждень)</div>
-        <div class="kpi-value">35 731 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній місяць)</div>
+        <div class="kpi-value">307 510 ₴</div></div>
       <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div>
-        <div class="kpi-value">28</div></div>
-      <div class="kpi-card"><div class="kpi-label">Тижнів на платформі</div>
-        <div class="kpi-value">8</div></div>
+        <div class="kpi-value">267</div></div>
+      <div class="kpi-card"><div class="kpi-label">Період звіту</div>
+        <div class="kpi-value" style="font-size:16px">травень 2026 — червень 2026</div></div>
       <div class="kpi-card"><div class="kpi-label">Локацій / під увагою</div>
         <div class="kpi-value">6 / 6</div></div>
     </div>
 
-  <div class="section-title">1. Продажі</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+  <div class="section-title">1. Продажі</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-gross">
       <h3>Загальні продажі</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5 923 ₴</div>
-          <div class="hist-bar brand-bar" style="height:7%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">262 353 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:85%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">38 321 ₴</div>
-          <div class="hist-bar brand-bar" style="height:45%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">84 623 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">67 386 ₴</div>
-          <div class="hist-bar brand-bar" style="height:80%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">72 023 ₴</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">63 515 ₴</div>
-          <div class="hist-bar brand-bar" style="height:75%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">42 963 ₴</div>
-          <div class="hist-bar brand-bar" style="height:51%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">35 731 ₴</div>
-          <div class="hist-bar brand-bar" style="height:42%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">307 510 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-orders">
       <h3>Доставлені замовлення</h3>
       <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
-      <p class="unit">Одиниця: шт. · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: шт. · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7</div>
-          <div class="hist-bar brand-bar" style="height:9%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">256</div>
+          <div class="hist-bar brand-bar m1" style="height:96%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">33</div>
-          <div class="hist-bar brand-bar" style="height:42%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">78</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">72</div>
-          <div class="hist-bar brand-bar" style="height:92%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">73</div>
-          <div class="hist-bar brand-bar" style="height:94%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">62</div>
-          <div class="hist-bar brand-bar" style="height:79%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">38</div>
-          <div class="hist-bar brand-bar" style="height:49%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">28</div>
-          <div class="hist-bar brand-bar" style="height:36%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">267</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-aov">
       <h3>Середній чек</h3>
       <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">846 ₴</div>
-          <div class="hist-bar brand-bar" style="height:66%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">1 025 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:89%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">1 161 ₴</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 085 ₴</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">936 ₴</div>
-          <div class="hist-bar brand-bar" style="height:73%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">987 ₴</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 024 ₴</div>
-          <div class="hist-bar brand-bar" style="height:80%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 131 ₴</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 276 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">1 152 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-avail">
       <h3>Доступність на платформі</h3>
       <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">90.93%</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">97.83%</div>
+          <div class="hist-bar brand-bar m1" style="height:98%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">91.46%</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">99.87%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">99.05%</div>
-          <div class="hist-bar brand-bar" style="height:99%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">98.52%</div>
-          <div class="hist-bar brand-bar" style="height:99%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">99.50%</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-accept">
       <h3>Прийняття замовлень</h3>
       <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">98.61%</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">94.91%</div>
-          <div class="hist-bar brand-bar" style="height:95%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">98.15%</div>
-          <div class="hist-bar brand-bar" style="height:98%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">97.10%</div>
+          <div class="hist-bar brand-bar m2" style="height:98%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-refunds">
       <h3>Замовлення з компенсаціями</h3>
       <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">0.87%</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.49%</div>
-          <div class="hist-bar brand-bar" style="height:24%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.74%</div>
-          <div class="hist-bar brand-bar" style="height:36%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">2.08%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.93%</div>
-          <div class="hist-bar brand-bar" style="height:45%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">0.19%</div>
+          <div class="hist-bar brand-bar m2" style="height:22%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-prep_time">
       <h3>Час приготування</h3>
       <p class="metric-desc">Середній час приготування замовлення на кухні</p>
-      <p class="unit">Одиниця: хв · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: хв · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">24.30 хв</div>
-          <div class="hist-bar brand-bar" style="height:49%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">43.70 хв</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">41.20 хв</div>
-          <div class="hist-bar brand-bar" style="height:84%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">41.30 хв</div>
-          <div class="hist-bar brand-bar" style="height:84%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">42.50 хв</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">49.10 хв</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">41.60 хв</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">43.80 хв</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">46.80 хв</div>
-          <div class="hist-bar brand-bar" style="height:95%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">42.80 хв</div>
+          <div class="hist-bar brand-bar m2" style="height:98%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-active_users">
       <h3>Активні користувачі</h3>
-      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
-      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за місяць</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7</div>
-          <div class="hist-bar brand-bar" style="height:10%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">236</div>
+          <div class="hist-bar brand-bar m1" style="height:94%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">33</div>
-          <div class="hist-bar brand-bar" style="height:46%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">72</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">66</div>
-          <div class="hist-bar brand-bar" style="height:92%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">65</div>
-          <div class="hist-bar brand-bar" style="height:90%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">58</div>
-          <div class="hist-bar brand-bar" style="height:81%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">35</div>
-          <div class="hist-bar brand-bar" style="height:49%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">27</div>
-          <div class="hist-bar brand-bar" style="height:38%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">250</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-freq">
       <h3>Частота замовлень</h3>
       <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
-      <p class="unit">Одиниця: зам./корист. · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: зам./корист. · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">1</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">27.04</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
           <div class="brand-bar-val">1.08</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.09</div>
-          <div class="hist-bar brand-bar" style="height:97%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.12</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
           <div class="brand-bar-val">1.07</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.09</div>
-          <div class="hist-bar brand-bar" style="height:97%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.04</div>
-          <div class="hist-bar brand-bar" style="height:93%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="hist-bar brand-bar m2" style="height:99%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-new_users">
       <h3>Нові користувачі</h3>
       <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
-      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7</div>
-          <div class="hist-bar brand-bar" style="height:10%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">213</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">31</div>
-          <div class="hist-bar brand-bar" style="height:46%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">67</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">64</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">51</div>
-          <div class="hist-bar brand-bar" style="height:76%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">44</div>
-          <div class="hist-bar brand-bar" style="height:66%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">25</div>
-          <div class="hist-bar brand-bar" style="height:37%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">13</div>
-          <div class="hist-bar brand-bar" style="height:19%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">188</div>
+          <div class="hist-bar brand-bar m2" style="height:88%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-sessions">
       <h3>Перегляди закладу</h3>
       <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
-      <p class="unit">Одиниця: сесій · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: сесій · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">751</div>
-          <div class="hist-bar brand-bar" style="height:6%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">33 786</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4 433</div>
-          <div class="hist-bar brand-bar" style="height:36%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">12 208</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">9 523</div>
-          <div class="hist-bar brand-bar" style="height:78%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">7 622</div>
-          <div class="hist-bar brand-bar" style="height:62%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6 921</div>
-          <div class="hist-bar brand-bar" style="height:57%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 426</div>
-          <div class="hist-bar brand-bar" style="height:44%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4 643</div>
-          <div class="hist-bar brand-bar" style="height:38%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">33 007</div>
+          <div class="hist-bar brand-bar m2" style="height:98%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-imp_menu">
       <h3>Конверсія: перегляд → меню</h3>
       <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">6.79%</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">7.13%</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7.78%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6.81%</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6.98%</div>
-          <div class="hist-bar brand-bar" style="height:90%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">7.45%</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6.95%</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6.08%</div>
-          <div class="hist-bar brand-bar" style="height:78%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5.84%</div>
-          <div class="hist-bar brand-bar" style="height:75%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">6.36%</div>
+          <div class="hist-bar brand-bar m2" style="height:89%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-menu_prod">
       <h3>Конверсія: меню → кошик</h3>
       <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">600.00%</div>
-          <div class="hist-bar brand-bar" style="height:5%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">38400.00%</div>
+          <div class="hist-bar brand-bar m1" style="height:95%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">3800.00%</div>
-          <div class="hist-bar brand-bar" style="height:31%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">12200.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">10900.00%</div>
-          <div class="hist-bar brand-bar" style="height:89%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">11500.00%</div>
-          <div class="hist-bar brand-bar" style="height:94%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">9200.00%</div>
-          <div class="hist-bar brand-bar" style="height:75%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6300.00%</div>
-          <div class="hist-bar brand-bar" style="height:52%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4400.00%</div>
-          <div class="hist-bar brand-bar" style="height:36%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">40600.00%</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-rating">
       <h3>Рейтинг закладу</h3>
       <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
-      <p class="unit">Одиниця: з 5 · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: з 5 · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5 з 5</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">4.52 з 5</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5 з 5</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.80 з 5</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.89 з 5</div>
-          <div class="hist-bar brand-bar" style="height:98%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3.40 з 5</div>
-          <div class="hist-bar brand-bar" style="height:68%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3.09 з 5</div>
-          <div class="hist-bar brand-bar" style="height:62%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.67 з 5</div>
-          <div class="hist-bar brand-bar" style="height:93%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 з 5</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">4.27 з 5</div>
+          <div class="hist-bar brand-bar m2" style="height:94%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-discounts">
       <h3>Загальна сума знижок</h3>
-      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="metric-desc">Усі знижки для клієнтів за місяць (Bolt + партнер)</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">51 655 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:85%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">6 536 ₴</div>
-          <div class="hist-bar brand-bar" style="height:39%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">16 931 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">13 246 ₴</div>
-          <div class="hist-bar brand-bar" style="height:78%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">14 943 ₴</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">13 034 ₴</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 056 ₴</div>
-          <div class="hist-bar brand-bar" style="height:30%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">2 921 ₴</div>
-          <div class="hist-bar brand-bar" style="height:17%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">60 506 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-camp_bolt">
       <h3>Витрати Bolt на знижки</h3>
       <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="brand-bar-val">51 655 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">6 536 ₴</div>
-          <div class="hist-bar brand-bar" style="height:39%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">16 931 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">13 246 ₴</div>
-          <div class="hist-bar brand-bar" style="height:78%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">14 943 ₴</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">13 034 ₴</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 056 ₴</div>
-          <div class="hist-bar brand-bar" style="height:30%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">2 921 ₴</div>
-          <div class="hist-bar brand-bar" style="height:17%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">40 831 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:79%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="bella-mozzarella-kharkiv-brand-camp_merch">
       <h3>Витрати партнера на знижки</h3>
       <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
           <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">27.04</div>
+          <div class="hist-bar brand-bar m1" style="height:4%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">19 675 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div></div>
@@ -967,31 +480,19 @@
     </summary>
     <div class="loc-collapse-body">
       <div class="section-title">⚠️ Проблемні локації</div>
-      <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
-      <p class="section-hint" style="margin-top:-8px">Порівняння: 08.06 – 14.06.2026 vs 15.06 – 21.06.2026</p><div class="problem-locs-grid">
+      <p class="section-hint">Точки з відхиленнями в останньому повному місяці порівняно з попереднім</p>
+      <p class="section-hint" style="margin-top:-8px">Порівняння: травень 2026 vs червень 2026</p><div class="problem-locs-grid">
         <div class="problem-loc-card">
           <div class="problem-loc-header">
             <span class="problem-badge">⚠️ Потребує уваги</span>
             <h3>Bella Mozzarella  п-кт Тракторобудівників</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>2</strong> → <strong>2</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>0.00</strong> → <strong>0.00</strong></span>
+            <span>Замовлення: <strong>10</strong> → <strong>9</strong></span>
+            <span>Доступність: <strong>97.6%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>3.00</strong> → <strong>1.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 2 (було 2 тижнем раніше).</li><li>Довгий час приготування — 84.0 хв у середньому.</li><li>Мало переходів у меню — лише 4.2% переглядів.</li></ul>
-        </div>
-        <div class="problem-loc-card">
-          <div class="problem-loc-header">
-            <span class="problem-badge">⚠️ Потребує уваги</span>
-            <h3>Bella Mozzarella вул.Нескоренних</h3>
-          </div>
-          <div class="problem-kpi-row">
-            <span>Замовлення: <strong>1</strong> → <strong>4</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>5.00</strong> → <strong>5.00</strong></span>
-          </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 4 (було 1 тижнем раніше).</li><li>Довгий час приготування — 53.1 хв у середньому.</li><li>Мало переходів у меню — лише 7.6% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 9 (було 10 місяцем раніше).</li><li>Не всі замовлення приймаються вчасно — 90.0%.</li><li>Низький рейтинг — 1.00 з 5.</li><li>Довгий час приготування — 61.3 хв у середньому.</li><li>Мало переходів у меню — лише 5.0% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -999,23 +500,23 @@
             <h3>Bella Mozzarella вулиця Полтавський Шлях</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>8</strong> → <strong>2</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>0.00</strong> → <strong>0.00</strong></span>
+            <span>Замовлення: <strong>21</strong> → <strong>21</strong></span>
+            <span>Доступність: <strong>98.0%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>5.00</strong> → <strong>3.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 2 (було 8 тижнем раніше).</li><li>Довгий час приготування — 37.5 хв у середньому.</li><li>Мало переходів у меню — лише 4.3% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 21 (було 21 місяцем раніше).</li><li>Не всі замовлення приймаються вчасно — 96.0%.</li><li>Низький рейтинг — 3.00 з 5.</li><li>Довгий час приготування — 48.0 хв у середньому.</li><li>Мало переходів у меню — лише 5.3% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
             <span class="problem-badge">⚠️ Потребує уваги</span>
-            <h3>Bella Mozzarella п-кт Григоренка</h3>
+            <h3>Bella Mozzarella вул.Нескоренних</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>12</strong> → <strong>5</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>3.67</strong> → <strong>5.00</strong></span>
+            <span>Замовлення: <strong>13</strong> → <strong>18</strong></span>
+            <span>Доступність: <strong>97.6%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>0.00</strong> → <strong>4.50</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 5 (було 12 тижнем раніше).</li><li>Довгий час приготування — 34.5 хв у середньому.</li><li>Мало переходів у меню — лише 6.6% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 18 (було 13 місяцем раніше).</li><li>Довгий час приготування — 43.8 хв у середньому.</li><li>Мало переходів у меню — лише 6.9% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -1023,11 +524,23 @@
             <h3>Bella Mozzarella пр-т Перемоги</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>3</strong> → <strong>4</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>5.00</strong> → <strong>0.00</strong></span>
+            <span>Замовлення: <strong>13</strong> → <strong>12</strong></span>
+            <span>Доступність: <strong>98.2%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>5.00</strong> → <strong>5.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 4 (було 3 тижнем раніше).</li><li>Довгий час приготування — 46.2 хв у середньому.</li><li>Мало переходів у меню — лише 6.3% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 12 (було 13 місяцем раніше).</li><li>Довгий час приготування — 39.3 хв у середньому.</li><li>Мало переходів у меню — лише 6.5% переглядів.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Bella Mozzarella п-кт Григоренка</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>88</strong> → <strong>84</strong></span>
+            <span>Доступність: <strong>97.5%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>4.87</strong> → <strong>4.49</strong></span>
+          </div>
+          <ul class="problem-list"><li>Низький рейтинг — 4.49 з 5.</li><li>Довгий час приготування — 36.2 хв у середньому.</li><li>Мало переходів у меню — лише 6.9% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -1035,101 +548,101 @@
             <h3>Bella Mozzarella вул.Сумська</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>12</strong> → <strong>11</strong></span>
-            <span>Доступність: <strong>99.0%</strong> → <strong>98.5%</strong></span>
-            <span>Рейтинг: <strong>5.00</strong> → <strong>5.00</strong></span>
+            <span>Замовлення: <strong>111</strong> → <strong>123</strong></span>
+            <span>Доступність: <strong>98.0%</strong> → <strong>99.5%</strong></span>
+            <span>Рейтинг: <strong>4.70</strong> → <strong>4.88</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 11 (було 12 тижнем раніше).</li><li>Мало переходів у меню — лише 5.5% переглядів.</li></ul>
+          <ul class="problem-list"><li>Мало переходів у меню — лише 6.5% переглядів.</li></ul>
         </div></div>
-      <div class="section-title subsection">1. Продажі</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+      <div class="section-title subsection">1. Продажі</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Загальні продажі</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 612</div>
-              <div class="hist-bar m1" style="height:11%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">11 842</div>
+              <div class="hist-bar m1" style="height:9%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 641</div>
-              <div class="hist-bar m2" style="height:12%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">10 221</div>
+              <div class="hist-bar m2" style="height:7%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">956</div>
-              <div class="hist-bar m1" style="height:7%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13 788</div>
+              <div class="hist-bar m1" style="height:10%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3 879</div>
-              <div class="hist-bar m2" style="height:27%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">18 603</div>
+              <div class="hist-bar m2" style="height:14%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">12 538</div>
-              <div class="hist-bar m1" style="height:88%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">107 140</div>
+              <div class="hist-bar m1" style="height:78%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">14 218</div>
+              <div class="loc-bar-val">137 487</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">9 344</div>
-              <div class="hist-bar m1" style="height:66%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">26 466</div>
+              <div class="hist-bar m1" style="height:19%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2 994</div>
-              <div class="hist-bar m2" style="height:21%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">25 815</div>
+              <div class="hist-bar m2" style="height:19%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">13 702</div>
-              <div class="hist-bar m1" style="height:96%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">89 962</div>
+              <div class="hist-bar m1" style="height:65%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">8 001</div>
-              <div class="hist-bar m2" style="height:56%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">100 815</div>
+              <div class="hist-bar m2" style="height:73%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4 810</div>
-              <div class="hist-bar m1" style="height:34%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13 156</div>
+              <div class="hist-bar m1" style="height:10%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4 998</div>
-              <div class="hist-bar m2" style="height:35%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">14 569</div>
+              <div class="hist-bar m2" style="height:11%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1137,90 +650,90 @@
       <h3>Доставлені замовлення</h3>
       <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
       <p class="unit">Одиниця: шт. · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m1" style="height:17%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">10</div>
+              <div class="hist-bar m1" style="height:8%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">9</div>
+              <div class="hist-bar m2" style="height:7%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:8%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">18</div>
+              <div class="hist-bar m2" style="height:15%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">12</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">111</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">11</div>
-              <div class="hist-bar m2" style="height:92%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">123</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">8</div>
-              <div class="hist-bar m1" style="height:67%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">21</div>
+              <div class="hist-bar m1" style="height:17%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
+              <div class="loc-bar-val">21</div>
               <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">12</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">88</div>
+              <div class="hist-bar m1" style="height:72%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m2" style="height:42%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">84</div>
+              <div class="hist-bar m2" style="height:68%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m1" style="height:25%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12</div>
+              <div class="hist-bar m2" style="height:10%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1228,181 +741,181 @@
       <h3>Середній чек</h3>
       <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">806</div>
-              <div class="hist-bar m1" style="height:50%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 184</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">820</div>
-              <div class="hist-bar m2" style="height:51%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 136</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">956</div>
-              <div class="hist-bar m1" style="height:60%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 061</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">970</div>
-              <div class="hist-bar m2" style="height:61%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 034</div>
+              <div class="hist-bar m2" style="height:82%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 045</div>
-              <div class="hist-bar m1" style="height:65%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">965</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 293</div>
-              <div class="hist-bar m2" style="height:81%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 118</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 168</div>
-              <div class="hist-bar m1" style="height:73%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 260</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 497</div>
-              <div class="hist-bar m2" style="height:93%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 229</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 142</div>
-              <div class="hist-bar m1" style="height:71%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 022</div>
+              <div class="hist-bar m1" style="height:81%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 600</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 200</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 603</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 012</div>
+              <div class="hist-bar m1" style="height:80%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 250</div>
-              <div class="hist-bar m2" style="height:78%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 214</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">2. Операційні показники</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">2. Операційні показники</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Доступність на платформі</h3>
       <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">97.63%</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.52%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.51%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">97.63%</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.52%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.51%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.00%</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.52%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.51%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.05%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.51%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.51%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">97.50%</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.52%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.48%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.05%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.18%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.51%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.51%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1410,7 +923,7 @@
       <h3>Прийняття замовлень</h3>
       <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
@@ -1418,26 +931,26 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">90.00%</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">93.75%</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">97.78%</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1446,12 +959,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1460,26 +973,26 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">96.00%</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.61%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.41%</div>
+              <div class="hist-bar m2" style="height:99%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1488,12 +1001,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1501,7 +1014,7 @@
       <h3>Замовлення з компенсаціями</h3>
       <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
@@ -1509,12 +1022,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1523,54 +1036,54 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">0.74%</div>
+              <div class="hist-bar m1" style="height:18%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.17%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">0.93%</div>
+              <div class="hist-bar m1" style="height:22%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.11%</div>
+              <div class="hist-bar m2" style="height:27%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1579,12 +1092,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1592,181 +1105,181 @@
       <h3>Час приготування</h3>
       <p class="metric-desc">Середній час приготування замовлення на кухні</p>
       <p class="unit">Одиниця: хв · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">74.10</div>
-              <div class="hist-bar m1" style="height:88%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">52.30</div>
+              <div class="hist-bar m1" style="height:76%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">84</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">61.30</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">35.20</div>
-              <div class="hist-bar m1" style="height:42%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">69.20</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">53.10</div>
+              <div class="loc-bar-val">43.80</div>
               <div class="hist-bar m2" style="height:63%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">24.50</div>
-              <div class="hist-bar m1" style="height:29%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">27.50</div>
+              <div class="hist-bar m1" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">25.60</div>
-              <div class="hist-bar m2" style="height:30%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">27.20</div>
+              <div class="hist-bar m2" style="height:39%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">48.20</div>
-              <div class="hist-bar m1" style="height:57%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">45.40</div>
+              <div class="hist-bar m1" style="height:66%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">37.50</div>
-              <div class="hist-bar m2" style="height:45%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">48</div>
+              <div class="hist-bar m2" style="height:69%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">37.40</div>
-              <div class="hist-bar m1" style="height:45%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">32</div>
+              <div class="hist-bar m1" style="height:46%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">34.50</div>
-              <div class="hist-bar m2" style="height:41%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">36.20</div>
+              <div class="hist-bar m2" style="height:52%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">43.10</div>
-              <div class="hist-bar m1" style="height:51%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">38.30</div>
+              <div class="hist-bar m1" style="height:55%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">46.20</div>
-              <div class="hist-bar m2" style="height:55%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">39.30</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Активні користувачі</h3>
-      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за місяць</p>
       <p class="unit">Одиниця: осіб · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m1" style="height:17%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">10</div>
+              <div class="hist-bar m1" style="height:9%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">9</div>
+              <div class="hist-bar m2" style="height:8%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:8%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13</div>
+              <div class="hist-bar m1" style="height:12%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">16</div>
+              <div class="hist-bar m2" style="height:14%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">10</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">102</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">10</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">113</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">7</div>
-              <div class="hist-bar m1" style="height:58%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">20</div>
+              <div class="hist-bar m1" style="height:18%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">20</div>
+              <div class="hist-bar m2" style="height:18%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
+          <div class="loc-bars">
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">79</div>
+              <div class="hist-bar m1" style="height:70%"></div>
+              <div class="loc-bar-month">тра</div>
+            </div>
+            <div class="loc-bar-col">
+              <div class="loc-bar-val">80</div>
+              <div class="hist-bar m2" style="height:71%"></div>
+              <div class="loc-bar-month">чер</div>
+            </div></div>
+        </div>
+        <div class="loc-row loc-row-problem">
+          <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">12</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m2" style="height:42%"></div>
-              <div class="loc-bar-month">15.06</div>
-            </div></div>
-        </div>
-        <div class="loc-row loc-row-problem">
-          <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
-          <div class="loc-bars">
-            <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m1" style="height:25%"></div>
-              <div class="loc-bar-month">08.06</div>
-            </div>
-            <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12</div>
+              <div class="hist-bar m2" style="height:11%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1774,20 +1287,20 @@
       <h3>Частота замовлень</h3>
       <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
       <p class="unit">Одиниця: зам./корист. · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:89%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1795,69 +1308,69 @@
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:89%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.12</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1.20</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1.09</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1.10</div>
-              <div class="hist-bar m2" style="height:92%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.09</div>
+              <div class="hist-bar m2" style="height:97%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1.14</div>
-              <div class="hist-bar m1" style="height:95%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1.05</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.05</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1.11</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.05</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1.08</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1865,90 +1378,90 @@
       <h3>Нові користувачі</h3>
       <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
       <p class="unit">Одиниця: осіб · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
+              <div class="loc-bar-val">10</div>
               <div class="hist-bar m1" style="height:11%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:22%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m2" style="height:8%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">10</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:22%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12</div>
+              <div class="hist-bar m2" style="height:13%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:56%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">93</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">81</div>
+              <div class="hist-bar m2" style="height:87%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6</div>
-              <div class="hist-bar m1" style="height:67%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">19</div>
+              <div class="hist-bar m1" style="height:20%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:11%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">16</div>
+              <div class="hist-bar m2" style="height:17%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">9</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">71</div>
+              <div class="hist-bar m1" style="height:76%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2</div>
-              <div class="hist-bar m2" style="height:22%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">63</div>
+              <div class="hist-bar m2" style="height:68%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:44%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">10</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m2" style="height:33%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">9</div>
+              <div class="hist-bar m2" style="height:10%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1956,90 +1469,90 @@
       <h3>Перегляди закладу</h3>
       <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
       <p class="unit">Одиниця: сесій · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">999</div>
-              <div class="hist-bar m1" style="height:71%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3 489</div>
+              <div class="hist-bar m1" style="height:29%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">522</div>
-              <div class="hist-bar m2" style="height:37%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 632</div>
+              <div class="hist-bar m2" style="height:30%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">612</div>
-              <div class="hist-bar m1" style="height:44%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3 216</div>
+              <div class="hist-bar m1" style="height:27%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">564</div>
-              <div class="hist-bar m2" style="height:40%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 174</div>
+              <div class="hist-bar m2" style="height:26%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 363</div>
-              <div class="hist-bar m1" style="height:97%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">12 048</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 228</div>
-              <div class="hist-bar m2" style="height:87%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">11 070</div>
+              <div class="hist-bar m2" style="height:92%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">738</div>
-              <div class="hist-bar m1" style="height:52%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5 140</div>
+              <div class="hist-bar m1" style="height:43%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">644</div>
-              <div class="hist-bar m2" style="height:46%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 385</div>
+              <div class="hist-bar m2" style="height:28%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 406</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7 330</div>
+              <div class="hist-bar m1" style="height:61%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 353</div>
-              <div class="hist-bar m2" style="height:96%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">10 104</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">308</div>
-              <div class="hist-bar m1" style="height:22%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 563</div>
+              <div class="hist-bar m1" style="height:21%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">332</div>
-              <div class="hist-bar m2" style="height:24%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 642</div>
+              <div class="hist-bar m2" style="height:14%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2047,90 +1560,90 @@
       <h3>Конверсія: перегляд → меню</h3>
       <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5.31%</div>
-              <div class="hist-bar m1" style="height:65%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5.33%</div>
+              <div class="hist-bar m1" style="height:61%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.21%</div>
-              <div class="hist-bar m2" style="height:52%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.96%</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5.39%</div>
-              <div class="hist-bar m1" style="height:66%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8.43%</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">7.62%</div>
-              <div class="hist-bar m2" style="height:94%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6.90%</div>
+              <div class="hist-bar m2" style="height:79%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6.02%</div>
-              <div class="hist-bar m1" style="height:74%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6.76%</div>
+              <div class="hist-bar m1" style="height:77%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5.54%</div>
-              <div class="hist-bar m2" style="height:68%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6.50%</div>
+              <div class="hist-bar m2" style="height:74%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5.83%</div>
-              <div class="hist-bar m1" style="height:72%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5.78%</div>
+              <div class="hist-bar m1" style="height:66%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.35%</div>
-              <div class="hist-bar m2" style="height:54%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5.29%</div>
+              <div class="hist-bar m2" style="height:61%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6.69%</div>
-              <div class="hist-bar m1" style="height:82%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8.73%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6.58%</div>
-              <div class="hist-bar m2" style="height:81%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6.88%</div>
+              <div class="hist-bar m2" style="height:79%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">8.12%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7.84%</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6.33%</div>
-              <div class="hist-bar m2" style="height:78%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6.52%</div>
+              <div class="hist-bar m2" style="height:75%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2138,90 +1651,90 @@
       <h3>Конверсія: меню → кошик</h3>
       <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">7.55%</div>
-              <div class="hist-bar m1" style="height:27%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">9.29%</div>
+              <div class="hist-bar m1" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">13.64%</div>
-              <div class="hist-bar m2" style="height:49%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12.15%</div>
+              <div class="hist-bar m2" style="height:52%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">15.15%</div>
-              <div class="hist-bar m1" style="height:54%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8.49%</div>
+              <div class="hist-bar m1" style="height:37%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">16.28%</div>
-              <div class="hist-bar m2" style="height:58%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">15.35%</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">25.61%</div>
-              <div class="hist-bar m1" style="height:92%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">19.78%</div>
+              <div class="hist-bar m1" style="height:85%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">20.59%</div>
-              <div class="hist-bar m2" style="height:74%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">23.17%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">27.91%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">13.94%</div>
+              <div class="hist-bar m1" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">10.71%</div>
-              <div class="hist-bar m2" style="height:38%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">21.71%</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">17.02%</div>
-              <div class="hist-bar m1" style="height:61%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">16.99%</div>
+              <div class="hist-bar m1" style="height:73%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">14.61%</div>
-              <div class="hist-bar m2" style="height:52%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">17.86%</div>
+              <div class="hist-bar m2" style="height:77%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">20.00%</div>
+              <div class="loc-bar-val">16.58%</div>
               <div class="hist-bar m1" style="height:72%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">19.05%</div>
-              <div class="hist-bar m2" style="height:68%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">17.45%</div>
+              <div class="hist-bar m2" style="height:75%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2229,76 +1742,76 @@
       <h3>Рейтинг закладу</h3>
       <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
       <p class="unit">Одиниця: з 5 · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3</div>
+              <div class="hist-bar m1" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1</div>
+              <div class="hist-bar m2" style="height:20%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">0</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.50</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.70</div>
+              <div class="hist-bar m1" style="height:94%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.88</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3.67</div>
-              <div class="hist-bar m1" style="height:73%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.87</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.49</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2307,103 +1820,103 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">5</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">4. Знижки</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">4. Знижки</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Загальна сума знижок</h3>
-      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
+      <p class="metric-desc">Усі знижки для клієнтів за місяць (Bolt + партнер)</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">253</div>
-              <div class="hist-bar m1" style="height:18%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 326</div>
+              <div class="hist-bar m1" style="height:8%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">259</div>
-              <div class="hist-bar m2" style="height:18%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 627</div>
+              <div class="hist-bar m2" style="height:6%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">133</div>
+              <div class="loc-bar-val">2 750</div>
               <div class="hist-bar m1" style="height:9%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">443</div>
-              <div class="hist-bar m2" style="height:31%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 128</div>
+              <div class="hist-bar m2" style="height:11%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 440</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">20 993</div>
+              <div class="hist-bar m1" style="height:71%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 005</div>
-              <div class="hist-bar m2" style="height:70%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">29 544</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 128</div>
-              <div class="hist-bar m1" style="height:78%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 236</div>
+              <div class="hist-bar m1" style="height:14%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 215</div>
+              <div class="hist-bar m2" style="height:11%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 252</div>
-              <div class="hist-bar m1" style="height:87%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">18 966</div>
+              <div class="hist-bar m1" style="height:64%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">697</div>
-              <div class="hist-bar m2" style="height:48%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">20 690</div>
+              <div class="hist-bar m2" style="height:70%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">850</div>
-              <div class="hist-bar m1" style="height:59%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 385</div>
+              <div class="hist-bar m1" style="height:8%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">517</div>
-              <div class="hist-bar m2" style="height:36%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 303</div>
+              <div class="hist-bar m2" style="height:8%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2411,90 +1924,90 @@
       <h3>Витрати Bolt на знижки</h3>
       <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">253</div>
-              <div class="hist-bar m1" style="height:18%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 326</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">259</div>
-              <div class="hist-bar m2" style="height:18%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 370</div>
+              <div class="hist-bar m2" style="height:7%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Нескоренних">вул.Нескоренних</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">133</div>
-              <div class="hist-bar m1" style="height:9%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 750</div>
+              <div class="hist-bar m1" style="height:13%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">443</div>
-              <div class="hist-bar m2" style="height:31%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 647</div>
+              <div class="hist-bar m2" style="height:13%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 440</div>
+              <div class="loc-bar-val">20 993</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 005</div>
-              <div class="hist-bar m2" style="height:70%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">18 753</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella вулиця Полтавський Шлях">вулиця Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 128</div>
-              <div class="hist-bar m1" style="height:78%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 236</div>
+              <div class="hist-bar m1" style="height:20%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 887</div>
+              <div class="hist-bar m2" style="height:14%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 252</div>
-              <div class="hist-bar m1" style="height:87%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">18 966</div>
+              <div class="hist-bar m1" style="height:90%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">697</div>
-              <div class="hist-bar m2" style="height:48%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">13 134</div>
+              <div class="hist-bar m2" style="height:63%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">850</div>
-              <div class="hist-bar m1" style="height:59%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 385</div>
+              <div class="hist-bar m1" style="height:11%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">517</div>
-              <div class="hist-bar m2" style="height:36%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 039</div>
+              <div class="hist-bar m2" style="height:10%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2502,7 +2015,7 @@
       <h3>Витрати партнера на знижки</h3>
       <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Bella Mozzarella  п-кт Тракторобудівників">п-кт Тракторобудівників</div>
@@ -2510,12 +2023,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
+              <div class="loc-bar-val">256</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2524,12 +2037,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
+              <div class="loc-bar-val">481</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2538,12 +2051,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">10 791</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2552,12 +2065,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
+              <div class="loc-bar-val">328</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2566,12 +2079,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">7 556</div>
+              <div class="hist-bar m2" style="height:70%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2580,12 +2093,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
+              <div class="loc-bar-val">264</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div></div>
@@ -2593,7 +2106,7 @@
   </details>
 
   <div class="section-title">ТОП-10 позицій меню</div>
-  <p class="section-hint">За весь період на платформі · найпопулярніші страви</p>
+  <p class="section-hint">За 2 останні повні місяці · найпопулярніші страви</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -2603,79 +2116,83 @@
       <tbody><tr>
           <td class="rank">1</td>
           <td><strong>Borscht</strong></td>
-          <td class="num">42</td>
-          <td class="num">7 518.0 ₴</td>
+          <td class="num">47</td>
+          <td class="num">8 413.0 ₴</td>
           <td class="num">179 ₴</td>
         </tr><tr>
           <td class="rank">2</td>
+          <td><strong>COMBO 2 PIZZAS</strong></td>
+          <td class="num">43</td>
+          <td class="num">31 347.0 ₴</td>
+          <td class="num">729 ₴</td>
+        </tr><tr>
+          <td class="rank">3</td>
           <td><strong>Strawberry Cider</strong></td>
           <td class="num">41</td>
           <td class="num">3 649.0 ₴</td>
           <td class="num">89 ₴</td>
         </tr><tr>
-          <td class="rank">3</td>
-          <td><strong>COMBO 2 PIZZAS</strong></td>
-          <td class="num">39</td>
-          <td class="num">28 431.0 ₴</td>
-          <td class="num">729 ₴</td>
-        </tr><tr>
           <td class="rank">4</td>
-          <td><strong>Bella Mozzarella Pizza</strong></td>
-          <td class="num">33</td>
-          <td class="num">16 074.0 ₴</td>
-          <td class="num">463 ₴</td>
+          <td><strong>Lasagna with Bolognese Sauce</strong></td>
+          <td class="num">36</td>
+          <td class="num">10 044.0 ₴</td>
+          <td class="num">279 ₴</td>
         </tr><tr>
           <td class="rank">5</td>
-          <td><strong>Lasagna with Bolognese Sauce</strong></td>
-          <td class="num">32</td>
-          <td class="num">8 928.0 ₴</td>
-          <td class="num">279 ₴</td>
+          <td><strong>Bella Mozzarella Pizza</strong></td>
+          <td class="num">36</td>
+          <td class="num">17 714.0 ₴</td>
+          <td class="num">462 ₴</td>
         </tr><tr>
           <td class="rank">6</td>
           <td><strong>Okroshka with Chicken</strong></td>
-          <td class="num">30</td>
-          <td class="num">5 970.0 ₴</td>
+          <td class="num">32</td>
+          <td class="num">6 368.0 ₴</td>
           <td class="num">199 ₴</td>
         </tr><tr>
           <td class="rank">7</td>
-          <td><strong>Carbonara Pasta</strong></td>
-          <td class="num">26</td>
-          <td class="num">6 214.0 ₴</td>
-          <td class="num">239 ₴</td>
-        </tr><tr>
-          <td class="rank">8</td>
           <td><strong>French fries</strong></td>
-          <td class="num">26</td>
-          <td class="num">3 531.0 ₴</td>
+          <td class="num">30</td>
+          <td class="num">4 135.0 ₴</td>
           <td class="num">129 ₴</td>
         </tr><tr>
-          <td class="rank">9</td>
+          <td class="rank">8</td>
           <td><strong>Carbonara Pizza</strong></td>
-          <td class="num">24</td>
-          <td class="num">10 155.0 ₴</td>
+          <td class="num">28</td>
+          <td class="num">11 820.0 ₴</td>
           <td class="num">399 ₴</td>
         </tr><tr>
+          <td class="rank">9</td>
+          <td><strong>Caesar Salad</strong></td>
+          <td class="num">28</td>
+          <td class="num">10 612.0 ₴</td>
+          <td class="num">379 ₴</td>
+        </tr><tr>
           <td class="rank">10</td>
-          <td><strong>Fettuccine with Chicken  Ham  and Mushrooms</strong></td>
-          <td class="num">23</td>
-          <td class="num">5 727.0 ₴</td>
-          <td class="num">249 ₴</td>
+          <td><strong>French Fries</strong></td>
+          <td class="num">28</td>
+          <td class="num">3 690.0 ₴</td>
+          <td class="num">129 ₴</td>
         </tr></tbody>
     </table>
   </div>
 
   <div class="section-title">Висновки та рекомендації</div>
-  <div class="insights-grid"><div class="insight-card warning">
-          <div class="insight-title">⚠️ Час приготування зростає</div>
-          <p>Середній час приготування: 43.8 → 46.8 хв.</p>
+  <div class="insights-grid"><div class="insight-card positive">
+          <div class="insight-title">✅ Продажі зростають</div>
+          <p>Загальний оборот мережі зріс на 17% (травень 2026 → червень 2026). Доставлених замовлень: 4%.</p>
         </div>
 <div class="insight-card positive">
-          <div class="insight-title">✅ Клієнти задоволені якістю</div>
-          <p>Середній рейтинг мережі: 4.67 → 5.00 з 5.</p>
+          <div class="insight-title">✅ Менше компенсацій клієнтам</div>
+          <p>Частка замовлень з поверненнями: 0.9% → 0.2%.</p>
+        </div>
+<div class="insight-card info">
+          <div class="insight-title">ℹ️ Співфінансування знижок</div>
+          <p>Інвестиції Bolt у знижки зросли на 17% (51 655 → 60 506 ₴). Для стабільного зростання важливо долучатися до промо з боку партнера.</p>
         </div>
 <div class="insight-card warning">
           <div class="insight-title">⚠️ Є точки, що потребують уваги</div>
-          <p>Детальний розбір нижче. Насамперед: п-кт Тракторобудівників, вул.Нескоренних, вулиця Полтавський Шлях.</p>
+          <p>Детальний розбір нижче. Насамперед: п-кт Тракторобудівників, вулиця Полтавський Шлях, вул.Нескоренних.</p>
         </div></div>
 </div>
 

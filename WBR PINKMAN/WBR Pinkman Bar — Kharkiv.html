@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>PINKMAN BAR — WBR · Харків · 04.05 – 10.05.2026 — 15.06 – 21.06.2026</title>
+  <title>PINKMAN BAR — WBR · Харків · травень 2026 — червень 2026</title>
   <style>
     :root {
       --green:#34D186; --green-darker:#0d8a52;
@@ -45,7 +45,13 @@
     .brand-bar-col{display:flex;flex-direction:column;align-items:center;min-width:52px;flex-shrink:0;height:120px;justify-content:flex-end}
     .brand-bar-val{font-size:9px;font-weight:700;color:var(--gray-700);margin-bottom:4px;text-align:center;max-width:64px;line-height:1.2}
     .brand-bar-week{font-size:9px;color:var(--gray-400);margin-top:4px;text-align:center}
-    .hist-bar.brand-bar{width:36px;background:linear-gradient(180deg,var(--green) 0%,var(--green-darker) 100%)}
+    .hist-bar.brand-bar{width:48px}
+    .hist-bar.brand-bar.m1{background:var(--green-darker)}
+    .hist-bar.brand-bar.m2{background:var(--green)}
+    .brand-legend{display:flex;gap:16px;font-size:11px;color:var(--gray-700);margin-bottom:10px;flex-wrap:wrap}
+    .brand-legend .leg{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:4px;vertical-align:middle}
+    .brand-legend .leg.m1{background:var(--green-darker)}
+    .brand-legend .leg.m2{background:var(--green)}
     .loc-collapse{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:28px 0}
     .loc-collapse summary{list-style:none;cursor:pointer;padding:18px 24px;font-size:14px;font-weight:700;
       color:var(--gray-700);display:flex;align-items:center;gap:10px;user-select:none}
@@ -110,765 +116,357 @@
     </div>
     <div class="header-title">
       <h1>PINKMAN BAR · Харків</h1>
-      <p>Bolt Food · Щотижневий звіт (WBR)</p>
+      <p>Bolt Food · Звіт за 2 місяці (WBR)</p>
     </div>
   </div>
   <div class="header-meta">
-    <div>Період: <strong>04.05 – 10.05.2026 — 15.06 – 21.06.2026</strong></div>
+    <div>Період: <strong>травень 2026 — червень 2026</strong></div>
     <div>Локацій: <strong>6 точок</strong></div>
-    <div>Оновлено: <strong>22.06.2026 17:31</strong></div>
+    <div>Оновлено: <strong>08.07.2026 19:56</strong></div>
   </div>
 </header>
 
 <div class="container">
   <div class="period-bar">
-    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Динаміка:</span>
-    <span style="font-size:12px;color:var(--gray-700)">7 повних тижнів · валюта UAH (₴)</span>
-    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній повний тиждень: 15.06 – 21.06.2026</span>
+    <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)">Період:</span>
+    <span style="font-size:12px;color:var(--gray-700)">2 останні повні місяці · валюта UAH (₴)</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--gray-400)">Останній місяць: червень 2026</span>
   </div>
 
-  <div class="section-title">Огляд бренду — 15.06 – 21.06.2026</div>
+  <div class="section-title">Огляд бренду — червень 2026</div>
   
     <div class="kpi-grid">
-      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній тиждень)</div>
-        <div class="kpi-value">11 927 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Загальні продажі (останній місяць)</div>
+        <div class="kpi-value">127 316 ₴</div></div>
       <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div>
-        <div class="kpi-value">10</div></div>
-      <div class="kpi-card"><div class="kpi-label">Тижнів на платформі</div>
-        <div class="kpi-value">7</div></div>
+        <div class="kpi-value">102</div></div>
+      <div class="kpi-card"><div class="kpi-label">Період звіту</div>
+        <div class="kpi-value" style="font-size:16px">травень 2026 — червень 2026</div></div>
       <div class="kpi-card"><div class="kpi-label">Локацій / під увагою</div>
         <div class="kpi-value">6 / 6</div></div>
     </div>
 
-  <div class="section-title">1. Продажі</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+  <div class="section-title">1. Продажі</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-gross">
       <h3>Загальні продажі</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">29 217 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">101 254 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:80%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">24 047 ₴</div>
-          <div class="hist-bar brand-bar" style="height:82%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">27 609 ₴</div>
-          <div class="hist-bar brand-bar" style="height:94%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">20 381 ₴</div>
-          <div class="hist-bar brand-bar" style="height:70%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">26 558 ₴</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">23 374 ₴</div>
-          <div class="hist-bar brand-bar" style="height:80%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">11 927 ₴</div>
-          <div class="hist-bar brand-bar" style="height:41%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">127 316 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-orders">
       <h3>Доставлені замовлення</h3>
       <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
-      <p class="unit">Одиниця: шт. · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: шт. · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">22</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">93</div>
+          <div class="hist-bar brand-bar m1" style="height:91%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">23</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">26</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">22</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">20</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">21</div>
-          <div class="hist-bar brand-bar" style="height:81%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">10</div>
-          <div class="hist-bar brand-bar" style="height:38%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">102</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-aov">
       <h3>Середній чек</h3>
       <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">1 328 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">1 089 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:87%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">1 046 ₴</div>
-          <div class="hist-bar brand-bar" style="height:79%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 062 ₴</div>
-          <div class="hist-bar brand-bar" style="height:80%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">926 ₴</div>
-          <div class="hist-bar brand-bar" style="height:70%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 328 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 113 ₴</div>
-          <div class="hist-bar brand-bar" style="height:84%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 193 ₴</div>
-          <div class="hist-bar brand-bar" style="height:90%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">1 248 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">2. Операційні показники</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-avail">
       <h3>Доступність на платформі</h3>
       <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">98.16%</div>
-          <div class="hist-bar brand-bar" style="height:98%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">98.64%</div>
+          <div class="hist-bar brand-bar m1" style="height:99%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">96.39%</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">99.57%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">98.39%</div>
-          <div class="hist-bar brand-bar" style="height:98%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">99.56%</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-accept">
       <h3>Прийняття замовлень</h3>
       <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
           <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">100.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">95.00%</div>
-          <div class="hist-bar brand-bar" style="height:95%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">96.73%</div>
+          <div class="hist-bar brand-bar m2" style="height:97%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-refunds">
       <h3>Замовлення з компенсаціями</h3>
       <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">0.72%</div>
+          <div class="hist-bar brand-bar m1" style="height:16%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">3.33%</div>
-          <div class="hist-bar brand-bar" style="height:17%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0.00%</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">20.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">4.37%</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-prep_time">
       <h3>Час приготування</h3>
       <p class="metric-desc">Середній час приготування замовлення на кухні</p>
-      <p class="unit">Одиниця: хв · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: хв · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">48.10 хв</div>
-          <div class="hist-bar brand-bar" style="height:82%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">49 хв</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">44.70 хв</div>
-          <div class="hist-bar brand-bar" style="height:76%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">43.10 хв</div>
-          <div class="hist-bar brand-bar" style="height:73%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">58.70 хв</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">49.60 хв</div>
-          <div class="hist-bar brand-bar" style="height:84%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">46.90 хв</div>
-          <div class="hist-bar brand-bar" style="height:80%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">51.80 хв</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">47.80 хв</div>
+          <div class="hist-bar brand-bar m2" style="height:98%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-active_users">
       <h3>Активні користувачі</h3>
-      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
-      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за місяць</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">21</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">87</div>
+          <div class="hist-bar brand-bar m1" style="height:90%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">21</div>
-          <div class="hist-bar brand-bar" style="height:91%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">23</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">22</div>
-          <div class="hist-bar brand-bar" style="height:96%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">20</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">20</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">10</div>
-          <div class="hist-bar brand-bar" style="height:43%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">97</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-freq">
       <h3>Частота замовлень</h3>
       <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
-      <p class="unit">Одиниця: зам./корист. · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: зам./корист. · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">1.05</div>
-          <div class="hist-bar brand-bar" style="height:93%"></div>
-          <div class="brand-bar-week">04.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.10</div>
-          <div class="hist-bar brand-bar" style="height:97%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1.13</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">01.06</div>
+          <div class="brand-bar-val">1.07</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
           <div class="brand-bar-val">1.05</div>
-          <div class="hist-bar brand-bar" style="height:93%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="hist-bar brand-bar m2" style="height:98%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-new_users">
       <h3>Нові користувачі</h3>
       <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
-      <p class="unit">Одиниця: осіб · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: осіб · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">21</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">74</div>
+          <div class="hist-bar brand-bar m1" style="height:91%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">21</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">16</div>
-          <div class="hist-bar brand-bar" style="height:76%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">16</div>
-          <div class="hist-bar brand-bar" style="height:76%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">16</div>
-          <div class="hist-bar brand-bar" style="height:76%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">14</div>
-          <div class="hist-bar brand-bar" style="height:67%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">9</div>
-          <div class="hist-bar brand-bar" style="height:43%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">81</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-sessions">
       <h3>Перегляди закладу</h3>
       <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
-      <p class="unit">Одиниця: сесій · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: сесій · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5 021</div>
-          <div class="hist-bar brand-bar" style="height:55%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">27 686</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7 540</div>
-          <div class="hist-bar brand-bar" style="height:83%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">9 112</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6 013</div>
-          <div class="hist-bar brand-bar" style="height:66%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 509</div>
-          <div class="hist-bar brand-bar" style="height:60%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4 136</div>
-          <div class="hist-bar brand-bar" style="height:45%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4 958</div>
-          <div class="hist-bar brand-bar" style="height:54%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">27 438</div>
+          <div class="hist-bar brand-bar m2" style="height:99%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-imp_menu">
       <h3>Конверсія: перегляд → меню</h3>
       <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">6.49%</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">6.45%</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">7.45%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5.54%</div>
-          <div class="hist-bar brand-bar" style="height:74%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">6.52%</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5.79%</div>
-          <div class="hist-bar brand-bar" style="height:78%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.21%</div>
-          <div class="hist-bar brand-bar" style="height:57%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.62%</div>
-          <div class="hist-bar brand-bar" style="height:62%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">5.34%</div>
+          <div class="hist-bar brand-bar m2" style="height:83%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-menu_prod">
       <h3>Конверсія: меню → кошик</h3>
       <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
-      <p class="unit">Одиниця: % · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: % · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">3200.00%</div>
-          <div class="hist-bar brand-bar" style="height:57%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">17100.00%</div>
+          <div class="hist-bar brand-bar m1" style="height:82%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5600.00%</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4400.00%</div>
-          <div class="hist-bar brand-bar" style="height:79%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3900.00%</div>
-          <div class="hist-bar brand-bar" style="height:70%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4200.00%</div>
-          <div class="hist-bar brand-bar" style="height:75%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3200.00%</div>
-          <div class="hist-bar brand-bar" style="height:57%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3100.00%</div>
-          <div class="hist-bar brand-bar" style="height:55%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">20900.00%</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-rating">
       <h3>Рейтинг закладу</h3>
       <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
-      <p class="unit">Одиниця: з 5 · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: з 5 · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">5 з 5</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">4.37 з 5</div>
+          <div class="hist-bar brand-bar m1" style="height:99%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4.83 з 5</div>
-          <div class="hist-bar brand-bar" style="height:97%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.33 з 5</div>
-          <div class="hist-bar brand-bar" style="height:87%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">3.67 з 5</div>
-          <div class="hist-bar brand-bar" style="height:73%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 з 5</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4.75 з 5</div>
-          <div class="hist-bar brand-bar" style="height:95%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">1 з 5</div>
-          <div class="hist-bar brand-bar" style="height:20%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">4.42 з 5</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
-    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Динаміка по тижнях · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
+    </div></div><div class="section-title">4. Знижки</div><p class="section-hint">Порівняння 2 останніх повних місяців · увесь бренд (усі локації разом)</p><div class="charts-grid brand-charts-grid">
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-discounts">
       <h3>Загальна сума знижок</h3>
-      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="metric-desc">Усі знижки для клієнтів за місяць (Bolt + партнер)</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4 935 ₴</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">19 577 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:84%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4 469 ₴</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 836 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4 338 ₴</div>
-          <div class="hist-bar brand-bar" style="height:74%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 141 ₴</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">2 581 ₴</div>
-          <div class="hist-bar brand-bar" style="height:44%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">419 ₴</div>
-          <div class="hist-bar brand-bar" style="height:7%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">23 439 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-camp_bolt">
       <h3>Витрати Bolt на знижки</h3>
       <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4 935 ₴</div>
-          <div class="hist-bar brand-bar" style="height:85%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="brand-bar-val">19 577 ₴</div>
+          <div class="hist-bar brand-bar m1" style="height:100%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">4 469 ₴</div>
-          <div class="hist-bar brand-bar" style="height:77%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 836 ₴</div>
-          <div class="hist-bar brand-bar" style="height:100%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">4 338 ₴</div>
-          <div class="hist-bar brand-bar" style="height:74%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">5 141 ₴</div>
-          <div class="hist-bar brand-bar" style="height:88%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">2 581 ₴</div>
-          <div class="hist-bar brand-bar" style="height:44%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">419 ₴</div>
-          <div class="hist-bar brand-bar" style="height:7%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">15 611 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:80%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div>
     <div class="chart-card brand-chart-card" id="pinkman-bar-kharkiv-brand-camp_merch">
       <h3>Витрати партнера на знижки</h3>
       <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
-      <p class="unit">Одиниця: ₴ · увесь бренд · по тижнях</p>
+      <p class="unit">Одиниця: ₴ · увесь бренд · порівняння місяців</p>
+      <div class="brand-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="brand-bars-scroll">
         <div class="brand-bars">
         <div class="brand-bar-col">
           <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">04.05</div>
+          <div class="hist-bar brand-bar m1" style="height:4%"></div>
+          <div class="brand-bar-week">тра</div>
         </div>
         <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">11.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">18.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">25.05</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">01.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">08.06</div>
-        </div>
-        <div class="brand-bar-col">
-          <div class="brand-bar-val">0 ₴</div>
-          <div class="hist-bar brand-bar" style="height:4%"></div>
-          <div class="brand-bar-week">15.06</div>
+          <div class="brand-bar-val">7 828 ₴</div>
+          <div class="hist-bar brand-bar m2" style="height:100%"></div>
+          <div class="brand-bar-week">чер</div>
         </div></div>
       </div>
     </div></div>
@@ -882,19 +480,19 @@
     </summary>
     <div class="loc-collapse-body">
       <div class="section-title">⚠️ Проблемні локації</div>
-      <p class="section-hint">Точки з відхиленнями в останньому повному тижні порівняно з попереднім</p>
-      <p class="section-hint" style="margin-top:-8px">Порівняння: 08.06 – 14.06.2026 vs 15.06 – 21.06.2026</p><div class="problem-locs-grid">
+      <p class="section-hint">Точки з відхиленнями в останньому повному місяці порівняно з попереднім</p>
+      <p class="section-hint" style="margin-top:-8px">Порівняння: травень 2026 vs червень 2026</p><div class="problem-locs-grid">
         <div class="problem-loc-card">
           <div class="problem-loc-header">
             <span class="problem-badge">⚠️ Потребує уваги</span>
             <h3>Pinkman Bar п-кт Григоренка</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>6</strong> → <strong>1</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
-            <span>Рейтинг: <strong>4.00</strong> → <strong>1.00</strong></span>
+            <span>Замовлення: <strong>32</strong> → <strong>21</strong></span>
+            <span>Доступність: <strong>98.6%</strong> → <strong>99.6%</strong></span>
+            <span>Рейтинг: <strong>4.33</strong> → <strong>3.60</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 1 (було 6 тижнем раніше).</li><li>Висока частка замовлень з компенсаціями — 100.0%.</li><li>Низький рейтинг — 1.00 з 5.</li><li>Довгий час приготування — 47.4 хв у середньому.</li><li>Мало переходів у меню — лише 4.0% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 21 (було 32 місяцем раніше).</li><li>Висока частка замовлень з компенсаціями — 24.4%.</li><li>Низький рейтинг — 3.60 з 5.</li><li>Довгий час приготування — 40.1 хв у середньому.</li><li>Мало переходів у меню — лише 5.1% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -902,23 +500,11 @@
             <h3>Pinkman Bar вул. Полтавський Шлях</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>4</strong> → <strong>3</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
-            <span>Рейтинг: <strong>5.00</strong> → <strong>0.00</strong></span>
+            <span>Замовлення: <strong>7</strong> → <strong>12</strong></span>
+            <span>Доступність: <strong>98.5%</strong> → <strong>99.6%</strong></span>
+            <span>Рейтинг: <strong>0.00</strong> → <strong>5.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 3 (було 4 тижнем раніше).</li><li>Не всі замовлення приймаються вчасно — 75.0%.</li><li>Довгий час приготування — 50.0 хв у середньому.</li><li>Мало переходів у меню — лише 5.5% переглядів.</li></ul>
-        </div>
-        <div class="problem-loc-card">
-          <div class="problem-loc-header">
-            <span class="problem-badge">⚠️ Потребує уваги</span>
-            <h3>Pinkman Bar пр-т Перемоги</h3>
-          </div>
-          <div class="problem-kpi-row">
-            <span>Замовлення: <strong>1</strong> → <strong>0</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
-            <span>Рейтинг: <strong>0.00</strong> → <strong>0.00</strong></span>
-          </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 0 (було 1 тижнем раніше).</li><li>Не всі замовлення приймаються вчасно — 0.0%.</li><li>Мало переходів у меню — лише 7.0% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 12 (було 7 місяцем раніше).</li><li>Не всі замовлення приймаються вчасно — 81.7%.</li><li>Довгий час приготування — 51.3 хв у середньому.</li><li>Мало переходів у меню — лише 5.3% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -926,11 +512,11 @@
             <h3>Pinkman Bar вул. Нескорених</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>4</strong> → <strong>4</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
-            <span>Рейтинг: <strong>5.00</strong> → <strong>0.00</strong></span>
+            <span>Замовлення: <strong>14</strong> → <strong>26</strong></span>
+            <span>Доступність: <strong>98.6%</strong> → <strong>99.6%</strong></span>
+            <span>Рейтинг: <strong>3.00</strong> → <strong>5.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 4 (було 4 тижнем раніше).</li><li>Довгий час приготування — 59.5 хв у середньому.</li><li>Мало переходів у меню — лише 6.1% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 26 (було 14 місяцем раніше).</li><li>Довгий час приготування — 58.8 хв у середньому.</li><li>Мало переходів у меню — лише 6.1% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -938,11 +524,23 @@
             <h3>Pinkman Bar вул.Сумська</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>5</strong> → <strong>1</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
+            <span>Замовлення: <strong>28</strong> → <strong>30</strong></span>
+            <span>Доступність: <strong>98.6%</strong> → <strong>99.6%</strong></span>
+            <span>Рейтинг: <strong>4.92</strong> → <strong>5.00</strong></span>
+          </div>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 30 (було 28 місяцем раніше).</li><li>Довгий час приготування — 34.5 хв у середньому.</li><li>Мало переходів у меню — лише 4.9% переглядів.</li></ul>
+        </div>
+        <div class="problem-loc-card">
+          <div class="problem-loc-header">
+            <span class="problem-badge">⚠️ Потребує уваги</span>
+            <h3>Pinkman Bar пр-т Перемоги</h3>
+          </div>
+          <div class="problem-kpi-row">
+            <span>Замовлення: <strong>4</strong> → <strong>6</strong></span>
+            <span>Доступність: <strong>99.0%</strong> → <strong>99.6%</strong></span>
             <span>Рейтинг: <strong>5.00</strong> → <strong>0.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 1 (було 5 тижнем раніше).</li><li>Довгий час приготування — 51.9 хв у середньому.</li><li>Мало переходів у меню — лише 3.3% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 6 (було 4 місяцем раніше).</li><li>Довгий час приготування — 36.0 хв у середньому.</li><li>Мало переходів у меню — лише 7.2% переглядів.</li></ul>
         </div>
         <div class="problem-loc-card">
           <div class="problem-loc-header">
@@ -950,101 +548,101 @@
             <h3>Pinkman Bar пр-т Тракторобудівників</h3>
           </div>
           <div class="problem-kpi-row">
-            <span>Замовлення: <strong>1</strong> → <strong>1</strong></span>
-            <span>Доступність: <strong>99.6%</strong> → <strong>98.4%</strong></span>
+            <span>Замовлення: <strong>8</strong> → <strong>7</strong></span>
+            <span>Доступність: <strong>98.6%</strong> → <strong>99.6%</strong></span>
             <span>Рейтинг: <strong>0.00</strong> → <strong>0.00</strong></span>
           </div>
-          <ul class="problem-list"><li>Дуже мало замовлень у останньому тижні — лише 1 (було 1 тижнем раніше).</li><li>Довгий час приготування — 50.0 хв у середньому.</li><li>Мало переходів у меню — лише 3.4% переглядів.</li></ul>
+          <ul class="problem-list"><li>Дуже мало замовлень у останньому місяці — лише 7 (було 8 місяцем раніше).</li><li>Довгий час приготування — 67.4 хв у середньому.</li><li>Мало переходів у меню — лише 4.8% переглядів.</li></ul>
         </div></div>
-      <div class="section-title subsection">1. Продажі</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+      <div class="section-title subsection">1. Продажі</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Загальні продажі</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до застосування знижок</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5 056</div>
-              <div class="hist-bar m1" style="height:77%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">17 510</div>
+              <div class="hist-bar m1" style="height:48%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4 845</div>
-              <div class="hist-bar m2" style="height:74%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">36 151</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4 207</div>
-              <div class="hist-bar m1" style="height:64%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">11 012</div>
+              <div class="hist-bar m1" style="height:30%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2 994</div>
-              <div class="hist-bar m2" style="height:46%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">17 012</div>
+              <div class="hist-bar m2" style="height:47%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6 536</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">26 028</div>
+              <div class="hist-bar m1" style="height:72%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 644</div>
-              <div class="hist-bar m2" style="height:25%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">34 381</div>
+              <div class="hist-bar m2" style="height:95%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5 345</div>
-              <div class="hist-bar m1" style="height:82%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">29 391</div>
+              <div class="hist-bar m1" style="height:81%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 775</div>
-              <div class="hist-bar m2" style="height:27%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">21 916</div>
+              <div class="hist-bar m2" style="height:61%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">669</div>
-              <div class="hist-bar m1" style="height:10%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 734</div>
+              <div class="hist-bar m1" style="height:13%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">8 270</div>
+              <div class="hist-bar m2" style="height:23%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 561</div>
-              <div class="hist-bar m1" style="height:24%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">12 580</div>
+              <div class="hist-bar m1" style="height:35%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">669</div>
-              <div class="hist-bar m2" style="height:10%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">9 586</div>
+              <div class="hist-bar m2" style="height:27%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1052,90 +650,90 @@
       <h3>Доставлені замовлення</h3>
       <p class="metric-desc">Кількість замовлень, успішно доставлених клієнтам</p>
       <p class="unit">Одиниця: шт. · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:67%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">14</div>
+              <div class="hist-bar m1" style="height:44%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:67%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">26</div>
+              <div class="hist-bar m2" style="height:81%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:67%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m1" style="height:22%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m2" style="height:50%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12</div>
+              <div class="hist-bar m2" style="height:38%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">28</div>
+              <div class="hist-bar m1" style="height:88%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">30</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6</div>
+              <div class="loc-bar-val">32</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">21</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:17%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4</div>
+              <div class="hist-bar m1" style="height:12%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6</div>
+              <div class="hist-bar m2" style="height:19%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:17%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8</div>
+              <div class="hist-bar m1" style="height:25%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:17%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m2" style="height:22%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1143,181 +741,181 @@
       <h3>Середній чек</h3>
       <p class="metric-desc">Середня сума одного доставленого замовлення до знижок</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 264</div>
-              <div class="hist-bar m1" style="height:71%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 251</div>
+              <div class="hist-bar m1" style="height:80%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 211</div>
-              <div class="hist-bar m2" style="height:68%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 390</div>
+              <div class="hist-bar m2" style="height:88%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 052</div>
-              <div class="hist-bar m1" style="height:59%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 573</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">998</div>
-              <div class="hist-bar m2" style="height:56%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 418</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 307</div>
-              <div class="hist-bar m1" style="height:74%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">930</div>
+              <div class="hist-bar m1" style="height:59%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 644</div>
-              <div class="hist-bar m2" style="height:93%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 146</div>
+              <div class="hist-bar m2" style="height:73%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">891</div>
-              <div class="hist-bar m1" style="height:50%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">918</div>
+              <div class="hist-bar m1" style="height:58%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 775</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 044</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">669</div>
-              <div class="hist-bar m1" style="height:38%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 183</div>
+              <div class="hist-bar m1" style="height:75%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 378</div>
+              <div class="hist-bar m2" style="height:88%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 561</div>
-              <div class="hist-bar m1" style="height:88%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 572</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">669</div>
-              <div class="hist-bar m2" style="height:38%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 369</div>
+              <div class="hist-bar m2" style="height:87%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">2. Операційні показники</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">2. Операційні показники</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Доступність на платформі</h3>
       <p class="metric-desc">Частка часу, коли заклад був онлайн і доступний для замовлення</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.58%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.58%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.38%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.58%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.55%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.39%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.57%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.57%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.39%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.56%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.57%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.39%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.56%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.99%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.39%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">99.56%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">98.56%</div>
+              <div class="hist-bar m1" style="height:99%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">98.40%</div>
-              <div class="hist-bar m2" style="height:99%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">99.56%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1325,7 +923,7 @@
       <h3>Прийняття замовлень</h3>
       <p class="metric-desc">Частка замовлень, які партнер прийняв вчасно</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
@@ -1333,12 +931,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1347,12 +945,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">75.00%</div>
-              <div class="hist-bar m2" style="height:75%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">81.67%</div>
+              <div class="hist-bar m2" style="height:82%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1361,12 +959,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1375,12 +973,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1389,12 +987,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">100.00%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1403,12 +1001,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">100.00%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1416,7 +1014,7 @@
       <h3>Замовлення з компенсаціями</h3>
       <p class="metric-desc">Частка замовлень, за які клієнту надано компенсацію або повернення</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
@@ -1424,12 +1022,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1438,26 +1036,26 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.17%</div>
+              <div class="hist-bar m1" style="height:17%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1466,12 +1064,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">100.00%</div>
+              <div class="loc-bar-val">24.44%</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1480,12 +1078,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1494,12 +1092,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0.00%</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1507,181 +1105,181 @@
       <h3>Час приготування</h3>
       <p class="metric-desc">Середній час приготування замовлення на кухні</p>
       <p class="unit">Одиниця: хв · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">49.90</div>
-              <div class="hist-bar m1" style="height:61%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">52.10</div>
+              <div class="hist-bar m1" style="height:65%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">59.50</div>
-              <div class="hist-bar m2" style="height:73%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">58.80</div>
+              <div class="hist-bar m2" style="height:74%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">50.10</div>
+              <div class="loc-bar-val">48.90</div>
               <div class="hist-bar m1" style="height:61%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">50</div>
-              <div class="hist-bar m2" style="height:61%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">51.30</div>
+              <div class="hist-bar m2" style="height:64%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">35.20</div>
-              <div class="hist-bar m1" style="height:43%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">26.60</div>
+              <div class="hist-bar m1" style="height:33%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">51.90</div>
-              <div class="hist-bar m2" style="height:64%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">34.50</div>
+              <div class="hist-bar m2" style="height:43%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">47.10</div>
-              <div class="hist-bar m1" style="height:58%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">32</div>
+              <div class="hist-bar m1" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">47.40</div>
-              <div class="hist-bar m2" style="height:58%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">40.10</div>
+              <div class="hist-bar m2" style="height:50%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">17.40</div>
-              <div class="hist-bar m1" style="height:21%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">56</div>
+              <div class="hist-bar m1" style="height:70%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">36</div>
+              <div class="hist-bar m2" style="height:45%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">81.60</div>
+              <div class="loc-bar-val">80</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">50</div>
-              <div class="hist-bar m2" style="height:61%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">67.40</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">3. Клієнти та їх поведінка</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Активні користувачі</h3>
-      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за тиждень</p>
+      <p class="metric-desc">Унікальні клієнти з хоча б одним доставленим замовленням за місяць</p>
       <p class="unit">Одиниця: осіб · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:80%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">14</div>
+              <div class="hist-bar m1" style="height:50%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:80%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">26</div>
+              <div class="hist-bar m2" style="height:93%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:80%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m1" style="height:25%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m2" style="height:60%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12</div>
+              <div class="hist-bar m2" style="height:43%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">27</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:20%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">28</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">27</div>
+              <div class="hist-bar m1" style="height:96%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:20%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">18</div>
+              <div class="hist-bar m2" style="height:64%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:20%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4</div>
+              <div class="hist-bar m1" style="height:14%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6</div>
+              <div class="hist-bar m2" style="height:21%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:20%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8</div>
+              <div class="hist-bar m1" style="height:29%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:20%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m2" style="height:25%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1689,20 +1287,20 @@
       <h3>Частота замовлень</h3>
       <p class="metric-desc">Середня кількість замовлень на одного активного користувача</p>
       <p class="unit">Одиниця: зам./корист. · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1710,41 +1308,41 @@
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1.04</div>
+              <div class="hist-bar m1" style="height:87%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.07</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1.20</div>
+              <div class="loc-bar-val">1.19</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1.17</div>
+              <div class="hist-bar m2" style="height:98%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1752,13 +1350,13 @@
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -1766,13 +1364,13 @@
           <div class="loc-bars">
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:83%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="hist-bar m1" style="height:84%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="hist-bar m2" style="height:84%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1780,90 +1378,90 @@
       <h3>Нові користувачі</h3>
       <p class="metric-desc">Клієнти, які вперше зробили замовлення в цьому бренді</p>
       <p class="unit">Одиниця: осіб · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m1" style="height:75%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">14</div>
+              <div class="hist-bar m1" style="height:61%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">22</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m1" style="height:75%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m1" style="height:30%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m2" style="height:75%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">11</div>
+              <div class="hist-bar m2" style="height:48%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
+              <div class="loc-bar-val">23</div>
               <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">22</div>
+              <div class="hist-bar m2" style="height:96%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3</div>
-              <div class="hist-bar m1" style="height:75%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">21</div>
+              <div class="hist-bar m1" style="height:91%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:25%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">15</div>
+              <div class="hist-bar m2" style="height:65%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m1" style="height:25%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2</div>
+              <div class="hist-bar m1" style="height:9%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6</div>
+              <div class="hist-bar m2" style="height:26%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7</div>
+              <div class="hist-bar m1" style="height:30%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:25%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:22%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1871,90 +1469,90 @@
       <h3>Перегляди закладу</h3>
       <p class="metric-desc">Сесії, коли клієнт бачив заклад у стрічці, пошуку або на карті</p>
       <p class="unit">Одиниця: сесій · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">882</div>
-              <div class="hist-bar m1" style="height:71%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 024</div>
+              <div class="hist-bar m1" style="height:55%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">656</div>
-              <div class="hist-bar m2" style="height:53%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4 187</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">491</div>
-              <div class="hist-bar m1" style="height:39%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 188</div>
+              <div class="hist-bar m1" style="height:57%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">976</div>
-              <div class="hist-bar m2" style="height:78%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 565</div>
+              <div class="hist-bar m2" style="height:49%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">860</div>
-              <div class="hist-bar m1" style="height:69%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7 212</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1 244</div>
+              <div class="loc-bar-val">7 338</div>
               <div class="hist-bar m2" style="height:100%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">821</div>
-              <div class="hist-bar m1" style="height:66%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6 223</div>
+              <div class="hist-bar m1" style="height:85%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">974</div>
-              <div class="hist-bar m2" style="height:78%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6 082</div>
+              <div class="hist-bar m2" style="height:83%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">435</div>
-              <div class="hist-bar m1" style="height:35%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 081</div>
+              <div class="hist-bar m1" style="height:28%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">483</div>
-              <div class="hist-bar m2" style="height:39%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 300</div>
+              <div class="hist-bar m2" style="height:31%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">647</div>
-              <div class="hist-bar m1" style="height:52%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3 958</div>
+              <div class="hist-bar m1" style="height:54%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">625</div>
-              <div class="hist-bar m2" style="height:50%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 966</div>
+              <div class="hist-bar m2" style="height:54%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -1962,90 +1560,90 @@
       <h3>Конверсія: перегляд → меню</h3>
       <p class="metric-desc">Частка переглядів закладу, з яких клієнт відкрив меню</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.31%</div>
-              <div class="hist-bar m1" style="height:51%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">8.08%</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">6.10%</div>
-              <div class="hist-bar m2" style="height:72%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6.07%</div>
+              <div class="hist-bar m2" style="height:75%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.48%</div>
-              <div class="hist-bar m1" style="height:53%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5.44%</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5.53%</div>
-              <div class="hist-bar m2" style="height:65%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5.33%</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2.91%</div>
-              <div class="hist-bar m1" style="height:34%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5.92%</div>
+              <div class="hist-bar m1" style="height:73%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3.30%</div>
-              <div class="hist-bar m2" style="height:39%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.87%</div>
+              <div class="hist-bar m2" style="height:60%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.02%</div>
-              <div class="hist-bar m1" style="height:47%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7.36%</div>
+              <div class="hist-bar m1" style="height:91%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4.00%</div>
-              <div class="hist-bar m2" style="height:47%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5.10%</div>
+              <div class="hist-bar m2" style="height:63%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">8.51%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6.34%</div>
+              <div class="hist-bar m1" style="height:78%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">7.04%</div>
-              <div class="hist-bar m2" style="height:83%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">7.22%</div>
+              <div class="hist-bar m2" style="height:89%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">2.94%</div>
-              <div class="hist-bar m1" style="height:35%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5.43%</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">3.36%</div>
-              <div class="hist-bar m2" style="height:39%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4.77%</div>
+              <div class="hist-bar m2" style="height:59%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2053,90 +1651,90 @@
       <h3>Конверсія: меню → кошик</h3>
       <p class="metric-desc">Частка переглядів меню, з яких клієнт додав страву в кошик</p>
       <p class="unit">Одиниця: % · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">10.53%</div>
-              <div class="hist-bar m1" style="height:33%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6.99%</div>
+              <div class="hist-bar m1" style="height:38%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">15.00%</div>
-              <div class="hist-bar m2" style="height:47%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">13.76%</div>
+              <div class="hist-bar m2" style="height:74%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">27.27%</div>
-              <div class="hist-bar m1" style="height:85%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">7.28%</div>
+              <div class="hist-bar m1" style="height:39%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">14.81%</div>
-              <div class="hist-bar m2" style="height:46%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">18.52%</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">32.00%</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">11.64%</div>
+              <div class="hist-bar m1" style="height:63%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">7.32%</div>
-              <div class="hist-bar m2" style="height:23%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">16.72%</div>
+              <div class="hist-bar m2" style="height:90%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">24.24%</div>
-              <div class="hist-bar m1" style="height:76%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">10.88%</div>
+              <div class="hist-bar m1" style="height:59%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">15.38%</div>
-              <div class="hist-bar m2" style="height:48%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">16.14%</div>
+              <div class="hist-bar m2" style="height:87%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">16.22%</div>
-              <div class="hist-bar m1" style="height:51%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6.90%</div>
+              <div class="hist-bar m1" style="height:37%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">14.71%</div>
-              <div class="hist-bar m2" style="height:46%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">12.25%</div>
+              <div class="hist-bar m2" style="height:66%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0.00%</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">11.40%</div>
+              <div class="hist-bar m1" style="height:62%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">14.29%</div>
-              <div class="hist-bar m2" style="height:45%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">10.07%</div>
+              <div class="hist-bar m2" style="height:54%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2144,76 +1742,76 @@
       <h3>Рейтинг закладу</h3>
       <p class="metric-desc">Середня оцінка від клієнтів після доставки</p>
       <p class="unit">Одиниця: з 5 · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3</div>
+              <div class="hist-bar m1" style="height:60%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">0</div>
+              <div class="hist-bar m1" style="height:4%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">5</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.92</div>
+              <div class="hist-bar m1" style="height:98%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">4</div>
-              <div class="hist-bar m1" style="height:80%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4.33</div>
+              <div class="hist-bar m1" style="height:87%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">1</div>
-              <div class="hist-bar m2" style="height:20%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3.60</div>
+              <div class="hist-bar m2" style="height:72%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">5</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2222,103 +1820,103 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
-    </div></div><div class="section-title subsection">4. Знижки</div><p class="section-hint">Порівняння останніх двох повних тижнів (08.06 – 14.06.2026 · 15.06 – 21.06.2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
+    </div></div><div class="section-title subsection">4. Знижки</div><p class="section-hint">Порівняння двох повних місяців (травень 2026 · червень 2026) · по кожній локації</p><div class="charts-grid loc-charts-grid">
     <div class="chart-card loc-chart-card">
       <h3>Загальна сума знижок</h3>
-      <p class="metric-desc">Усі знижки для клієнтів за тиждень (Bolt + партнер)</p>
+      <p class="metric-desc">Усі знижки для клієнтів за місяць (Bolt + партнер)</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">499</div>
-              <div class="hist-bar m1" style="height:56%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3 420</div>
+              <div class="hist-bar m1" style="height:51%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">217</div>
-              <div class="hist-bar m2" style="height:24%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6 275</div>
+              <div class="hist-bar m2" style="height:94%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">899</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 688</div>
+              <div class="hist-bar m1" style="height:25%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">202</div>
-              <div class="hist-bar m2" style="height:22%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 650</div>
+              <div class="hist-bar m2" style="height:55%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">571</div>
-              <div class="hist-bar m1" style="height:64%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 501</div>
+              <div class="hist-bar m1" style="height:67%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">6 674</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">613</div>
-              <div class="hist-bar m1" style="height:68%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6 479</div>
+              <div class="hist-bar m1" style="height:97%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 859</div>
+              <div class="hist-bar m2" style="height:58%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">844</div>
+              <div class="hist-bar m1" style="height:13%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 663</div>
+              <div class="hist-bar m2" style="height:25%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 646</div>
+              <div class="hist-bar m1" style="height:40%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 319</div>
+              <div class="hist-bar m2" style="height:20%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2326,90 +1924,90 @@
       <h3>Витрати Bolt на знижки</h3>
       <p class="metric-desc">Сума, яку Bolt профінансував на знижки та промо для клієнтів</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">499</div>
-              <div class="hist-bar m1" style="height:56%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">3 420</div>
+              <div class="hist-bar m1" style="height:53%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">217</div>
-              <div class="hist-bar m2" style="height:24%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">4 654</div>
+              <div class="hist-bar m2" style="height:72%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Полтавський Шлях">вул. Полтавський Шлях</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">899</div>
-              <div class="hist-bar m1" style="height:100%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">1 688</div>
+              <div class="hist-bar m1" style="height:26%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">202</div>
-              <div class="hist-bar m2" style="height:22%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 574</div>
+              <div class="hist-bar m2" style="height:40%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул.Сумська">вул.Сумська</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">571</div>
-              <div class="hist-bar m1" style="height:64%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">4 501</div>
+              <div class="hist-bar m1" style="height:69%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">3 851</div>
+              <div class="hist-bar m2" style="height:59%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar п-кт Григоренка">п-кт Григоренка</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">613</div>
-              <div class="hist-bar m1" style="height:68%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">6 479</div>
+              <div class="hist-bar m1" style="height:100%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 288</div>
+              <div class="hist-bar m2" style="height:35%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Перемоги">пр-т Перемоги</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">844</div>
+              <div class="hist-bar m1" style="height:13%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 049</div>
+              <div class="hist-bar m2" style="height:16%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar пр-т Тракторобудівників">пр-т Тракторобудівників</div>
           <div class="loc-bars">
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-val">2 646</div>
+              <div class="hist-bar m1" style="height:41%"></div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 195</div>
+              <div class="hist-bar m2" style="height:18%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div>
@@ -2417,7 +2015,7 @@
       <h3>Витрати партнера на знижки</h3>
       <p class="metric-desc">Сума, яку партнер профінансував на знижки та промо для клієнтів</p>
       <p class="unit">Одиниця: ₴ · по кожній локації</p>
-      <div class="loc-legend"><span><i class="leg m1"></i> 08.06 – 14.06.2026</span><span><i class="leg m2"></i> 15.06 – 21.06.2026</span></div>
+      <div class="loc-legend"><span><i class="leg m1"></i> травень 2026</span><span><i class="leg m2"></i> червень 2026</span></div>
       <div class="loc-chart">
         <div class="loc-row loc-row-problem">
           <div class="loc-name" title="Pinkman Bar вул. Нескорених">вул. Нескорених</div>
@@ -2425,12 +2023,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 621</div>
+              <div class="hist-bar m2" style="height:57%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2439,12 +2037,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 075</div>
+              <div class="hist-bar m2" style="height:38%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2453,12 +2051,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">2 823</div>
+              <div class="hist-bar m2" style="height:100%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2467,12 +2065,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">1 571</div>
+              <div class="hist-bar m2" style="height:56%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2481,12 +2079,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
-              <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-val">614</div>
+              <div class="hist-bar m2" style="height:22%"></div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div>
         <div class="loc-row loc-row-problem">
@@ -2495,12 +2093,12 @@
             <div class="loc-bar-col">
               <div class="loc-bar-val">0</div>
               <div class="hist-bar m1" style="height:4%"></div>
-              <div class="loc-bar-month">08.06</div>
+              <div class="loc-bar-month">тра</div>
             </div>
             <div class="loc-bar-col">
-              <div class="loc-bar-val">0</div>
+              <div class="loc-bar-val">124</div>
               <div class="hist-bar m2" style="height:4%"></div>
-              <div class="loc-bar-month">15.06</div>
+              <div class="loc-bar-month">чер</div>
             </div></div>
         </div></div>
     </div></div>
@@ -2508,7 +2106,7 @@
   </details>
 
   <div class="section-title">ТОП-10 позицій меню</div>
-  <p class="section-hint">За весь період на платформі · найпопулярніші страви</p>
+  <p class="section-hint">За 2 останні повні місяці · найпопулярніші страви</p>
   <div class="table-wrap">
     <table>
       <thead>
@@ -2518,8 +2116,8 @@
       <tbody><tr>
           <td class="rank">1</td>
           <td><strong>Borscht</strong></td>
-          <td class="num">23</td>
-          <td class="num">4 117.0 ₴</td>
+          <td class="num">31</td>
+          <td class="num">5 549.0 ₴</td>
           <td class="num">179 ₴</td>
         </tr><tr>
           <td class="rank">2</td>
@@ -2529,16 +2127,16 @@
           <td class="num">119 ₴</td>
         </tr><tr>
           <td class="rank">3</td>
-          <td><strong>Chicken and Tomato Pizza</strong></td>
-          <td class="num">16</td>
-          <td class="num">5 424.0 ₴</td>
-          <td class="num">339 ₴</td>
-        </tr><tr>
-          <td class="rank">4</td>
           <td><strong>LASAGNA WITH BOLOGNESE SAUCE</strong></td>
           <td class="num">16</td>
           <td class="num">4 464.0 ₴</td>
           <td class="num">279 ₴</td>
+        </tr><tr>
+          <td class="rank">4</td>
+          <td><strong>Chicken and Tomato Pizza</strong></td>
+          <td class="num">16</td>
+          <td class="num">5 424.0 ₴</td>
+          <td class="num">339 ₴</td>
         </tr><tr>
           <td class="rank">5</td>
           <td><strong>BBQ Burrito with Spicy Mince and Jalapeños</strong></td>
@@ -2559,34 +2157,38 @@
           <td class="num">229 ₴</td>
         </tr><tr>
           <td class="rank">8</td>
+          <td><strong>Caesar Salad</strong></td>
+          <td class="num">13</td>
+          <td class="num">4 927.0 ₴</td>
+          <td class="num">379 ₴</td>
+        </tr><tr>
+          <td class="rank">9</td>
           <td><strong>Carbonara Pasta</strong></td>
           <td class="num">13</td>
           <td class="num">3 107.0 ₴</td>
           <td class="num">239 ₴</td>
         </tr><tr>
-          <td class="rank">9</td>
-          <td><strong>Honey-glazed Chicken</strong></td>
-          <td class="num">12</td>
-          <td class="num">3 708.0 ₴</td>
-          <td class="num">309 ₴</td>
-        </tr><tr>
           <td class="rank">10</td>
-          <td><strong>Okroshka with Chicken</strong></td>
-          <td class="num">11</td>
-          <td class="num">2 189.0 ₴</td>
-          <td class="num">199 ₴</td>
+          <td><strong>Lemonade</strong></td>
+          <td class="num">13</td>
+          <td class="num">1 287.0 ₴</td>
+          <td class="num">99 ₴</td>
         </tr></tbody>
     </table>
   </div>
 
   <div class="section-title">Висновки та рекомендації</div>
-  <div class="insights-grid"><div class="insight-card warning">
-          <div class="insight-title">⚠️ Час приготування зростає</div>
-          <p>Середній час приготування: 46.9 → 51.8 хв.</p>
+  <div class="insights-grid"><div class="insight-card positive">
+          <div class="insight-title">✅ Продажі зростають</div>
+          <p>Загальний оборот мережі зріс на 26% (травень 2026 → червень 2026). Доставлених замовлень: 10%.</p>
+        </div>
+<div class="insight-card info">
+          <div class="insight-title">ℹ️ Співфінансування знижок</div>
+          <p>Інвестиції Bolt у знижки зросли на 20% (19 577 → 23 439 ₴). Для стабільного зростання важливо долучатися до промо з боку партнера.</p>
         </div>
 <div class="insight-card warning">
           <div class="insight-title">⚠️ Є точки, що потребують уваги</div>
-          <p>Детальний розбір нижче. Насамперед: п-кт Григоренка, вул. Полтавський Шлях, пр-т Перемоги.</p>
+          <p>Детальний розбір нижче. Насамперед: п-кт Григоренка, вул. Полтавський Шлях, вул. Нескорених.</p>
         </div></div>
 </div>
 
