@@ -14,7 +14,6 @@ COUNTRY_CODE = "ua"
 
 def main() -> None:
     today = date.today()
-    # last complete Sunday, then 14 days back
     last_sunday = today - timedelta(days=today.weekday() + 1)
     d1 = last_sunday.isoformat()
     d0 = (last_sunday - timedelta(days=13)).isoformat()
@@ -40,42 +39,31 @@ def main() -> None:
             ROUND(AVG(f.order_provider_estimated_cooking_time_seconds) / 60.0, 1) AS provider_est_min,
             ROUND(AVG(f.provider_stated_cooking_time_minutes), 1) AS stated_min,
             ROUND(AVG(f.provider_ml_estimated_adjusted_cooking_time_minutes), 1) AS ml_est_min,
-            ROUND(AVG(f.provider_estimated_cooking_time), 1) AS provider_estimated_cooking_time,
-            ROUND(AVG(f.order_actual_cooking_time_minutes)
-                - AVG(COALESCE(
-                    f.provider_ml_estimated_adjusted_cooking_time_minutes,
-                    f.order_default_cooking_time_minutes,
-                    f.order_provider_estimated_cooking_time_seconds / 60.0
-                )), 1) AS diff_vs_system
+            ROUND(AVG(f.provider_estimated_cooking_time), 1) AS provider_estimated_cooking_time
         FROM ng_delivery_spark.fact_order_delivery f
         INNER JOIN ng_delivery_spark.dim_provider_v2 p
             ON p.provider_id = f.provider_id
         WHERE p.account_manager_name = '{ACCOUNT_MANAGER}'
           AND p.country_code = '{COUNTRY_CODE}'
-          AND f.created_date_local BETWEEN '{d0}' AND '{d1}'
+          AND f.order_created_date_local BETWEEN '{d0}' AND '{d1}'
           AND f.order_actual_cooking_time_minutes IS NOT NULL
           AND f.order_actual_cooking_time_minutes > 0
         GROUP BY 1,2,3,4,5
         HAVING COUNT(*) >= 5
-        ORDER BY ABS(diff_vs_system) DESC
-        LIMIT 15
+        ORDER BY ABS(AVG(f.order_actual_cooking_time_minutes) - AVG(COALESCE(
+            f.provider_ml_estimated_adjusted_cooking_time_minutes,
+            f.order_default_cooking_time_minutes,
+            f.order_provider_estimated_cooking_time_seconds / 60.0
+        ))) DESC
+        LIMIT 12
         """
     )
     cols = [d[0] for d in cur.description]
     print("COLS:", cols)
     for row in cur.fetchall():
         print(dict(zip(cols, row)))
-
-    # also check created_date column name
-    print("\n=== check date columns sample ===")
-    for col in ("created_date_local", "created_date", "order_created_date_local"):
-        try:
-            cur.execute(f"SELECT {col} FROM ng_delivery_spark.fact_order_delivery LIMIT 1")
-            print("OK", col, cur.fetchone())
-        except Exception as e:
-            print("FAIL", col, str(e).split("\n")[0][:120])
-
     conn.close()
+    print("DONE")
 
 
 if __name__ == "__main__":
