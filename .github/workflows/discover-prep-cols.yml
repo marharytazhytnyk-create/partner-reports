@@ -16,4 +16,4 @@ jobs:
       - name: Discover columns
         env:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-        run: python "Bad Orders analys weekly/_discover_prep_cols.py"
+        run: python "Bad Orders analys weekly/_sample_prep.py"
