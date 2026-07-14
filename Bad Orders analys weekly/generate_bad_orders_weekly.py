@@ -304,6 +304,15 @@ def empty_prep_payload() -> dict:
     }
 
 
+def recommend_cooking_time_min(actual: float | None) -> int | None:
+    """Рекомендований cooking time у системі: actual, округлений до 5 хв."""
+    if actual is None:
+        return None
+    # Крок 5 хв — типовий для налаштування cooking time в Bolt
+    rounded = int(round(max(5.0, float(actual)) / 5.0) * 5)
+    return min(rounded, 90)
+
+
 def fetch_prep_time_data(conn) -> dict:
     """Actual vs estimated preparation time по провайдерах портфоліо за останні 2 тижні."""
     d0, d1 = prep_time_window()
@@ -361,6 +370,7 @@ def fetch_prep_time_data(conn) -> dict:
         diff = None
         if actual is not None and estimated is not None:
             diff = round(actual - estimated, 1)
+        recommended = recommend_cooking_time_min(actual)
         city = str(row["city_name"] or "—")
         rows.append(
             {
@@ -373,6 +383,7 @@ def fetch_prep_time_data(conn) -> dict:
                 "actual_prep_min": actual,
                 "estimated_prep_min": estimated,
                 "diff_min": diff,
+                "recommended_cooking_min": recommended,
                 "orders": int(row["orders"]),
             }
         )
@@ -725,6 +736,14 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
       background:#f0f0f0; color:#555; font-weight:600;
       padding:3px 8px; border-radius:6px; display:inline-block;
     }}
+    .rec-change {{
+      background:#E3F2FD; color:#1565C0; font-weight:700;
+      padding:3px 8px; border-radius:6px; display:inline-block;
+    }}
+    .rec-ok {{
+      background:#E8F5E9; color:#2E7D32; font-weight:600;
+      padding:3px 8px; border-radius:6px; display:inline-block;
+    }}
     .prep-table-wrap {{
       background:var(--card); border:1px solid var(--border); border-radius:12px;
       overflow:auto; box-shadow:0 1px 4px rgba(0,0,0,.04);
@@ -830,6 +849,26 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
     return `<span class="${{cls}}">${{sign}}${{n.toFixed(1)}} хв</span>`;
   }}
 
+  function recommendCooking(actual) {{
+    if (actual === null || actual === undefined || Number.isNaN(Number(actual))) return null;
+    const rounded = Math.round(Math.max(5, Number(actual)) / 5) * 5;
+    return Math.min(rounded, 90);
+  }}
+
+  function fmtRecommended(row) {{
+    const rec = (row.recommended_cooking_min != null)
+      ? Number(row.recommended_cooking_min)
+      : recommendCooking(row.actual_prep_min);
+    if (rec === null || rec === undefined || Number.isNaN(rec)) return '—';
+    const cooking = Number(row.cooking_time_min);
+    const differs = !Number.isNaN(cooking) && Math.abs(cooking - rec) >= 5;
+    const cls = differs ? 'rec-change' : 'rec-ok';
+    const hint = differs
+      ? ` <span style="color:#888;font-weight:500;font-size:.72rem">(зараз ${{fmtMin(cooking)}})</span>`
+      : '';
+    return `<span class="${{cls}}">${{rec}} хв</span>${{hint}}`;
+  }}
+
   function setView(view) {{
     activeView = view;
     document.querySelectorAll('.view-tabs button').forEach(b => {{
@@ -881,6 +920,7 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
       <td class="num">${{fmtMin(r.actual_prep_min)}}</td>
       <td class="num">${{fmtMin(r.estimated_prep_min)}}</td>
       <td class="num">${{fmtDiff(r.diff_min)}}</td>
+      <td class="num">${{fmtRecommended(r)}}</td>
       <td class="num">${{r.orders || 0}}</td>
       <td>${{r.city_ua || r.city_name || '—'}}</td>
     </tr>`).join('');
@@ -892,7 +932,8 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
         Cooking time — налаштований час провайдера.
         Actual — фактичний час приготування.
         Estimated — оцінка системи.
-        Різниця = Actual − Estimated (плюс = довше за оцінку системи).
+        Різниця = Actual − Estimated (плюс = довше за оцінку системи).<br>
+        <strong>Рекомендовано виставити</strong> — actual, округлений до 5 хв (макс. 90), щоб партнер підлаштував cooking time у системі під реальний час.
       </div>
       <div class="kpi-row">
         <div class="kpi"><div class="n">${{total}}</div><div class="l">Провайдерів</div></div>
@@ -903,6 +944,8 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
       <div class="prep-legend">
         <span><span class="diff-pos">+x хв</span> актуальний час довший за систему</span>
         <span><span class="diff-neg">−x хв</span> актуальний час коротший за систему</span>
+        <span><span class="rec-change">N хв</span> рекомендуємо змінити cooking time</span>
+        <span><span class="rec-ok">N хв</span> вже близьке до факту</span>
       </div>
       <div class="prep-table-wrap">
         ${{rows.length ? `<table>
@@ -913,6 +956,7 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
             <th>Actual preparation, хв</th>
             <th>Estimated preparation, хв</th>
             <th>Різниця</th>
+            <th>Рекомендовано виставити, хв</th>
             <th>Замовлень</th>
             <th>Місто</th>
           </tr></thead>
