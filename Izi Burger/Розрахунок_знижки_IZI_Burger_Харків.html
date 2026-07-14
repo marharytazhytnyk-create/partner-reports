@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аналіз акції · IZI BURGER · Харків · Квітень–Травень 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--green:#34D186;--green-dark:#1FAD6A;--green-light:#E8FAF2;--dark:#1C1F23;--text:#2C3E50;--muted:#7F8C8D;--bg:#F5F6F7;--white:#fff;--border:#E0E0E0;--orange:#FF6B35;--red:#E74C3C;--blue:#4A90E2}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+    .hero{background:var(--dark);color:#fff;padding:40px 24px 48px}
+    .hero-inner{max-width:960px;margin:0 auto}
+    .hero-badge{display:inline-flex;gap:6px;background:rgba(52,209,134,.15);border:1px solid rgba(52,209,134,.35);color:var(--green);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:16px}
+    .hero h1{font-size:26px;font-weight:800;margin-bottom:8px}
+    .hero p{color:rgba(255,255,255,.6);font-size:14px;max-width:720px}
+    .container{max-width:960px;margin:0 auto;padding:0 20px 60px}
+
+    .verdict{background:var(--white);border-radius:16px;padding:28px 32px;margin-top:-28px;margin-bottom:24px;box-shadow:0 8px 32px rgba(0,0,0,.1);border-left:5px solid var(--green)}
+    .verdict h2{font-size:18px;font-weight:800;margin-bottom:12px}
+    .verdict-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .verdict-card{border-radius:12px;padding:18px 20px}
+    .verdict-card.good{background:var(--green-light)}
+    .verdict-card.warn{background:#FFF4EE}
+    .verdict-card h3{font-size:14px;font-weight:800;margin-bottom:6px}
+    .verdict-card p{font-size:13px;color:#555}
+
+    .section{background:var(--white);border-radius:16px;padding:28px 32px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .section h2{font-size:18px;font-weight:800;margin-bottom:6px}
+    .section-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+    .section h3{font-size:15px;font-weight:700;margin:20px 0 10px}
+
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .kpi{background:var(--bg);border-radius:12px;padding:14px 12px;text-align:center;border:1px solid var(--border)}
+    .kpi .val{font-size:19px;font-weight:800;color:var(--green-dark)}
+    .kpi .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3}
+    .kpi .chg{font-size:11px;font-weight:700;margin-top:4px}
+    .chg.up{color:#1FAD6A}.chg.down{color:var(--red)}
+
+    .explain{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:16px 20px;margin:16px 0;font-size:14px}
+    .explain strong{color:#92400E}
+    .explain.green{background:var(--green-light);border-color:#A8E6CF}
+    .explain.green strong{color:#1A7A4C}
+    .explain.blue{background:#EFF6FF;border-color:#BFDBFE}
+    .explain.blue strong{color:#1E40AF}
+    .explain.red{background:#FEF2F2;border-color:#FECACA}
+    .explain.red strong{color:#991B1B}
+
+    table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+    thead th{background:var(--dark);color:#fff;padding:10px 12px;text-align:right;font-size:11px}
+    thead th:first-child{text-align:left}
+    tbody td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:right}
+    tbody td:first-child{text-align:left;font-weight:600}
+    tbody tr:nth-child(even){background:var(--bg)}
+    .hl{background:var(--green-light)!important;font-weight:700}
+    .warn-row{background:#FFF4EE!important}
+
+    .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .opt-card{border:2px solid var(--border);border-radius:14px;padding:24px}
+    .opt-card.rec{border-color:var(--green);background:var(--green-light)}
+    .opt-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px}
+    .opt-card.rec .opt-tag{color:var(--green-dark)}
+    .opt-card h3{font-size:17px;margin-bottom:12px}
+    .opt-price{font-size:30px;font-weight:900;color:var(--dark)}
+    .opt-sub{font-size:13px;color:var(--muted);margin:4px 0 14px}
+    .opt-card ul{padding-left:18px;font-size:13px;color:#555}
+    .opt-card li{margin-bottom:6px}
+
+    .formula{background:var(--dark);color:#fff;border-radius:12px;padding:18px 22px;margin:14px 0;font-size:14px;line-height:1.9}
+    .formula .r{color:var(--green);font-weight:700}
+
+    .chart-wrap{position:relative;height:280px;margin-top:16px}
+    .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+    .compare-bar{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px}
+    .compare-bar .label{width:140px;flex-shrink:0;font-weight:600}
+    .compare-bar .bar{flex:1;height:28px;background:var(--bg);border-radius:6px;overflow:hidden}
+    .compare-bar .fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff}
+
+    footer{text-align:center;padding:24px;font-size:12px;color:var(--muted)}
+    @media(max-width:720px){.kpi-row,.verdict-grid,.opt-grid,.chart-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">⚡ Bolt Food · IZI BURGER · Харків</div>
+    <h1>Аналіз акції: квітень → травень 2026<br>2 варіанти знижки + 2 борди</h1>
+    <p>Динаміка продажів, аналіз існуючих знижок партнера, розрахунок бюджету та оцінка вигідності бартеру (борди на Григорівському шосе та Тракторобудівників).</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ВЕРДИКТ -->
+  <div class="verdict">
+    <h2>📌 Підсумок: чи вигідно?</h2>
+    <p style="font-size:14px;color:#555;margin-bottom:4px">З урахуванням <strong>2 бордів на 1–2 місяці</strong> та історії знижок партнера:</p>
+    <div class="verdict-grid">
+      <div class="verdict-card good">
+        <h3>✅ Рекомендуємо: Варіант 2</h3>
+        <p>20% для нових + <strong>мін. замовлення 500 ₴</strong><br>
+        Бюджет ~<strong>48 000 ₴/міс</strong> · з 2 бордами на 2 міс ≈ <strong>+6 000 ₴ в плюс</strong></p>
+      </div>
+      <div class="verdict-card warn">
+        <h3>⚠️ Варіант 1 — лише з 2 бордами на 2 міс</h3>
+        <p>20% для нових без мінімуму · ~<strong>61 000 ₴/міс</strong><br>
+        2 борди на 1 міс — <strong>в мінусі</strong> · на 2 міс — ледь в нуль (~+5 000 ₴)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ДИНАМІКА -->
+  <section class="section">
+    <h2>📈 Динаміка: квітень vs травень 2026</h2>
+    <p class="section-sub">Джерело: Databricks <code>fact_provider_monthly</code> · 3 локації · Харків</p>
+
+    <table>
+      <thead>
+        <tr><th>Показник</th><th>Квітень</th><th>Травень</th><th>Зміна</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Продажі (валовий дохід)</td><td>724 099 ₴</td><td>855 680 ₴</td><td class="chg up">+18,2%</td></tr>
+        <tr><td>Доставлених замовлень</td><td>1 053</td><td>1 160</td><td class="chg up">+10,2%</td></tr>
+        <tr><td>Середній чек</td><td>687,7 ₴</td><td>737,7 ₴</td><td class="chg up">+7,3%</td></tr>
+        <tr><td>Нові клієнти бренду</td><td>337</td><td>413</td><td class="chg up">+22,6%</td></tr>
+        <tr><td>Знижки партнера (різниця валовий−чистий)</td><td>11 097 ₴</td><td>99 692 ₴</td><td class="chg up">×9</td></tr>
+        <tr class="warn-row"><td>% знижок від продажів</td><td>1,5%</td><td>11,7%</td><td>стрибок з 04.05</td></tr>
+        <tr><td>Contribution Profit (Bolt)</td><td>~63 400 ₴</td><td>~88 900 ₴</td><td class="chg up">+40%</td></tr>
+        <tr><td>Маржа CP</td><td>8,0%</td><td>10,4%</td><td class="chg up">+2,4 п.п.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="chart-grid" style="margin-top:20px">
+      <div class="chart-wrap"><canvas id="monthChart"></canvas></div>
+      <div class="chart-wrap"><canvas id="discChart"></canvas></div>
+    </div>
+
+    <div class="explain green" style="margin-top:16px">
+      <strong>Що видно з динаміки:</strong> у травні IZI Burger суттєво виріс — більше замовлень, вищий чек, більше новачків. Це збігається з тим, що партнер у травні <strong>різко посилив власні знижки</strong> (з 1,5% до 11,7%). Тобто промо вже «працює» — наша акція для новачків логічно <em>доповнює</em>, а не дублює все меню.
+    </div>
+  </section>
+
+  <!-- АНАЛІЗ ЗНИЖОК -->
+  <section class="section">
+    <h2>🔍 Аналіз знижок партнера (квітень–травень)</h2>
+    <p class="section-sub">Різниця між «продажі до знижок» і «чисті продажі» = скільки партнер/акції віддали клієнтам</p>
+
+    <table>
+      <thead><tr><th>Період</th><th>Знижки ₴</th><th>% від продажів</th><th>Що відбувалось</th></tr></thead>
+      <tbody>
+        <tr><td>Квітень (весь місяць)</td><td>11 097 ₴</td><td>1,5%</td><td>Майже без акцій — «органічний» базовий місяць</td></tr>
+        <tr><td>Тиждень 30.03–05.04</td><td>~4 800 ₴</td><td>2,9%</td><td>Початок легких знижок</td></tr>
+        <tr><td>Тижні 06.04–27.04</td><td>~1 000–2 500 ₴/тиж</td><td>1,0–2,1%</td><td>Стабільно мало</td></tr>
+        <tr class="warn-row"><td>Тиждень 04.05–10.05</td><td>~27 700 ₴</td><td>12,7%</td><td>⚡ Старт великих знижок партнера</td></tr>
+        <tr class="warn-row"><td>Тижні 11.05–07.06</td><td>~11 600–13 700 ₴/тиж</td><td>11,6–13,7%</td><td>Знижки тримаються на високому рівні</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain red">
+      <strong>Ключовий висновок:</strong> у травні партнер вже інвестував <strong>~100 000 ₴</strong> у знижки для клієнтів (переважно на повторних — бо % знижок високий на всі замовлення). Це дало +18% продажів і +23% новачків.<br><br>
+      <strong>Для нас це означає:</strong> не варто давати 20% на <em>все</em> меню — партнер уже це робить. Наша пропозиція «20% лише на 1-ше замовлення для новачків» — точкова і не перетинається з їхньою стратегією.
+    </div>
+
+    <h3>Кампанії Bolt на IZI Burger (травень)</h3>
+    <table>
+      <thead><tr><th>Тип</th><th>Витрати Bolt</th><th>Коментар</th></tr></thead>
+      <tbody>
+        <tr><td>Activation (нові юзери)</td><td>~106 €</td><td>Мінімальні</td></tr>
+        <tr><td>Reactivation</td><td>~570 €</td><td>Повернення «сплячих»</td></tr>
+        <tr><td>Targeted campaigns</td><td>~1 218 €</td><td>Таргетовані акції</td></tr>
+        <tr><td>Разом кампанії Bolt</td><td>~1 928 € (~102 000 ₴)</td><td>Окремо від пропозиції 20%</td></tr>
+        <tr><td>Знижки від партнера (provider spend)</td><td>~110 €</td><td>Невеликий внесок партнера в Bolt-кампанії</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- СЕР. ЧЕК НОВАЧКІВ -->
+  <section class="section">
+    <h2>🧾 Середній чек у нових користувачів</h2>
+    <p class="section-sub">Окремого поля «AOV новачків» у Databricks немає — нижче оцінка з <code>users_activated_brand_count</code> та зваженого сер. чека</p>
+
+    <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+      <div class="kpi"><div class="val">687,7 ₴</div><div class="lbl">Сер. чек усіх<br>квітень</div></div>
+      <div class="kpi"><div class="val">737,7 ₴</div><div class="lbl">Сер. чек усіх<br>травень</div></div>
+      <div class="kpi" style="border-color:var(--green);background:var(--green-light)"><div class="val">~740 ₴</div><div class="lbl">Оцінка сер. чека<br>новачків (травень)</div></div>
+    </div>
+
+    <div class="explain blue">
+      <strong>Що таке «новий користувач»?</strong><br>
+      <code>users_activated_brand_count</code> — клієнт, у якого <strong>перше замовлення в IZI Burger</strong> (будь-яка з 3 точок) припало на цей місяць.<br>
+      У травні: <strong>413 новачків</strong> = <strong>35,6%</strong> від 1 160 замовлень.
+    </div>
+
+    <h3>Як ми оцінили чек новачків</h3>
+    <table>
+      <thead><tr><th>Метод</th><th>Що показує</th><th>Результат</th></tr></thead>
+      <tbody>
+        <tr><td>Загальний сер. чек бренду</td><td>855 680 ÷ 1 160</td><td>737,7 ₴</td></tr>
+        <tr class="hl"><td>Тижні з багатьма новачками (36%+ замовлень)</td><td>04.05 та 25.05 — коли новачків найбільше</td><td><strong>~726 ₴</strong></td></tr>
+        <tr><td>Тижні з малою часткою новачків (&lt;32%)</td><td>06.04 — переважно «старі» клієнти</td><td>~702 ₴</td></tr>
+        <tr class="hl"><td>Різниця</td><td>Новачки vs постійні клієнти</td><td><strong>+~25 ₴</strong> (новачки платять більше)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain green">
+      <strong>Висновок:</strong> новачки <em>не</em> замовляють дешевше — навпаки, їхній чек на ~25 ₴ вищий за тижні з переважно постійними клієнтами. Для бюджету знижки беремо <strong>~740 ₴</strong> (трохи вище загального 737,7 ₴).
+    </div>
+
+    <h3>По локаціях — травень (де більше новачків → вищий чек)</h3>
+    <table>
+      <thead><tr><th>Локація</th><th>Новачків</th><th>% від замовлень</th><th>Сер. чек</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td>Григорівське шосе</td><td>146</td><td>42,1%</td><td><strong>744,6 ₴</strong></td></tr>
+        <tr><td>пр. Ювілейний</td><td>134</td><td>35,9%</td><td>734,2 ₴</td></tr>
+        <tr><td>Стадіонний проїзд</td><td>94</td><td>29,5%</td><td>720,3 ₴</td></tr>
+      </tbody>
+    </table>
+
+    <div class="chart-wrap" style="height:220px"><canvas id="newUserAovChart"></canvas></div>
+
+    <h3>Що це змінює в бюджеті знижки 20%</h3>
+    <table>
+      <thead><tr><th>База сер. чека</th><th>Розрахунок (413 новачків)</th><th>Бюджет/міс</th></tr></thead>
+      <tbody>
+        <tr><td>Загальний чек 737,7 ₴</td><td>413 × 737,7 × 20%</td><td>60 934 ₴</td></tr>
+        <tr class="hl"><td>Оцінка для новачків ~740 ₴</td><td>413 × 740 × 20%</td><td><strong>~61 100 ₴</strong></td></tr>
+        <tr><td>Верхня оцінка ~745 ₴ (Григорівське)</td><td>413 × 745 × 20%</td><td>~61 500 ₴</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain">
+      <strong>Обмеження:</strong> це оцінка, не точна метрика з Vendor Report. Для 100% точного AOV новачків потрібен order-level звіт (перше замовлення кожного user_id). Різниця між оцінками — лише <strong>~500 ₴/міс</strong>, тож попередній розрахунок <strong>~61 000 ₴</strong> залишається валідним.
+    </div>
+  </section>
+
+  <!-- 2 ВАРІАНТИ -->
+  <section class="section">
+    <h2>💡 2 варіанти акції (за наш рахунок)</h2>
+    <p class="section-sub">База для розрахунку — <strong>травень 2026</strong>: 413 новачків, сер. чек новачків <strong>~740 ₴</strong> (загальний 737,7 ₴)</p>
+
+    <div class="opt-grid">
+      <div class="opt-card">
+        <div class="opt-tag">Варіант 1</div>
+        <h3>20% на меню<br>для нових користувачів</h3>
+        <div class="opt-price">~61 000 ₴</div>
+        <div class="opt-sub">на місяць · ~14 000 ₴/тиждень</div>
+        <ul>
+          <li>Без мінімальної суми замовлення</li>
+          <li>413 новачків × ~740 ₴ × 20%</li>
+          <li>Максимальне охоплення новачків</li>
+          <li>Найдорожчий для Bolt</li>
+        </ul>
+      </div>
+      <div class="opt-card rec">
+        <div class="opt-tag">✅ Варіант 2 — рекомендовано</div>
+        <h3>20% для нових +<br>мін. замовлення <strong>500 ₴</strong></h3>
+        <div class="opt-price">~48 000 ₴</div>
+        <div class="opt-sub">на місяць · ~11 200 ₴/тиждень · економія ~13 000 ₴</div>
+        <ul>
+          <li>Знижка лише якщо кошик ≥ 500 ₴</li>
+          <li>~72% новачків проходять (≈297 з 413)</li>
+          <li>Сер. чек тих, хто проходить: ~810 ₴</li>
+          <li>297 × 810 × 20% ≈ 48 000 ₴</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="explain blue">
+      <strong>Чому мінімум 500 ₴?</strong><br>
+      • Середній чек IZI Burger — <strong>738 ₴</strong>, тож 500 ₴ відсікає лише дрібні замовлення (~28%), а не половину клієнтів.<br>
+      • Це стандартний поріг у food delivery — зрозумілий для клієнта.<br>
+      • Економія для Bolt: <strong>~13 000 ₴/міс</strong> vs варіант 1.<br>
+      • Альтернатива <strong>600 ₴</strong> — ще дешевше (~41 000 ₴/міс), але відсікає ~42% новачків. Пропонуємо 500 ₴ як баланс.
+    </div>
+
+    <h3>Порівняння варіантів (детально)</h3>
+    <table>
+      <thead>
+        <tr><th></th><th>Варіант 1<br>20% без мінімуму</th><th>Варіант 2<br>20% + мін. 500 ₴</th><th>Варіант 2а<br>20% + мін. 600 ₴</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Новачків отримують знижку</td><td>413 (100%)</td><td>~297 (72%)</td><td>~240 (58%)</td></tr>
+        <tr><td>Бюджет Bolt / місяць</td><td>61 000 ₴</td><td class="hl">48 000 ₴</td><td>41 000 ₴</td></tr>
+        <tr><td>CP від цих замовлень*</td><td>~32 000 ₴</td><td>~23 000 ₴</td><td>~18 000 ₴</td></tr>
+        <tr><td>Чистий мінус (без бордів)</td><td>−29 000 ₴</td><td>−25 000 ₴</td><td>−23 000 ₴</td></tr>
+        <tr><td>+ 2 борди × 2 міс (~34 000 ₴)</td><td class="hl">≈ +5 000 ₴</td><td class="hl">≈ +9 000 ₴</td><td class="hl">≈ +11 000 ₴</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">* CP (Contribution Profit) — наш прибуток з замовлень новачків, ~77 ₴/замовлення, маржа 10,4%</p>
+
+    <div class="formula">
+      <strong>Варіант 1:</strong> 413 × ~740 × 20% = <span class="r">~61 100 ₴</span><br>
+      <strong>Варіант 2:</strong> 297 × 810 × 20% = <span class="r">48 114 ₴</span> (мін. 500 ₴)<br>
+      <strong>Варіант 2а:</strong> 240 × 860 × 20% = <span class="r">41 280 ₴</span> (мін. 600 ₴)
+    </div>
+  </section>
+
+  <!-- БОРДИ -->
+  <section class="section">
+    <h2>🪧 2 борди: Григорівське шосе + Тракторобудівників</h2>
+    <p class="section-sub">Партнер розміщує за свій рахунок · оцінка ринкової вартості для Bolt</p>
+
+    <table>
+      <thead><tr><th>Локація</th><th>Чому важливо</th><th>Орієнтовна ціна/міс</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Григорівське шосе</strong></td>
+          <td>Там же IZI Burger (локація 184043, 347 зам/міс). Високий трафік, видимість з центру. Преміум-локація.</td>
+          <td>8 000 – 10 000 ₴</td>
+        </tr>
+        <tr>
+          <td><strong>Тракторобудівників</strong></td>
+          <td>Жвавий район, промислова/житлова зона. Добре для охоплення Салтівки/Нової Баварії.</td>
+          <td>6 500 – 8 500 ₴</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Вартість бартеру для Bolt</h3>
+    <table>
+      <thead><tr><th>Сценарій</th><th>Розрахунок</th><th>Сума</th></tr></thead>
+      <tbody>
+        <tr><td>2 борди × 1 місяць (база)</td><td>2 × 7 500 ₴</td><td>~15 000 ₴</td></tr>
+        <tr><td>2 борди × 1 місяць (преміум)</td><td>2 × 9 000 ₴</td><td>~18 000 ₴</td></tr>
+        <tr class="hl"><td>2 борди × 2 місяці (база)</td><td>2 × 7 500 × 2</td><td>~30 000 ₴</td></tr>
+        <tr class="hl"><td>2 борди × 2 місяці (преміум)</td><td>2 × 9 000 × 2</td><td>~36 000 ₴</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain">
+      <strong>Реалістична оцінка:</strong> 2 борди на 2 місяці ≈ <strong>30 000 – 36 000 ₴</strong> ринкової вартості реклами для Bolt.<br>
+      Джерело цін: ринок outdoor Харків 6 500–8 500 ₴/борд (<a href="https://billboards.com.ua/ua/board/harkov">billboards.com.ua</a>), Григорівське шосе — преміум.
+    </div>
+
+    <h3>Зведення: знижка vs борди</h3>
+    <div style="margin:16px 0">
+      <div class="compare-bar">
+        <div class="label">Варіант 1 (знижка)</div>
+        <div class="bar"><div class="fill" style="width:100%;background:#FF6B35">61 000 ₴</div></div>
+      </div>
+      <div class="compare-bar">
+        <div class="label">Варіант 2 (знижка)</div>
+        <div class="bar"><div class="fill" style="width:79%;background:#FF6B35">48 000 ₴</div></div>
+      </div>
+      <div class="compare-bar">
+        <div class="label">2 борди × 1 міс</div>
+        <div class="bar"><div class="fill" style="width:25%;background:#34D186;min-width:60px">~15к</div></div>
+      </div>
+      <div class="compare-bar">
+        <div class="label">2 борди × 2 міс</div>
+        <div class="bar"><div class="fill" style="width:55%;background:#34D186">~34к</div></div>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Комбінація</th><th>Знижка</th><th>Борди</th><th>CP новачків</th><th>Разом</th></tr></thead>
+      <tbody>
+        <tr><td>Вар.1 + 2 борди × 1 міс</td><td>−61 000</td><td>+15 000</td><td>+32 000</td><td class="warn-row"><strong>−14 000 ₴ ❌</strong></td></tr>
+        <tr><td>Вар.1 + 2 борди × 2 міс</td><td>−61 000</td><td>+34 000</td><td>+32 000</td><td><strong>≈ +5 000 ₴ ✅</strong></td></tr>
+        <tr class="hl"><td>Вар.2 + 2 борди × 2 міс</td><td>−48 000</td><td>+34 000</td><td>+23 000</td><td><strong>≈ +9 000 ₴ ✅✅</strong></td></tr>
+        <tr><td>Вар.2 + 2 борди × 1 міс</td><td>−48 000</td><td>+15 000</td><td>+23 000</td><td class="warn-row"><strong>−10 000 ₴ ❌</strong></td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain red">
+      <strong>Важливо:</strong> 2 борди на <strong>1 місяць недостатньо</strong>, щоб окупити знижку. Потрібно домовлятись мінімум на <strong>2 місяці</strong> — тоді угода виходить у нуль або невеликий плюс.
+    </div>
+  </section>
+
+  <!-- РЕКОМЕНДАЦІЯ -->
+  <section class="section">
+    <h2>🎯 Фінальна рекомендація для переговорів</h2>
+
+    <table>
+      <thead><tr><th>Параметр</th><th>Що пропонуємо</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td>Акція</td><td><strong>20% на меню для нових клієнтів бренду</strong> (1-ше замовлення)</td></tr>
+        <tr class="hl"><td>Мін. замовлення</td><td><strong>500 ₴</strong> (варіант 2)</td></tr>
+        <tr><td>Тривалість акції</td><td>1–2 місяці, далі перегляд за результатами</td></tr>
+        <tr><td>Бюджет Bolt</td><td>~48 000 ₴/міс (варіант 2) або ~61 000 ₴ (варіант 1)</td></tr>
+        <tr class="hl"><td>Борди від партнера</td><td><strong>2 шт.</strong> — Григорівське шосе + Тракторобудівників</td></tr>
+        <tr class="hl"><td>Термін бордів</td><td><strong>Мінімум 2 місяці</strong> (обов'язкова умова)</td></tr>
+        <tr><td>Брендинг</td><td>Bolt Food на бордах + фотозвіт після монтажу</td></tr>
+        <tr><td>Чому вигідно Bolt</td><td>Бартер ~34 000 ₴ + CP ~23 000 ₴ ≈ покриває 48 000 ₴ знижки</td></tr>
+        <tr><td>Чому вигідно партнеру</td><td>Безкоштовна знижка для новачків + вже працюючі власні промо + outdoor за свій рахунок лише 2 борди</td></tr>
+      </tbody>
+    </table>
+
+    <div class="explain green" style="margin-top:16px">
+      <strong>Аргумент для партнера:</strong> «У травні ваші власні знижки (~100 000 ₴) дали +18% продажів. Ми пропонуємо точково підсилити залучення новачків (ще ~48 000 ₴), а ви — 2 борди з Bolt на 2 місяці. Разом це дешевше, ніж ваша травнева акція на все меню, але б'є точно в нових клієнтів.»
+    </div>
+  </section>
+
+  <!-- ТИЖНЕВА ДИНАМІКА -->
+  <section class="section">
+    <h2>📅 Тижнева динаміка (березень – червень)</h2>
+    <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
+  </section>
+
+</div>
+
+<footer>
+  Bolt Food · IZI BURGER Харків · Databricks fact_provider_monthly + fact_provider_weekly · Оновлено 11.06.2026
+</footer>
+
+<script>
+const fmt = v => Math.round(v).toLocaleString('uk-UA');
+
+new Chart(document.getElementById('monthChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Продажі, тис ₴', 'Замовлення', 'Новачки', 'CP, тис ₴'],
+    datasets: [
+      { label: 'Квітень', data: [724.1, 1053, 337, 63.4], backgroundColor: '#A8E6CF', borderRadius: 6 },
+      { label: 'Травень', data: [855.7, 1160, 413, 88.9], backgroundColor: '#34D186', borderRadius: 6 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+});
+
+new Chart(document.getElementById('discChart'), {
+  type: 'line',
+  data: {
+    labels: ['30.03','06.04','13.04','20.04','27.04','04.05','11.05','18.05','25.05','01.06'],
+    datasets: [
+      { label: '% знижок партнера', data: [2.9,1.5,1.0,1.2,2.1,12.7,11.6,13.5,13.3,13.7], borderColor: '#FF6B35', backgroundColor: 'rgba(255,107,53,.1)', fill: true, tension: .3, yAxisID: 'y' },
+      { label: 'Нові клієнти', data: [88,61,85,83,80,111,77,78,108,90], borderColor: '#4A90E2', tension: .3, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { title: { display: true, text: 'Знижки партнера vs нові клієнти по тижнях' }, legend: { position: 'top' } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: '% знижок' } },
+      y1: { position: 'right', title: { display: true, text: 'Новачки' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('newUserAovChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Квітень\n(оцінка ~700)', 'Травень\n(оцінка ~740)', 'Тижні\nмало новачків', 'Тижні\nбагато новачків', 'Григорівське\nшосе'],
+    datasets: [{
+      label: 'Сер. чек, ₴',
+      data: [698, 734, 702, 726, 745],
+      backgroundColor: ['#A8E6CF', '#34D186', '#B0BEC5', '#4A90E2', '#1FAD6A'],
+      borderRadius: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      title: { display: true, text: 'Сер. чек: новачки vs загальний (травень 2026)' }
+    },
+    scales: { y: { beginAtZero: false, min: 680, ticks: { callback: v => v + ' ₴' } } }
+  }
+});
+
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['30.03','06.04','13.04','20.04','27.04','04.05','11.05','18.05','25.05','01.06'],
+    datasets: [
+      { label: 'Продажі, тис ₴', data: [164.1,171.2,174.8,174.0,181.2,217.6,174.7,167.4,202.4,199.0], backgroundColor: '#34D186', borderRadius: 4, yAxisID: 'y' },
+      { label: 'Замовлення', data: [239,244,260,251,249,307,233,227,272,259], backgroundColor: '#4A90E2', borderRadius: 4, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: 'тис ₴' } },
+      y1: { position: 'right', title: { display: true, text: 'Замовлення' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

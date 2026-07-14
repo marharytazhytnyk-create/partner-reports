@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пропозиція спільної акції · IZI BURGER · Харків</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--green:#34D186;--green-dark:#1FAD6A;--green-light:#E8FAF2;--dark:#1C1F23;--muted:#7F8C8D;--bg:#F5F6F7;--white:#fff;--border:#E0E0E0;--orange:#FF6B35}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:#2C3E50;line-height:1.65}
+    .hero{background:linear-gradient(135deg,#1a1a1a,#2a2a2a);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:-40%;right:-15%;width:500px;height:500px;background:radial-gradient(circle,rgba(52,209,134,.15),transparent 70%);border-radius:50%}
+    .hero-inner{position:relative;z-index:2;max-width:680px;margin:0 auto}
+    .hero-badge{display:inline-flex;gap:6px;background:rgba(52,209,134,.15);border:1px solid rgba(52,209,134,.35);color:var(--green);font-size:12px;font-weight:700;padding:6px 16px;border-radius:20px;margin-bottom:20px}
+    .hero-logo{font-size:42px;font-weight:900;letter-spacing:-1px;margin-bottom:8px}
+    .hero-logo span{color:var(--green)}
+    .hero h1{font-size:24px;font-weight:700;line-height:1.4;margin-bottom:12px}
+    .hero p{font-size:14px;color:rgba(255,255,255,.55)}
+    .hero-date{margin-top:16px;font-size:12px;color:rgba(255,255,255,.35)}
+
+    .container{max-width:820px;margin:0 auto;padding:0 20px 60px}
+    .intro{background:var(--white);border-radius:20px;padding:32px 36px;margin-top:-40px;margin-bottom:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);position:relative;z-index:3}
+    .intro p{font-size:15px;color:#444;line-height:1.8}
+    .intro .hl{color:var(--green-dark);font-weight:700}
+
+    .section{background:var(--white);border-radius:16px;padding:28px 32px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .section h2{font-size:18px;font-weight:800;margin-bottom:6px}
+    .section-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .kpi{background:var(--bg);border-radius:12px;padding:16px 12px;text-align:center;border:1px solid var(--border)}
+    .kpi .val{font-size:20px;font-weight:800;color:var(--green-dark)}
+    .kpi .sub-val{font-size:12px;font-weight:600;color:var(--muted);margin-top:3px}
+    .kpi .lbl{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.3}
+
+    .barter{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .barter-card{border-radius:14px;padding:24px;border:2px solid var(--border)}
+    .barter-card.bolt{border-color:var(--green);background:var(--green-light)}
+    .barter-card.partner{border-color:#E0E0E0}
+    .barter-card .who{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:8px}
+    .barter-card.bolt .who{color:var(--green-dark)}
+    .barter-card h3{font-size:16px;font-weight:800;margin-bottom:10px}
+    .barter-card ul{padding-left:18px;font-size:14px;color:#555}
+    .barter-card li{margin-bottom:6px}
+
+    .opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+    .opt{border:2px solid var(--border);border-radius:16px;padding:28px 24px;position:relative}
+    .opt.rec{border-color:var(--green);background:var(--green-light)}
+    .opt.rec::before{content:'РЕКОМЕНДУЄМО';position:absolute;top:14px;right:-32px;background:var(--green);color:#fff;font-size:9px;font-weight:800;letter-spacing:.5px;padding:4px 36px;transform:rotate(45deg)}
+    .opt-label{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .opt.rec .opt-label{color:var(--green-dark)}
+    .opt h3{font-size:20px;font-weight:800;margin-bottom:4px}
+    .opt .min-order{font-size:28px;font-weight:900;color:var(--dark);margin:12px 0 4px}
+    .opt .min-order span{font-size:16px;font-weight:600;color:var(--muted)}
+    .opt-desc{font-size:13px;color:#555;margin-bottom:16px;line-height:1.6}
+    .opt-details{background:rgba(255,255,255,.7);border-radius:10px;padding:14px 16px;font-size:13px}
+    .opt.rec .opt-details{background:rgba(255,255,255,.85)}
+    .opt-details div{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+    .opt-details div:last-child{border:none;font-weight:700;color:var(--green-dark)}
+
+    .boards{background:var(--dark);color:#fff;border-radius:16px;padding:28px 32px;margin-bottom:24px}
+    .boards h2{font-size:18px;font-weight:800;margin-bottom:16px;color:#fff}
+    .board-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .board-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:18px 20px}
+    .board-item .pin{font-size:20px;margin-bottom:6px}
+    .board-item strong{display:block;font-size:14px;margin-bottom:4px}
+    .board-item span{font-size:12px;color:rgba(255,255,255,.5)}
+
+
+    .benefits{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px}
+    .benefit{background:var(--bg);border-radius:12px;padding:18px 16px;text-align:center;border:1px solid var(--border)}
+    .benefit .icon{font-size:28px;margin-bottom:8px}
+    .benefit h4{font-size:13px;font-weight:700;margin-bottom:4px}
+    .benefit p{font-size:12px;color:var(--muted);line-height:1.4}
+
+    .scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+    .scenario{border-radius:14px;padding:20px 18px;border:2px solid var(--border)}
+    .scenario.pess{border-color:#FECACA;background:#FEF2F2}
+    .scenario.base{border-color:#BFDBFE;background:#EFF6FF}
+    .scenario.opt{border-color:#A8E6CF;background:var(--green-light)}
+    .scenario .tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+    .scenario.pess .tag{color:#B91C1C}
+    .scenario.base .tag{color:#1D4ED8}
+    .scenario.opt .tag{color:var(--green-dark)}
+    .scenario .orders{font-size:32px;font-weight:900;line-height:1;margin:8px 0 4px}
+    .scenario .vs{font-size:13px;font-weight:700;margin-bottom:12px}
+    .scenario.pess .vs{color:#B45309}
+    .scenario.base .vs{color:#1D4ED8}
+    .scenario.opt .vs{color:var(--green-dark)}
+    .scenario ul{padding-left:16px;font-size:12px;color:#555;line-height:1.5}
+    .scenario li{margin-bottom:4px}
+    .risk-note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:18px 22px;margin-top:20px;font-size:13px;color:#555;line-height:1.65}
+    .risk-note h3{font-size:14px;font-weight:800;color:#92400E;margin-bottom:10px}
+    .risk-note ul{padding-left:18px;margin:0}
+    .risk-note li{margin-bottom:6px}
+    @media(max-width:700px){
+      .kpi-row,.barter,.opt-grid,.board-list,.benefits,.scenario-grid{grid-template-columns:1fr}
+      .intro{padding:24px 20px}
+      .hero h1{font-size:20px}
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">⚡ Bolt Food · Харків · Червень 2026</div>
+    <div class="hero-logo">Bolt <span>Food</span></div>
+    <h1>Пропозиція спільної акції<br>IZI BURGER × Bolt Food</h1>
+    <p>Знижка 20% для нових клієнтів + outdoor-реклама по Харкову</p>
+    <div class="hero-date">Підготовлено: 11.06.2026</div>
+  </div>
+</section>
+
+<div class="container">
+
+  <div class="intro">
+    <p>
+      Вітаємо, команда <span class="hl">IZI BURGER</span>! Дякуємо за співпрацю на Bolt Food у Харкові.
+      За останні два місяці ваш бренд показав сильне зростання — і ми хочемо разом із вами
+      <span class="hl">підсилити залучення нових клієнтів</span> через спільну акцію:
+      Bolt інвестує у залучення нових для закладу користувачів через знижку на перше замовлення,
+      а ви — у підсилення видимості пропозиції на платформі Bolt Food через зовнішню рекламу в місті.
+    </p>
+  </div>
+
+  <!-- РЕЗУЛЬТАТИ -->
+  <section class="section">
+    <h2>📈 Ваші результати: квітень → травень 2026</h2>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="val">+18%</div>
+        <div class="sub-val">855 680 ₴</div>
+        <div class="lbl">Зростання<br>продажів</div>
+      </div>
+      <div class="kpi">
+        <div class="val">1 160</div>
+        <div class="sub-val">+10% до квітня</div>
+        <div class="lbl">Замовлень<br>у травні</div>
+      </div>
+      <div class="kpi">
+        <div class="val">413</div>
+        <div class="sub-val">+23% до квітня</div>
+        <div class="lbl">Нових клієнтів<br>у травні</div>
+      </div>
+      <div class="kpi">
+        <div class="val">738 ₴</div>
+        <div class="sub-val">+7% до квітня</div>
+        <div class="lbl">Середній<br>чек</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- МОДЕЛЬ -->
+  <section class="section">
+    <h2>🤝 Модель співпраці</h2>
+    <p class="section-sub">Бартер: кожна сторона інвестує у те, що вміє найкраще</p>
+    <div class="barter">
+      <div class="barter-card bolt">
+        <div class="who">Bolt Food інвестує</div>
+        <h3>Знижка 20% на перше замовлення</h3>
+        <ul>
+          <li>Тільки для <strong>нових клієнтів</strong> IZI BURGER</li>
+          <li>Лише на <strong>1-ше замовлення</strong> — не на всі</li>
+          <li>У знижку інвестує <strong>Bolt</strong>, не партнер</li>
+          <li>Тривалість акції: <strong>1–3 місяці</strong></li>
+        </ul>
+      </div>
+      <div class="barter-card partner">
+        <div class="who">IZI BURGER інвестує</div>
+        <h3>2 рекламні борди</h3>
+        <ul>
+          <li>Розміщення за <strong>ваш рахунок</strong></li>
+          <li>Брендинг <strong>Bolt Food</strong> на макеті</li>
+          <li>Термін: <strong>1–3 місяці</strong></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- БОРДИ -->
+  <div class="boards">
+    <h2>🪧 Рекламні борди (1–3 місяці)</h2>
+    <div class="board-list">
+      <div class="board-item">
+        <div class="pin">📍</div>
+        <strong>Григорівське шосе</strong>
+        <span>Поруч із вашою локацією IZI BURGER · високий трафік · видимість з центру</span>
+      </div>
+      <div class="board-item">
+        <div class="pin">📍</div>
+        <strong>пр. Тракторобудівників</strong>
+        <span>Охоплення Салтівки / Нової Баварії · жвавий район</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 ВАРІАНТИ -->
+  <section class="section">
+    <h2>💡 Два варіанти акції — оберіть зручний</h2>
+    <p class="section-sub">Обидва варіанти: 20% знижка на меню · тільки для нових клієнтів · тільки 1-ше замовлення · Bolt інвестує в знижку</p>
+
+    <div class="opt-grid">
+      <div class="opt rec">
+        <div class="opt-label">Варіант А — рекомендуємо</div>
+        <h3>20% для новачків</h3>
+        <div class="min-order">від 500 <span>₴</span></div>
+        <p class="opt-desc">
+          Знижка 20% на перше замовлення для нового клієнта IZI BURGER,
+          якщо сума замовлення від <strong>500 ₴</strong>.
+        </p>
+        <div class="opt-details">
+          <div><span>Охоплення новачків</span><span>~72% (~300/міс)</span></div>
+          <div><span>Середній чек зі знижкою</span><span>~810 ₴</span></div>
+          <div><span>Знижка клієнту</span><span>~162 ₴</span></div>
+          <div><span>Інвестиція Bolt</span><span>~48 000 ₴/міс</span></div>
+        </div>
+      </div>
+
+      <div class="opt">
+        <div class="opt-label">Варіант Б</div>
+        <h3>20% для новачків</h3>
+        <div class="min-order">від 600 <span>₴</span></div>
+        <p class="opt-desc">
+          Те саме, але мінімальна сума замовлення —
+          <strong>600 ₴</strong>. Підходить, якщо хочете вищий середній чек.
+        </p>
+        <div class="opt-details">
+          <div><span>Охоплення новачків</span><span>~58% (~240/міс)</span></div>
+          <div><span>Середній чек зі знижкою</span><span>~860 ₴</span></div>
+          <div><span>Знижка клієнту</span><span>~172 ₴</span></div>
+          <div><span>Інвестиція Bolt</span><span>~41 000 ₴/міс</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ВИГОДА -->
+  <section class="section">
+    <h2>✅ Що отримує IZI BURGER</h2>
+    <div class="benefits">
+      <div class="benefit">
+        <div class="icon">🎯</div>
+        <h4>Нові клієнти</h4>
+        <p>~240–300 новачків на місяць отримують знижку 20% — за рахунок Bolt, не ваш</p>
+      </div>
+      <div class="benefit">
+        <div class="icon">📢</div>
+        <h4>Видимість у місті</h4>
+        <p>Bolt Food на 2 бордах у Харкові 1–3 місяці — більше впізнаваності платформи = більше замовлень</p>
+      </div>
+      <div class="benefit">
+        <div class="icon">📈</div>
+        <h4>Зростання без ризику</h4>
+        <p>Акція допоможе утримати обсяг у літній сезон — у знижку інвестує Bolt, не ви</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- СЦЕНАРІЇ -->
+  <section class="section">
+    <h2>📊 Очікуване зростання: 3 сценарії</h2>
+    <p class="section-sub">Орієнтири на <strong>липень–вересень 2026</strong> · база — травень 2026: <strong>1 160 замовлень/міс</strong> · не гарантія, а діапазон можливого приросту</p>
+
+    <div class="scenario-grid">
+      <div class="scenario pess">
+        <div class="tag">Песимістичний</div>
+        <div class="orders">~1 050</div>
+        <div class="vs">середнє за липень–вересень · +5–8% приросту</div>
+        <ul>
+          <li><strong>Липень:</strong> ~1 020 зам. (+приріст від акції)</li>
+          <li><strong>Серпень:</strong> ~1 050 зам.</li>
+          <li><strong>Вересень:</strong> ~1 080 зам.</li>
+          <li>Новачків: ~380/міс</li>
+          <li><strong>За 3 міс: ~3 150 зам.</strong></li>
+        </ul>
+      </div>
+      <div class="scenario base">
+        <div class="tag">Реалістичний · орієнтир</div>
+        <div class="orders">~1 150</div>
+        <div class="vs">середнє за липень–вересень · +10–12% приросту</div>
+        <ul>
+          <li><strong>Липень:</strong> ~1 120 зам.</li>
+          <li><strong>Серпень:</strong> ~1 150 зам. (пік сезону)</li>
+          <li><strong>Вересень:</strong> ~1 180 зам.</li>
+          <li>Новачків: ~430/міс</li>
+          <li><strong>За 3 міс: ~3 450 зам.</strong></li>
+        </ul>
+      </div>
+      <div class="scenario opt">
+        <div class="tag">Оптимістичний</div>
+        <div class="orders">~1 280</div>
+        <div class="vs">середнє за липень–вересень · +15–20% приросту</div>
+        <ul>
+          <li><strong>Липень:</strong> ~1 240 зам.</li>
+          <li><strong>Серпень:</strong> ~1 280 зам.</li>
+          <li><strong>Вересень:</strong> ~1 320 зам.</li>
+          <li>Новачків: ~475/міс</li>
+          <li><strong>За 3 міс: ~3 840 зам.</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="risk-note">
+      <h3>⚠️ Фактори, які можуть обмежити приріст (песимістичний сценарій)</h3>
+      <ul>
+        <li><strong>Літній сезон у Харкові</strong> — відпустки, виїзди з міста, менше замовлень «додому» у липні–серпні</li>
+        <li><strong>Економія домогосподарств</strong> — клієнти рідше замовляють доставку або обирають дешевші позиції</li>
+        <li><strong>Обстріли та тривоги</strong> — у дні з активними обстрілами замовлення падають на 15–30%</li>
+        <li><strong>Конкуренція</strong> — інші бренди також запускають літні акції на Bolt Food</li>
+        <li><strong>Затримка бордів</strong> — якщо монтаж зсунеться, менше нових клієнтів дізнаються про акцію</li>
+        <li><strong>Слабкий uptake промо</strong> — не всі новачки скористаються знижкою 20% (мін. сума 500–600 ₴)</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

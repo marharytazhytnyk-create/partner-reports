@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Josper Svintuz вулиця Келецька — Замовлення · 2026-07-06 — 2026-07-12</title>
+  <style>
+    :root {
+      --green:#34D186; --green-darker:#0d8a52;
+      --black:#0d0d0d; --gray-700:#4a4a4a; --gray-400:#9a9a9a; --gray-100:#f5f5f5;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+      font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}
+    .header{background:var(--black);padding:28px 40px;display:flex;align-items:center;
+      justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}
+    .header-title h1{font-size:22px;font-weight:700;color:#fff}
+    .header-title p{font-size:11px;color:var(--green);text-transform:uppercase;
+      letter-spacing:1.2px;font-weight:600;margin-top:4px}
+    .header-meta{text-align:right;color:var(--gray-400);font-size:12px;line-height:1.9}
+    .header-meta strong{color:var(--green)}
+    .container{max-width:1440px;margin:0 auto;padding:32px 40px}
+    .period-bar{background:#fff;border-radius:12px;padding:16px 24px;margin-bottom:28px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);font-size:13px;color:var(--gray-700)}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+    .kpi-card{background:#fff;border-radius:12px;padding:16px 18px;border-top:3px solid var(--green);
+      box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gray-400);margin-bottom:4px}
+    .kpi-value{font-size:22px;font-weight:700}
+    .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+      color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 10px}
+    .section-hint{font-size:12px;color:var(--gray-400);margin-bottom:14px}
+    .table-wrap{background:#fff;border-radius:12px;overflow:auto;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:32px}
+    table{width:100%;border-collapse:collapse;min-width:900px}
+    th{background:var(--black);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;
+      padding:12px 14px;text-align:left;position:sticky;top:0}
+    td{padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;vertical-align:top}
+    tr:hover td{background:#f9fffc}
+    .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+    .tag-sp{background:#ede7f6;color:#5e35b1}
+    .footer{text-align:center;color:var(--gray-400);font-size:11px;padding:24px 0 40px}
+    @media print {
+      body{background:#fff}
+      .table-wrap{box-shadow:none}
+      th{position:static}
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <h1>Josper Svintuz вулиця Келецька</h1>
+      <p>Замовлення зі spend objectives · Vinnytsia</p>
+    </div>
+    <div class="header-meta">
+      Provider ID: <strong>194993</strong><br/>
+      Період: <strong>2026-07-06 — 2026-07-12</strong><br/>
+      Оновлено: <strong>2026-07-13</strong>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="period-bar">
+      Джерело: Databricks <code>fact_order_delivery</code> + <code>int_order_campaign_dimensions</code> ·
+      delivered · не Bolt Market · одне замовлення може мати кілька рядків (різні spend objectives)
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Доставлені замовлення</div><div class="kpi-value">92</div></div>
+      <div class="kpi-card"><div class="kpi-label">З кампаніями</div><div class="kpi-value">71</div></div>
+      <div class="kpi-card"><div class="kpi-label">Без кампаній</div><div class="kpi-value">21</div></div>
+      <div class="kpi-card"><div class="kpi-label">Рядків у звіті</div><div class="kpi-value">147</div></div>
+      <div class="kpi-card"><div class="kpi-label">Gross sales</div><div class="kpi-value">68 455 ₴</div></div>
+      <div class="kpi-card"><div class="kpi-label">Net sales</div><div class="kpi-value">54 214 ₴</div></div>
+    </div>
+
+    <div class="section-title">Підсумок по Spend Objective</div>
+    <p class="section-hint">Унікальні замовлення та суми знижок по кожному spend objective</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Spend Objective</th><th class="num">Замовлення</th>
+            <th class="num">Знижка</th><th class="num">Bolt</th><th class="num">Партнер</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td class='num'>37</td><td class='num'>11 320 ₴</td><td class='num'>5 660 ₴</td><td class='num'>5 660 ₴</td></tr>
+<tr><td>bolt_plus_campaign</td><td class='num'>15</td><td class='num'>810 ₴</td><td class='num'>810 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td class='num'>7</td><td class='num'>657 ₴</td><td class='num'>0 ₴</td><td class='num'>657 ₴</td></tr>
+<tr><td>engagement</td><td class='num'>6</td><td class='num'>1 004 ₴</td><td class='num'>1 004 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td class='num'>6</td><td class='num'>1 982 ₴</td><td class='num'>991 ₴</td><td class='num'>991 ₴</td></tr>
+<tr><td>activation</td><td class='num'>3</td><td class='num'>650 ₴</td><td class='num'>650 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td class='num'>3</td><td class='num'>813 ₴</td><td class='num'>406 ₴</td><td class='num'>406 ₴</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Усі замовлення</div>
+    <p class="section-hint">Деталізація: кожен рядок — одна кампанія / spend objective в замовленні</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Дата</th><th class="num">Order ID</th>
+            <th class="num">Gross</th><th class="num">Net</th>
+            <th>Spend Objective</th><th>Objective Group</th>
+            <th>Target Type</th><th>Sponsor</th>
+            <th class="num">Знижка</th><th class="num">Bolt</th><th class="num">Партнер</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-07-06</td><td class='num'>317463213</td><td class='num'>235 ₴</td><td class='num'>235 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317468421</td><td class='num'>560 ₴</td><td class='num'>560 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317481068</td><td class='num'>955 ₴</td><td class='num'>860 ₴</td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>96 ₴</td><td class='num'>96 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317515675</td><td class='num'>990 ₴</td><td class='num'>891 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>64 ₴</td><td class='num'>64 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>99 ₴</td><td class='num'>99 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317563691</td><td class='num'>915 ₴</td><td class='num'>915 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>9 ₴</td><td class='num'>9 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317566886</td><td class='num'>550 ₴</td><td class='num'>550 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-06</td><td class='num'>317582935</td><td class='num'>650 ₴</td><td class='num'>650 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317633706</td><td class='num'>1 665 ₴</td><td class='num'>1 332 ₴</td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>333 ₴</td><td class='num'>333 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317636692</td><td class='num'>945 ₴</td><td class='num'>756 ₴</td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>189 ₴</td><td class='num'>189 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317641412</td><td class='num'>445 ₴</td><td class='num'>445 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>17 ₴</td><td class='num'>17 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317652179</td><td class='num'>530 ₴</td><td class='num'>530 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317654079</td><td class='num'>480 ₴</td><td class='num'>480 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317693306</td><td class='num'>730 ₴</td><td class='num'>584 ₴</td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>146 ₴</td><td class='num'>146 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317698481</td><td class='num'>935 ₴</td><td class='num'>654 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>42 ₴</td><td class='num'>21 ₴</td><td class='num'>21 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>280 ₴</td><td class='num'>140 ₴</td><td class='num'>140 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317702374</td><td class='num'>710 ₴</td><td class='num'>497 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>37 ₴</td><td class='num'>18 ₴</td><td class='num'>18 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>213 ₴</td><td class='num'>106 ₴</td><td class='num'>106 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317721145</td><td class='num'>260 ₴</td><td class='num'>260 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317742929</td><td class='num'>1 120 ₴</td><td class='num'>784 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>24 ₴</td><td class='num'>12 ₴</td><td class='num'>12 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>336 ₴</td><td class='num'>168 ₴</td><td class='num'>168 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317745805</td><td class='num'>1 125 ₴</td><td class='num'>788 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>338 ₴</td><td class='num'>169 ₴</td><td class='num'>169 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>59 ₴</td><td class='num'>29 ₴</td><td class='num'>29 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317754396</td><td class='num'>820 ₴</td><td class='num'>738 ₴</td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>82 ₴</td><td class='num'>0 ₴</td><td class='num'>82 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317761704</td><td class='num'>510 ₴</td><td class='num'>357 ₴</td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>59 ₴</td><td class='num'>30 ₴</td><td class='num'>30 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>153 ₴</td><td class='num'>76 ₴</td><td class='num'>76 ₴</td></tr>
+<tr><td>2026-07-07</td><td class='num'>317764669</td><td class='num'>880 ₴</td><td class='num'>616 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>264 ₴</td><td class='num'>132 ₴</td><td class='num'>132 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317815803</td><td class='num'>630 ₴</td><td class='num'>630 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317819784</td><td class='num'>765 ₴</td><td class='num'>536 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>230 ₴</td><td class='num'>115 ₴</td><td class='num'>115 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>23 ₴</td><td class='num'>12 ₴</td><td class='num'>12 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317838916</td><td class='num'>1 060 ₴</td><td class='num'>742 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>51 ₴</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>318 ₴</td><td class='num'>159 ₴</td><td class='num'>159 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317841178</td><td class='num'>290 ₴</td><td class='num'>290 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317865157</td><td class='num'>890 ₴</td><td class='num'>623 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>267 ₴</td><td class='num'>134 ₴</td><td class='num'>134 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>50 ₴</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317874367</td><td class='num'>390 ₴</td><td class='num'>390 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317883005</td><td class='num'>345 ₴</td><td class='num'>345 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317906656</td><td class='num'>450 ₴</td><td class='num'>450 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>28 ₴</td><td class='num'>28 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317911694</td><td class='num'>840 ₴</td><td class='num'>588 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>252 ₴</td><td class='num'>126 ₴</td><td class='num'>126 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>59 ₴</td><td class='num'>29 ₴</td><td class='num'>29 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317912573</td><td class='num'>700 ₴</td><td class='num'>490 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>210 ₴</td><td class='num'>105 ₴</td><td class='num'>105 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317916761</td><td class='num'>715 ₴</td><td class='num'>500 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>30 ₴</td><td class='num'>15 ₴</td><td class='num'>15 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>214 ₴</td><td class='num'>107 ₴</td><td class='num'>107 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317935335</td><td class='num'>1 000 ₴</td><td class='num'>700 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>300 ₴</td><td class='num'>150 ₴</td><td class='num'>150 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>50 ₴</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317935870</td><td class='num'>595 ₴</td><td class='num'>595 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-08</td><td class='num'>317943065</td><td class='num'>430 ₴</td><td class='num'>430 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>57 ₴</td><td class='num'>57 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318032923</td><td class='num'>455 ₴</td><td class='num'>455 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318055540</td><td class='num'>490 ₴</td><td class='num'>343 ₴</td><td>activation</td><td>Activation</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>22 ₴</td><td class='num'>22 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>activation</td><td>Activation</td><td>Menu discount</td><td>Bolt</td><td class='num'>147 ₴</td><td class='num'>147 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318068200</td><td class='num'>745 ₴</td><td class='num'>522 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>16 ₴</td><td class='num'>8 ₴</td><td class='num'>8 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>224 ₴</td><td class='num'>112 ₴</td><td class='num'>112 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318076255</td><td class='num'>585 ₴</td><td class='num'>585 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318091990</td><td class='num'>830 ₴</td><td class='num'>581 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>62 ₴</td><td class='num'>31 ₴</td><td class='num'>31 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>249 ₴</td><td class='num'>124 ₴</td><td class='num'>124 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318108022</td><td class='num'>270 ₴</td><td class='num'>270 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318129159</td><td class='num'>815 ₴</td><td class='num'>570 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>244 ₴</td><td class='num'>122 ₴</td><td class='num'>122 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>60 ₴</td><td class='num'>30 ₴</td><td class='num'>30 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318141684</td><td class='num'>490 ₴</td><td class='num'>490 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>100 ₴</td><td class='num'>100 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318152331</td><td class='num'>580 ₴</td><td class='num'>580 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318156101</td><td class='num'>1 235 ₴</td><td class='num'>864 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>370 ₴</td><td class='num'>185 ₴</td><td class='num'>185 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318168676</td><td class='num'>705 ₴</td><td class='num'>494 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>212 ₴</td><td class='num'>106 ₴</td><td class='num'>106 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>57 ₴</td><td class='num'>28 ₴</td><td class='num'>28 ₴</td></tr>
+<tr><td>2026-07-09</td><td class='num'>318173109</td><td class='num'>710 ₴</td><td class='num'>568 ₴</td><td>engagement</td><td>Engagement</td><td>Menu discount</td><td>Bolt</td><td class='num'>142 ₴</td><td class='num'>142 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318217950</td><td class='num'>875 ₴</td><td class='num'>612 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>262 ₴</td><td class='num'>131 ₴</td><td class='num'>131 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>23 ₴</td><td class='num'>12 ₴</td><td class='num'>12 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318219979</td><td class='num'>765 ₴</td><td class='num'>536 ₴</td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>38 ₴</td><td class='num'>19 ₴</td><td class='num'>19 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>230 ₴</td><td class='num'>115 ₴</td><td class='num'>115 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318221357</td><td class='num'>930 ₴</td><td class='num'>651 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>50 ₴</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>279 ₴</td><td class='num'>140 ₴</td><td class='num'>140 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318235831</td><td class='num'>765 ₴</td><td class='num'>688 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>68 ₴</td><td class='num'>68 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>76 ₴</td><td class='num'>0 ₴</td><td class='num'>76 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318239705</td><td class='num'>740 ₴</td><td class='num'>518 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>41 ₴</td><td class='num'>20 ₴</td><td class='num'>20 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>222 ₴</td><td class='num'>111 ₴</td><td class='num'>111 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318286486</td><td class='num'>735 ₴</td><td class='num'>514 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>61 ₴</td><td class='num'>31 ₴</td><td class='num'>31 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>220 ₴</td><td class='num'>110 ₴</td><td class='num'>110 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318298635</td><td class='num'>1 275 ₴</td><td class='num'>892 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>382 ₴</td><td class='num'>191 ₴</td><td class='num'>191 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318330697</td><td class='num'>830 ₴</td><td class='num'>581 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>13 ₴</td><td class='num'>6 ₴</td><td class='num'>6 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>249 ₴</td><td class='num'>124 ₴</td><td class='num'>124 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318339382</td><td class='num'>385 ₴</td><td class='num'>385 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318346497</td><td class='num'>645 ₴</td><td class='num'>452 ₴</td><td>activation</td><td>Activation</td><td>Menu discount</td><td>Bolt</td><td class='num'>194 ₴</td><td class='num'>194 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>activation</td><td>Activation</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>52 ₴</td><td class='num'>52 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318354674</td><td class='num'>1 025 ₴</td><td class='num'>922 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>87 ₴</td><td class='num'>87 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>102 ₴</td><td class='num'>0 ₴</td><td class='num'>102 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318364578</td><td class='num'>740 ₴</td><td class='num'>518 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>222 ₴</td><td class='num'>111 ₴</td><td class='num'>111 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>20 ₴</td><td class='num'>10 ₴</td><td class='num'>10 ₴</td></tr>
+<tr><td>2026-07-10</td><td class='num'>318375933</td><td class='num'>375 ₴</td><td class='num'>375 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318447042</td><td class='num'>735 ₴</td><td class='num'>514 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>18 ₴</td><td class='num'>9 ₴</td><td class='num'>9 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>220 ₴</td><td class='num'>110 ₴</td><td class='num'>110 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318447193</td><td class='num'>975 ₴</td><td class='num'>682 ₴</td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>292 ₴</td><td class='num'>146 ₴</td><td class='num'>146 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_activation <span class="tag tag-sp">Smart Promo</span></td><td>Activation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>40 ₴</td><td class='num'>20 ₴</td><td class='num'>20 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318447207</td><td class='num'>350 ₴</td><td class='num'>350 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>87 ₴</td><td class='num'>87 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318454966</td><td class='num'>1 600 ₴</td><td class='num'>1 120 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>61 ₴</td><td class='num'>30 ₴</td><td class='num'>30 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>480 ₴</td><td class='num'>240 ₴</td><td class='num'>240 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318459363</td><td class='num'>710 ₴</td><td class='num'>710 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318475136</td><td class='num'>1 135 ₴</td><td class='num'>794 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>340 ₴</td><td class='num'>170 ₴</td><td class='num'>170 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>49 ₴</td><td class='num'>25 ₴</td><td class='num'>25 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318475540</td><td class='num'>735 ₴</td><td class='num'>514 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>24 ₴</td><td class='num'>12 ₴</td><td class='num'>12 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>220 ₴</td><td class='num'>110 ₴</td><td class='num'>110 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318475651</td><td class='num'>430 ₴</td><td class='num'>430 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318480051</td><td class='num'>765 ₴</td><td class='num'>536 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>230 ₴</td><td class='num'>115 ₴</td><td class='num'>115 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>10 ₴</td><td class='num'>5 ₴</td><td class='num'>5 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318488691</td><td class='num'>790 ₴</td><td class='num'>553 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>13 ₴</td><td class='num'>7 ₴</td><td class='num'>7 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>237 ₴</td><td class='num'>118 ₴</td><td class='num'>118 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318509635</td><td class='num'>1 040 ₴</td><td class='num'>728 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>312 ₴</td><td class='num'>156 ₴</td><td class='num'>156 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318521765</td><td class='num'>900 ₴</td><td class='num'>630 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>28 ₴</td><td class='num'>14 ₴</td><td class='num'>14 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>270 ₴</td><td class='num'>135 ₴</td><td class='num'>135 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318534644</td><td class='num'>1 025 ₴</td><td class='num'>718 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>308 ₴</td><td class='num'>154 ₴</td><td class='num'>154 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>16 ₴</td><td class='num'>8 ₴</td><td class='num'>8 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318551070</td><td class='num'>780 ₴</td><td class='num'>546 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>234 ₴</td><td class='num'>117 ₴</td><td class='num'>117 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318595997</td><td class='num'>840 ₴</td><td class='num'>588 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>58 ₴</td><td class='num'>29 ₴</td><td class='num'>29 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>252 ₴</td><td class='num'>126 ₴</td><td class='num'>126 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318596572</td><td class='num'>735 ₴</td><td class='num'>662 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>41 ₴</td><td class='num'>41 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>74 ₴</td><td class='num'>0 ₴</td><td class='num'>74 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318600695</td><td class='num'>710 ₴</td><td class='num'>497 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>213 ₴</td><td class='num'>106 ₴</td><td class='num'>106 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>15 ₴</td><td class='num'>7 ₴</td><td class='num'>7 ₴</td></tr>
+<tr><td>2026-07-11</td><td class='num'>318609181</td><td class='num'>375 ₴</td><td class='num'>375 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>63 ₴</td><td class='num'>63 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318664023</td><td class='num'>350 ₴</td><td class='num'>350 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>86 ₴</td><td class='num'>86 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318702361</td><td class='num'>755 ₴</td><td class='num'>528 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>226 ₴</td><td class='num'>113 ₴</td><td class='num'>113 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318708479</td><td class='num'>575 ₴</td><td class='num'>402 ₴</td><td>activation</td><td>Activation</td><td>Menu discount</td><td>Bolt</td><td class='num'>172 ₴</td><td class='num'>172 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>activation</td><td>Activation</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>64 ₴</td><td class='num'>64 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318721439</td><td class='num'>975 ₴</td><td class='num'>878 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>42 ₴</td><td class='num'>42 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>98 ₴</td><td class='num'>0 ₴</td><td class='num'>98 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318737655</td><td class='num'>800 ₴</td><td class='num'>560 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>240 ₴</td><td class='num'>120 ₴</td><td class='num'>120 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>57 ₴</td><td class='num'>28 ₴</td><td class='num'>28 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318738090</td><td class='num'>895 ₴</td><td class='num'>626 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>268 ₴</td><td class='num'>134 ₴</td><td class='num'>134 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318756045</td><td class='num'>740 ₴</td><td class='num'>518 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>63 ₴</td><td class='num'>32 ₴</td><td class='num'>32 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>222 ₴</td><td class='num'>111 ₴</td><td class='num'>111 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318758151</td><td class='num'>1 070 ₴</td><td class='num'>749 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>321 ₴</td><td class='num'>160 ₴</td><td class='num'>160 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>70 ₴</td><td class='num'>35 ₴</td><td class='num'>35 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318799039</td><td class='num'>870 ₴</td><td class='num'>783 ₴</td><td>bolt_plus_campaign</td><td>Bolt Plus</td><td>Delivery fee discount</td><td>Bolt</td><td class='num'>38 ₴</td><td class='num'>38 ₴</td><td class='num'>0 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>87 ₴</td><td class='num'>0 ₴</td><td class='num'>87 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318808938</td><td class='num'>470 ₴</td><td class='num'>470 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318815454</td><td class='num'>750 ₴</td><td class='num'>525 ₴</td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Menu discount</td><td>Cost-share</td><td class='num'>225 ₴</td><td class='num'>112 ₴</td><td class='num'>112 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_reactivation <span class="tag tag-sp">Smart Promo</span></td><td>Reactivation</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>26 ₴</td><td class='num'>13 ₴</td><td class='num'>13 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318818756</td><td class='num'>1 380 ₴</td><td class='num'>1 242 ₴</td><td>sp_fully_funded <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Provider</td><td class='num'>138 ₴</td><td class='num'>0 ₴</td><td class='num'>138 ₴</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318828006</td><td class='num'>380 ₴</td><td class='num'>380 ₴</td><td>—</td><td>—</td><td>—</td><td>—</td><td class='num'>—</td><td class='num'>—</td><td class='num'>—</td></tr>
+<tr><td>2026-07-12</td><td class='num'>318835696</td><td class='num'>710 ₴</td><td class='num'>497 ₴</td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Delivery fee discount</td><td>Cost-share</td><td class='num'>14 ₴</td><td class='num'>7 ₴</td><td class='num'>7 ₴</td></tr>
+<tr><td></td><td class='num'></td><td class='num'></td><td class='num'></td><td>sp_engagement <span class="tag tag-sp">Smart Promo</span></td><td>Engagement</td><td>Menu discount</td><td>Cost-share</td><td class='num'>213 ₴</td><td class='num'>106 ₴</td><td class='num'>106 ₴</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">Bolt Food · Databricks · Josper Svintuz вулиця Келецька · 2026-07-06 — 2026-07-12</div>
+</body>
+</html>

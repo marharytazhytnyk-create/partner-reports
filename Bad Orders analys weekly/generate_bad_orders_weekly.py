@@ -288,6 +288,103 @@ def fetch_week_data(conn, week_start: date, week_end: date) -> dict:
     return build_week_payload(week_start, week_end, df_summary, df_orders)
 
 
+def prep_time_window() -> tuple[date, date]:
+    """Останні 2 повні календарні тижні (пн–нд), закінчуючись минулою неділею."""
+    today = date.today()
+    last_sunday = today - timedelta(days=today.weekday() + 1)
+    return last_sunday - timedelta(days=13), last_sunday
+
+
+def empty_prep_payload() -> dict:
+    return {
+        "period_start": "",
+        "period_end": "",
+        "label": "",
+        "rows": [],
+    }
+
+
+def fetch_prep_time_data(conn) -> dict:
+    """Actual vs estimated preparation time по провайдерах портфоліо за останні 2 тижні."""
+    d0, d1 = prep_time_window()
+    print(f"  Fetching preparation time {d0} .. {d1} …")
+
+    q = f"""
+    SELECT
+        p.provider_id,
+        p.provider_name,
+        p.brand_name,
+        p.city_name,
+        ROUND(MAX(p.average_cooking_time_minutes) / 60.0, 1) AS cooking_time_min,
+        COUNT(*) AS orders,
+        ROUND(AVG(f.order_actual_cooking_time_minutes), 1) AS actual_prep_min,
+        ROUND(AVG(COALESCE(
+            f.provider_ml_estimated_adjusted_cooking_time_minutes,
+            f.provider_stated_cooking_time_minutes,
+            f.provider_estimated_cooking_time,
+            f.order_provider_estimated_cooking_time_seconds / 60.0
+        )), 1) AS estimated_prep_min
+    FROM ng_delivery_spark.fact_order_delivery f
+    INNER JOIN ng_delivery_spark.dim_provider_v2 p
+        ON p.provider_id = f.provider_id
+    WHERE p.account_manager_name = '{ACCOUNT_MANAGER}'
+      AND p.country_code = '{COUNTRY_CODE}'
+      AND f.order_created_date_local BETWEEN '{d0.isoformat()}' AND '{d1.isoformat()}'
+      AND f.order_actual_cooking_time_minutes IS NOT NULL
+      AND f.order_actual_cooking_time_minutes > 0
+    GROUP BY
+        p.provider_id,
+        p.provider_name,
+        p.brand_name,
+        p.city_name
+    HAVING COUNT(*) >= 1
+    ORDER BY
+        ABS(
+            AVG(f.order_actual_cooking_time_minutes)
+            - AVG(COALESCE(
+                f.provider_ml_estimated_adjusted_cooking_time_minutes,
+                f.provider_stated_cooking_time_minutes,
+                f.provider_estimated_cooking_time,
+                f.order_provider_estimated_cooking_time_seconds / 60.0
+            ))
+        ) DESC
+    """
+
+    df = run_query(conn, q)
+    rows: list[dict] = []
+    for _, row in df.iterrows():
+        actual = float(row["actual_prep_min"]) if row["actual_prep_min"] is not None else None
+        estimated = (
+            float(row["estimated_prep_min"]) if row["estimated_prep_min"] is not None else None
+        )
+        cooking = float(row["cooking_time_min"]) if row["cooking_time_min"] is not None else None
+        diff = None
+        if actual is not None and estimated is not None:
+            diff = round(actual - estimated, 1)
+        city = str(row["city_name"] or "—")
+        rows.append(
+            {
+                "provider_id": int(row["provider_id"]),
+                "provider_name": str(row["provider_name"] or "—"),
+                "brand_name": str(row["brand_name"] or "—"),
+                "city_name": city,
+                "city_ua": CITY_UA.get(city, city),
+                "cooking_time_min": cooking,
+                "actual_prep_min": actual,
+                "estimated_prep_min": estimated,
+                "diff_min": diff,
+                "orders": int(row["orders"]),
+            }
+        )
+
+    return {
+        "period_start": d0.isoformat(),
+        "period_end": d1.isoformat(),
+        "label": f"{d0:%d.%m.%Y} – {d1:%d.%m.%Y}",
+        "rows": rows,
+    }
+
+
 def build_week_payload(
     week_start: date, week_end: date, df_summary: pd.DataFrame, df_orders: pd.DataFrame
 ) -> dict:
@@ -429,8 +526,26 @@ def load_existing_weeks(html_path: Path) -> dict[str, dict]:
         return {}
 
 
-def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
+def load_existing_prep(html_path: Path) -> dict:
+    if not html_path.exists():
+        return empty_prep_payload()
+    text = html_path.read_text(encoding="utf-8")
+    m = re.search(r"const PREP_TIME = (\{.*?\});\s*\n", text, re.DOTALL)
+    if not m:
+        return empty_prep_payload()
+    try:
+        data = json.loads(m.group(1))
+        if not isinstance(data, dict):
+            return empty_prep_payload()
+        data.setdefault("rows", [])
+        return data
+    except json.JSONDecodeError:
+        return empty_prep_payload()
+
+
+def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) -> str:
     weeks_json = json.dumps(weeks_data, ensure_ascii=False, separators=(",", ":"))
+    prep_json = json.dumps(prep_data or empty_prep_payload(), ensure_ascii=False, separators=(",", ":"))
     week_keys = sorted(weeks_data.keys(), reverse=True)
     default_week = week_keys[0] if week_keys else ""
 
@@ -458,14 +573,25 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     }}
     .header h1 {{ font-size:1.2rem; color:var(--green); margin-bottom:4px; }}
     .header p {{ font-size:.82rem; color:#aaa; }}
+    .view-tabs {{
+      display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;
+    }}
+    .view-tabs button {{
+      background:#2a2a2a; color:#bbb; border:1px solid #444; border-radius:8px;
+      padding:8px 16px; font-size:.88rem; cursor:pointer; font-weight:600;
+    }}
+    .view-tabs button.active {{
+      background:var(--green); color:#fff; border-color:var(--green);
+    }}
     .filters {{
       display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; align-items:flex-end;
     }}
     .filters label {{ font-size:.72rem; color:#bbb; display:block; margin-bottom:4px; }}
-    .filters select {{
+    .filters select, .filters input {{
       background:#2a2a2a; color:#fff; border:1px solid #444; border-radius:8px;
       padding:8px 12px; font-size:.88rem; min-width:180px;
     }}
+    .filters input {{ min-width:220px; }}
     .wrap {{ max-width:1200px; margin:0 auto; padding:24px 20px 48px; }}
     .meta {{ color:var(--muted); font-size:.82rem; margin-bottom:20px; }}
     .kpi-row {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }}
@@ -575,16 +701,38 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     th {{
       text-align:left; padding:10px 12px; background:#f5f5f5;
       color:var(--muted); font-weight:600; border-bottom:1px solid var(--border);
+      white-space:nowrap;
     }}
     td {{ padding:8px 12px; border-bottom:1px solid #f0f0f0; vertical-align:top; }}
     tr:hover td {{ background:#fafafa; }}
     .mono {{ font-family:ui-monospace,monospace; }}
+    .num {{ font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }}
     .tag {{
       display:inline-block; padding:2px 8px; border-radius:6px;
       font-size:.72rem; font-weight:700;
     }}
     .tag-failed {{ background:#FFF3E0; color:#E65100; }}
     .tag-rejected {{ background:#FFEBEE; color:#C62828; }}
+    .diff-pos {{
+      background:#FFEBEE; color:#C62828; font-weight:700;
+      padding:3px 8px; border-radius:6px; display:inline-block;
+    }}
+    .diff-neg {{
+      background:#E8F5E9; color:#2E7D32; font-weight:700;
+      padding:3px 8px; border-radius:6px; display:inline-block;
+    }}
+    .diff-zero {{
+      background:#f0f0f0; color:#555; font-weight:600;
+      padding:3px 8px; border-radius:6px; display:inline-block;
+    }}
+    .prep-table-wrap {{
+      background:var(--card); border:1px solid var(--border); border-radius:12px;
+      overflow:auto; box-shadow:0 1px 4px rgba(0,0,0,.04);
+    }}
+    .prep-legend {{
+      display:flex; flex-wrap:wrap; gap:14px; font-size:.8rem; color:var(--muted);
+      margin:8px 0 16px;
+    }}
     .empty {{ color:var(--muted); text-align:center; padding:40px 20px; }}
     .portfolio-note {{
       background:#E8F9EE; border:1px solid #b8e6c8; border-radius:10px;
@@ -596,7 +744,11 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
   <div class="header">
     <h1>Аналіз Bad Orders — Портфоліо Marharyta Zhytnyk</h1>
     <p>Щотижневий розбір поганих та невдалих замовлень · Bolt Food Ukraine</p>
-    <div class="filters">
+    <div class="view-tabs">
+      <button type="button" class="active" data-view="bad">Bad Orders</button>
+      <button type="button" data-view="prep">Preparation time</button>
+    </div>
+    <div class="filters" id="filtersBad">
       <div>
         <label>Тиждень</label>
         <select id="selWeek"></select>
@@ -610,14 +762,27 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
         <select id="selBrand"><option value="">— Оберіть партнера —</option></select>
       </div>
     </div>
+    <div class="filters" id="filtersPrep" style="display:none">
+      <div>
+        <label>Місто</label>
+        <select id="selPrepCity"><option value="">— Усі міста —</option></select>
+      </div>
+      <div>
+        <label>Пошук провайдера</label>
+        <input id="prepSearch" type="search" placeholder="Назва або Provider ID" />
+      </div>
+    </div>
   </div>
 
   <div class="wrap">
     <div class="meta" id="metaLine">Згенеровано: {html.escape(generated_at)} UTC</div>
-    <div id="portfolioNote" class="portfolio-note" style="display:none"></div>
-    <div id="content">
-      <div class="empty">Оберіть місто та бренд, щоб переглянути деталі.</div>
+    <div id="viewBad">
+      <div id="portfolioNote" class="portfolio-note" style="display:none"></div>
+      <div id="content">
+        <div class="empty">Оберіть місто та бренд, щоб переглянути деталі.</div>
+      </div>
     </div>
+    <div id="viewPrep" style="display:none"></div>
   </div>
 
   <div class="modal-overlay" id="partnerModal">
@@ -638,6 +803,7 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
 
   <script>
   const REPORT_WEEKS = {weeks_json};
+  const PREP_TIME = {prep_json};
 
   const FAULT_CLASS = {{
     'Bolt (платформа)': 'bolt',
@@ -647,7 +813,114 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
     'Невизначено': 'client'
   }};
 
+  let activeView = 'bad';
+
   function $(id) {{ return document.getElementById(id); }}
+
+  function fmtMin(v) {{
+    if (v === null || v === undefined || Number.isNaN(v)) return '—';
+    return Number(v).toFixed(1);
+  }}
+
+  function fmtDiff(v) {{
+    if (v === null || v === undefined || Number.isNaN(v)) return '—';
+    const n = Number(v);
+    const sign = n > 0 ? '+' : '';
+    const cls = Math.abs(n) < 0.05 ? 'diff-zero' : (n > 0 ? 'diff-pos' : 'diff-neg');
+    return `<span class="${{cls}}">${{sign}}${{n.toFixed(1)}} хв</span>`;
+  }}
+
+  function setView(view) {{
+    activeView = view;
+    document.querySelectorAll('.view-tabs button').forEach(b => {{
+      b.classList.toggle('active', b.dataset.view === view);
+    }});
+    $('filtersBad').style.display = view === 'bad' ? 'flex' : 'none';
+    $('filtersPrep').style.display = view === 'prep' ? 'flex' : 'none';
+    $('viewBad').style.display = view === 'bad' ? 'block' : 'none';
+    $('viewPrep').style.display = view === 'prep' ? 'block' : 'none';
+    if (view === 'prep') renderPrep();
+  }}
+
+  function initPrepFilters() {{
+    const cities = [...new Set((PREP_TIME.rows || []).map(r => r.city_ua))].sort((a,b) => a.localeCompare(b,'uk'));
+    const sel = $('selPrepCity');
+    cities.forEach(c => {{
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    }});
+    sel.addEventListener('change', renderPrep);
+    $('prepSearch').addEventListener('input', renderPrep);
+  }}
+
+  function renderPrep() {{
+    const city = $('selPrepCity').value;
+    const q = ($('prepSearch').value || '').trim().toLowerCase();
+    let rows = [...(PREP_TIME.rows || [])];
+    if (city) rows = rows.filter(r => r.city_ua === city);
+    if (q) {{
+      rows = rows.filter(r =>
+        String(r.provider_name || '').toLowerCase().includes(q) ||
+        String(r.provider_id || '').includes(q) ||
+        String(r.brand_name || '').toLowerCase().includes(q)
+      );
+    }}
+
+    const total = rows.length;
+    const slower = rows.filter(r => (r.diff_min || 0) > 2).length;
+    const faster = rows.filter(r => (r.diff_min || 0) < -2).length;
+    const avgDiff = total
+      ? (rows.reduce((s, r) => s + (r.diff_min || 0), 0) / total)
+      : 0;
+
+    const tableRows = rows.map(r => `<tr>
+      <td>${{r.provider_name || '—'}}</td>
+      <td class="mono">${{r.provider_id}}</td>
+      <td class="num">${{fmtMin(r.cooking_time_min)}}</td>
+      <td class="num">${{fmtMin(r.actual_prep_min)}}</td>
+      <td class="num">${{fmtMin(r.estimated_prep_min)}}</td>
+      <td class="num">${{fmtDiff(r.diff_min)}}</td>
+      <td class="num">${{r.orders || 0}}</td>
+      <td>${{r.city_ua || r.city_name || '—'}}</td>
+    </tr>`).join('');
+
+    $('viewPrep').innerHTML = `
+      <div class="portfolio-note">
+        <strong>Preparation time</strong> · період <strong>${{PREP_TIME.label || '—'}}</strong>
+        (останні 2 повні тижні).<br>
+        Cooking time — налаштований час провайдера.
+        Actual — фактичний час приготування.
+        Estimated — оцінка системи.
+        Різниця = Actual − Estimated (плюс = довше за оцінку системи).
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="n">${{total}}</div><div class="l">Провайдерів</div></div>
+        <div class="kpi bad"><div class="n">${{slower}}</div><div class="l">Повільніше за систему (&gt; +2 хв)</div></div>
+        <div class="kpi"><div class="n" style="color:#2E7D32">${{faster}}</div><div class="l">Швидше за систему (&lt; −2 хв)</div></div>
+        <div class="kpi"><div class="n">${{avgDiff.toFixed(1)}}</div><div class="l">Середня різниця, хв</div></div>
+      </div>
+      <div class="prep-legend">
+        <span><span class="diff-pos">+x хв</span> актуальний час довший за систему</span>
+        <span><span class="diff-neg">−x хв</span> актуальний час коротший за систему</span>
+      </div>
+      <div class="prep-table-wrap">
+        ${{rows.length ? `<table>
+          <thead><tr>
+            <th>Provider name</th>
+            <th>Provider ID</th>
+            <th>Cooking time, хв</th>
+            <th>Actual preparation, хв</th>
+            <th>Estimated preparation, хв</th>
+            <th>Різниця</th>
+            <th>Замовлень</th>
+            <th>Місто</th>
+          </tr></thead>
+          <tbody>${{tableRows}}</tbody>
+        </table>` : '<p class="empty">Немає даних за обраним фільтром.</p>'}}
+      </div>
+    `;
+  }}
 
   function initFilters() {{
     const weeks = Object.keys(REPORT_WEEKS).sort().reverse();
@@ -1035,6 +1308,10 @@ def build_html(weeks_data: dict[str, dict], generated_at: str) -> str:
   }}
 
   initFilters();
+  initPrepFilters();
+  document.querySelectorAll('.view-tabs button').forEach(btn => {{
+    btn.addEventListener('click', () => setView(btn.dataset.view));
+  }});
   $('btnClosePartnerModal').addEventListener('click', closePartnerModal);
   $('btnClosePartnerModal2').addEventListener('click', closePartnerModal);
   $('btnCopyPartnerMsg').addEventListener('click', copyPartnerMessage);
@@ -1066,27 +1343,21 @@ def weeks_to_fetch(existing: dict[str, dict]) -> list[date]:
 
 
 def main() -> None:
+    existing = load_existing_weeks(OUTPUT_HTML)
+    prep_data = load_existing_prep(OUTPUT_HTML)
+
     if os.environ.get("BAD_ORDERS_HTML_ONLY"):
-        existing = load_existing_weeks(OUTPUT_HTML)
         if not existing:
             raise RuntimeError("No existing data in HTML for BAD_ORDERS_HTML_ONLY")
         generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-        OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
+        OUTPUT_HTML.write_text(build_html(existing, prep_data, generated_at), encoding="utf-8")
         print(f"Rebuilt HTML only: {OUTPUT_HTML}")
         return
 
-    week_start_env = os.environ.get("BAD_ORDERS_WEEK_START")
-    existing = load_existing_weeks(OUTPUT_HTML)
     print(f"Existing weeks in report: {list(existing.keys())}")
 
     to_fetch = weeks_to_fetch(existing)
-    if not to_fetch:
-        print("No new weeks to fetch — report is up to date.")
-        generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-        OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
-        return
-
-    print(f"Weeks to fetch: {[w.isoformat() for w in to_fetch]}")
+    print(f"Weeks to fetch: {[w.isoformat() for w in to_fetch] if to_fetch else '[] (up to date)'}")
 
     conn = sql.connect(
         server_hostname=SERVER_HOSTNAME,
@@ -1101,20 +1372,23 @@ def main() -> None:
                 continue
             we = ws + timedelta(days=6)
             existing[key] = fetch_week_data(conn, ws, we)
+
+        prep_data = fetch_prep_time_data(conn)
+        print(f"  Preparation time rows: {len(prep_data.get('rows', []))}")
     finally:
         conn.close()
 
     generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-    OUTPUT_HTML.write_text(build_html(existing, generated_at), encoding="utf-8")
+    OUTPUT_HTML.write_text(build_html(existing, prep_data, generated_at), encoding="utf-8")
     print(f"Written {OUTPUT_HTML} ({len(existing)} week(s))")
 
-    # Also write week-specific snapshot for the requested initial week
+    # Also write week-specific snapshot for weeks in report
     for key, data in existing.items():
         ws = date.fromisoformat(key)
         snap = SCRIPT_DIR / f"Bad Orders {ws:%d.%m}-{ws + timedelta(days=6):%d.%m.%Y}.html"
         if not snap.exists() or os.environ.get("BAD_ORDERS_FORCE_REFRESH"):
             single = {key: data}
-            snap.write_text(build_html(single, generated_at), encoding="utf-8")
+            snap.write_text(build_html(single, prep_data, generated_at), encoding="utf-8")
             print(f"  Snapshot: {snap.name}")
 
 
