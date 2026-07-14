@@ -28,6 +28,16 @@ HTTP_PATH = "sql/protocolv1/o/2472566184436351/0221-081903-9ag4bh69"
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_HTML = SCRIPT_DIR / "bad_orders_weekly.html"
+COOKING_BASELINE_PATH = SCRIPT_DIR / "cooking_time_baseline.json"
+
+# Причини Bad Orders, пов'язані з часом приготування / cooking ETA
+PREP_RELATED_REASONS = (
+    "provider_preparation_delay_seconds",
+    "provider_preparation_overestimate_seconds",
+    "bolt_cooking_eta_underestimate_seconds",
+    "pickup_delay_provider_fault_seconds",
+    "bolt_prep_instruction_delay_seconds",
+)
 
 CITY_UA = {
     "Bila Tserkva": "Біла Церква",
@@ -396,6 +406,258 @@ def fetch_prep_time_data(conn) -> dict:
     }
 
 
+def load_cooking_baseline() -> dict:
+    if not COOKING_BASELINE_PATH.exists():
+        return {}
+    try:
+        return json.loads(COOKING_BASELINE_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def ensure_cooking_baseline(prep_data: dict) -> dict:
+    """Зберігає baseline cooking time один раз (до змін партнера). Не перезаписує без COOKING_BASELINE_RESET=1."""
+    if COOKING_BASELINE_PATH.exists() and not os.environ.get("COOKING_BASELINE_RESET"):
+        return load_cooking_baseline()
+
+    providers = {}
+    for r in prep_data.get("rows") or []:
+        pid = str(r["provider_id"])
+        providers[pid] = {
+            "provider_id": r["provider_id"],
+            "provider_name": r.get("provider_name"),
+            "brand_name": r.get("brand_name"),
+            "city_name": r.get("city_name"),
+            "city_ua": r.get("city_ua"),
+            "cooking_time_min": r.get("cooking_time_min"),
+            "recommended_cooking_min": r.get("recommended_cooking_min"),
+            "actual_prep_min": r.get("actual_prep_min"),
+            "estimated_prep_min": r.get("estimated_prep_min"),
+        }
+    before_start, _ = week_bounds()
+    # Тиждень ДО змін (останній повний перед baseline-снімком)
+    # Якщо baseline створюється вперше mid-week — фіксуємо попередній повний тиждень.
+    payload = {
+        "saved_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "note": "Baseline cooking time for impact analysis. Do not overwrite unless COOKING_BASELINE_RESET=1.",
+        "before_week_start": before_start.isoformat(),
+        "before_week_label": f"{before_start:%d.%m.%Y} – {before_start + timedelta(days=6):%d.%m.%Y}",
+        "prep_period_label": prep_data.get("label"),
+        "providers": providers,
+    }
+    COOKING_BASELINE_PATH.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"  Saved cooking baseline ({len(providers)} providers) → {COOKING_BASELINE_PATH.name}")
+    return payload
+
+
+def fetch_provider_week_quality(conn, week_start: date, week_end: date) -> dict[int, dict]:
+    """Bad Orders / prep-related metrics на рівні provider_id за тиждень."""
+    d0, d1 = week_start.isoformat(), week_end.isoformat()
+    reasons_sql = ", ".join(f"'{r}'" for r in PREP_RELATED_REASONS)
+    q = f"""
+    SELECT
+        p.provider_id,
+        p.provider_name,
+        p.brand_name,
+        p.city_name,
+        ROUND(MAX(p.average_cooking_time_minutes) / 60.0, 1) AS cooking_time_min,
+        SUM(CASE WHEN o.state = 'delivered' THEN 1 ELSE 0 END) AS delivered,
+        SUM(CASE WHEN f.is_bad_order = true OR o.state IN ('failed','rejected') THEN 1 ELSE 0 END) AS bad_count,
+        SUM(CASE WHEN o.state IN ('failed','rejected') THEN 1 ELSE 0 END) AS failed_count,
+        SUM(CASE
+              WHEN a.bad_order_main_reason IN ({reasons_sql})
+                OR a.late_delivery_actor_at_fault_reason IN ({reasons_sql})
+              THEN 1 ELSE 0 END) AS prep_related_bad
+    FROM ng_delivery_spark.delivery_order_order o
+    INNER JOIN ng_delivery_spark.fact_order_delivery f ON f.order_id = o.id
+    INNER JOIN ng_delivery_spark.dim_provider_v2 p ON p.provider_id = o.provider_id
+    LEFT JOIN ng_delivery_spark.int_order_bad_order_attribution a ON a.order_id = o.id
+    WHERE p.account_manager_name = '{ACCOUNT_MANAGER}'
+      AND p.country_code = '{COUNTRY_CODE}'
+      AND o.created_date BETWEEN '{d0}' AND '{d1}'
+    GROUP BY p.provider_id, p.provider_name, p.brand_name, p.city_name
+    """
+    df = run_query(conn, q)
+    out: dict[int, dict] = {}
+    for _, row in df.iterrows():
+        pid = int(row["provider_id"])
+        delivered = int(row["delivered"] or 0)
+        bad = int(row["bad_count"] or 0)
+        failed = int(row["failed_count"] or 0)
+        prep_bad = int(row["prep_related_bad"] or 0)
+        city = str(row["city_name"] or "—")
+        out[pid] = {
+            "provider_id": pid,
+            "provider_name": str(row["provider_name"] or "—"),
+            "brand_name": str(row["brand_name"] or "—"),
+            "city_name": city,
+            "city_ua": CITY_UA.get(city, city),
+            "cooking_time_min": float(row["cooking_time_min"])
+            if row["cooking_time_min"] is not None
+            else None,
+            "delivered": delivered,
+            "bad_count": bad,
+            "failed_count": failed,
+            "prep_related_bad": prep_bad,
+            "bad_pct": round(bad / delivered * 100, 2) if delivered else None,
+            "failed_pct": round(failed / delivered * 100, 2) if delivered else None,
+            "prep_related_pct": round(prep_bad / delivered * 100, 2) if delivered else None,
+        }
+    return out
+
+
+def empty_cooking_impact() -> dict:
+    return {
+        "ready": False,
+        "message": "Очікуємо дані після наступного повного тижня з новими cooking time.",
+        "baseline_saved_at": "",
+        "before_week_start": "",
+        "before_week_label": "",
+        "after_week_start": "",
+        "after_week_label": "",
+        "changed_count": 0,
+        "improved_count": 0,
+        "worsened_count": 0,
+        "rows": [],
+    }
+
+
+def build_cooking_impact(conn, prep_data: dict, weeks_data: dict[str, dict]) -> dict:
+    """
+    Порівнює Bad Orders до/після зміни cooking time для критичних партнерів.
+    Baseline фіксує cooking time на момент змін (14.07.2026).
+    After-тиждень — останній повний тиждень у звіті після baseline before_week.
+    """
+    baseline = load_cooking_baseline()
+    if not baseline.get("providers"):
+        baseline = ensure_cooking_baseline(prep_data)
+
+    before_key = baseline.get("before_week_start") or "2026-07-06"
+    before_start = date.fromisoformat(before_key)
+    before_end = before_start + timedelta(days=6)
+
+    week_keys = sorted(weeks_data.keys())
+    after_candidates = [k for k in week_keys if date.fromisoformat(k) > before_start]
+    if not after_candidates:
+        impact = empty_cooking_impact()
+        impact["baseline_saved_at"] = baseline.get("saved_at", "")
+        impact["before_week_start"] = before_key
+        impact["before_week_label"] = baseline.get(
+            "before_week_label",
+            f"{before_start:%d.%m.%Y} – {before_end:%d.%m.%Y}",
+        )
+        impact["message"] = (
+            "Базовий тиждень зафіксовано "
+            f"({impact['before_week_label']}). "
+            "Аналіз впливу з’явиться після оновлення за наступний повний тиждень (пн)."
+        )
+        return impact
+
+    after_key = after_candidates[-1]
+    after_start = date.fromisoformat(after_key)
+    after_end = after_start + timedelta(days=6)
+
+    print(f"  Cooking impact: before {before_key} vs after {after_key}")
+    before_stats = fetch_provider_week_quality(conn, before_start, before_end)
+    after_stats = fetch_provider_week_quality(conn, after_start, after_end)
+
+    current_by_id = {int(r["provider_id"]): r for r in (prep_data.get("rows") or [])}
+    rows: list[dict] = []
+
+    for pid_str, base in (baseline.get("providers") or {}).items():
+        try:
+            pid = int(pid_str)
+        except (TypeError, ValueError):
+            continue
+        base_cook = base.get("cooking_time_min")
+        cur = current_by_id.get(pid) or after_stats.get(pid) or {}
+        cur_cook = cur.get("cooking_time_min")
+        if base_cook is None or cur_cook is None:
+            continue
+        delta_cook = round(float(cur_cook) - float(base_cook), 1)
+        if abs(delta_cook) < 5:
+            continue
+
+        b = before_stats.get(pid, {})
+        a = after_stats.get(pid, {})
+        bad_before = b.get("bad_pct")
+        bad_after = a.get("bad_pct")
+        delta_bad = None
+        if bad_before is not None and bad_after is not None:
+            delta_bad = round(bad_after - bad_before, 2)
+
+        prep_before = b.get("prep_related_pct")
+        prep_after = a.get("prep_related_pct")
+        delta_prep = None
+        if prep_before is not None and prep_after is not None:
+            delta_prep = round(prep_after - prep_before, 2)
+
+        rows.append(
+            {
+                "provider_id": pid,
+                "provider_name": cur.get("provider_name")
+                or a.get("provider_name")
+                or base.get("provider_name")
+                or "—",
+                "brand_name": cur.get("brand_name")
+                or a.get("brand_name")
+                or base.get("brand_name")
+                or "—",
+                "city_ua": cur.get("city_ua")
+                or a.get("city_ua")
+                or base.get("city_ua")
+                or CITY_UA.get(str(base.get("city_name") or ""), str(base.get("city_name") or "—")),
+                "cooking_before": float(base_cook),
+                "cooking_after": float(cur_cook),
+                "delta_cooking": delta_cook,
+                "recommended_at_baseline": base.get("recommended_cooking_min"),
+                "bad_pct_before": bad_before,
+                "bad_pct_after": bad_after,
+                "delta_bad_pp": delta_bad,
+                "prep_related_pct_before": prep_before,
+                "prep_related_pct_after": prep_after,
+                "delta_prep_related_pp": delta_prep,
+                "delivered_before": b.get("delivered", 0),
+                "delivered_after": a.get("delivered", 0),
+                "bad_count_before": b.get("bad_count", 0),
+                "bad_count_after": a.get("bad_count", 0),
+            }
+        )
+
+    rows.sort(
+        key=lambda r: (
+            0 if r.get("delta_bad_pp") is None else 1,
+            abs(r.get("delta_bad_pp") or 0),
+        ),
+        reverse=True,
+    )
+
+    improved = sum(1 for r in rows if (r.get("delta_bad_pp") or 0) < -0.5)
+    worsened = sum(1 for r in rows if (r.get("delta_bad_pp") or 0) > 0.5)
+
+    return {
+        "ready": True,
+        "message": (
+            "Порівняння провайдерів, у яких cooking time змінився ≥5 хв "
+            "відносно baseline до ваших правок."
+        ),
+        "baseline_saved_at": baseline.get("saved_at", ""),
+        "before_week_start": before_key,
+        "before_week_label": baseline.get(
+            "before_week_label",
+            f"{before_start:%d.%m.%Y} – {before_end:%d.%m.%Y}",
+        ),
+        "after_week_start": after_key,
+        "after_week_label": f"{after_start:%d.%m.%Y} – {after_end:%d.%m.%Y}",
+        "changed_count": len(rows),
+        "improved_count": improved,
+        "worsened_count": worsened,
+        "rows": rows,
+    }
+
+
 def build_week_payload(
     week_start: date, week_end: date, df_summary: pd.DataFrame, df_orders: pd.DataFrame
 ) -> dict:
@@ -554,9 +816,31 @@ def load_existing_prep(html_path: Path) -> dict:
         return empty_prep_payload()
 
 
-def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) -> str:
+def load_existing_cooking_impact(html_path: Path) -> dict:
+    if not html_path.exists():
+        return empty_cooking_impact()
+    text = html_path.read_text(encoding="utf-8")
+    m = re.search(r"const COOKING_IMPACT = (\{.*?\});\s*\n", text, re.DOTALL)
+    if not m:
+        return empty_cooking_impact()
+    try:
+        data = json.loads(m.group(1))
+        return data if isinstance(data, dict) else empty_cooking_impact()
+    except json.JSONDecodeError:
+        return empty_cooking_impact()
+
+
+def build_html(
+    weeks_data: dict[str, dict],
+    prep_data: dict,
+    generated_at: str,
+    cooking_impact: dict | None = None,
+) -> str:
     weeks_json = json.dumps(weeks_data, ensure_ascii=False, separators=(",", ":"))
     prep_json = json.dumps(prep_data or empty_prep_payload(), ensure_ascii=False, separators=(",", ":"))
+    impact_json = json.dumps(
+        cooking_impact or empty_cooking_impact(), ensure_ascii=False, separators=(",", ":")
+    )
     week_keys = sorted(weeks_data.keys(), reverse=True)
     default_week = week_keys[0] if week_keys else ""
 
@@ -823,6 +1107,7 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
   <script>
   const REPORT_WEEKS = {weeks_json};
   const PREP_TIME = {prep_json};
+  const COOKING_IMPACT = {impact_json};
 
   const FAULT_CLASS = {{
     'Bolt (платформа)': 'bolt',
@@ -891,6 +1176,76 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
     }});
     sel.addEventListener('change', renderPrep);
     $('prepSearch').addEventListener('input', renderPrep);
+  }}
+
+  function fmtPp(v) {{
+    if (v === null || v === undefined || Number.isNaN(v)) return '—';
+    const n = Number(v);
+    const sign = n > 0 ? '+' : '';
+    const cls = Math.abs(n) < 0.05 ? 'diff-zero' : (n > 0 ? 'diff-pos' : 'diff-neg');
+    return `<span class="${{cls}}">${{sign}}${{n.toFixed(2)}} п.п.</span>`;
+  }}
+
+  function renderCookingImpact() {{
+    const impact = COOKING_IMPACT || {{}};
+    if (!impact.ready) {{
+      return `<div class="portfolio-note" style="background:#FFF8E1;border-color:#FFE082;margin-top:20px">
+        <strong>Вплив змін cooking time на Bad Orders</strong><br>
+        ${{impact.message || 'Очікуємо дані наступного тижня.'}}
+        ${{impact.before_week_label ? `<br>Базовий тиждень (до змін): <strong>${{impact.before_week_label}}</strong>` : ''}}
+      </div>`;
+    }}
+    const rows = impact.rows || [];
+    const table = rows.length ? `<div class="prep-table-wrap" style="margin-top:12px"><table>
+      <thead><tr>
+        <th>Provider name</th>
+        <th>Provider ID</th>
+        <th>Cooking до</th>
+        <th>Cooking після</th>
+        <th>Δ cooking</th>
+        <th>Bad % до</th>
+        <th>Bad % після</th>
+        <th>Δ Bad Orders</th>
+        <th>Prep-related % до</th>
+        <th>Prep-related % після</th>
+        <th>Δ Prep-related</th>
+        <th>Місто</th>
+      </tr></thead>
+      <tbody>${{rows.map(r => `<tr>
+        <td>${{r.provider_name || '—'}}</td>
+        <td class="mono">${{r.provider_id}}</td>
+        <td class="num">${{fmtMin(r.cooking_before)}}</td>
+        <td class="num">${{fmtMin(r.cooking_after)}}</td>
+        <td class="num">${{fmtDiff(r.delta_cooking)}}</td>
+        <td class="num">${{r.bad_pct_before != null ? r.bad_pct_before.toFixed(2) + '%' : '—'}}</td>
+        <td class="num">${{r.bad_pct_after != null ? r.bad_pct_after.toFixed(2) + '%' : '—'}}</td>
+        <td class="num">${{fmtPp(r.delta_bad_pp)}}</td>
+        <td class="num">${{r.prep_related_pct_before != null ? r.prep_related_pct_before.toFixed(2) + '%' : '—'}}</td>
+        <td class="num">${{r.prep_related_pct_after != null ? r.prep_related_pct_after.toFixed(2) + '%' : '—'}}</td>
+        <td class="num">${{fmtPp(r.delta_prep_related_pp)}}</td>
+        <td>${{r.city_ua || '—'}}</td>
+      </tr>`).join('')}}</tbody>
+    </table></div>` : '<p class="empty">Не знайдено провайдерів зі зміною cooking time ≥ 5 хв.</p>';
+
+    return `
+      <h2 style="margin-top:28px">Вплив змін cooking time на Bad Orders</h2>
+      <div class="portfolio-note">
+        ${{impact.message || ''}}<br>
+        До: <strong>${{impact.before_week_label || '—'}}</strong>
+        · Після: <strong>${{impact.after_week_label || '—'}}</strong>
+        ${{impact.baseline_saved_at ? `<br><span style="color:#666">Baseline cooking time: ${{impact.baseline_saved_at}}</span>` : ''}}
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="n">${{impact.changed_count || 0}}</div><div class="l">Змінили cooking time</div></div>
+        <div class="kpi"><div class="n" style="color:#2E7D32">${{impact.improved_count || 0}}</div><div class="l">Bad Orders покращився</div></div>
+        <div class="kpi bad"><div class="n">${{impact.worsened_count || 0}}</div><div class="l">Bad Orders погіршився</div></div>
+      </div>
+      <div class="prep-legend">
+        <span>Δ Bad Orders у відсоткових пунктах (мінус = менше bad orders — добре)</span>
+        <span>Prep-related — bad orders з причинами затримки / ETA приготування</span>
+      </div>
+      ${{table}}
+    `;
   }}
 
   function renderPrep() {{
@@ -963,6 +1318,7 @@ def build_html(weeks_data: dict[str, dict], prep_data: dict, generated_at: str) 
           <tbody>${{tableRows}}</tbody>
         </table>` : '<p class="empty">Немає даних за обраним фільтром.</p>'}}
       </div>
+      ${{renderCookingImpact()}}
     `;
   }}
 
@@ -1389,12 +1745,30 @@ def weeks_to_fetch(existing: dict[str, dict]) -> list[date]:
 def main() -> None:
     existing = load_existing_weeks(OUTPUT_HTML)
     prep_data = load_existing_prep(OUTPUT_HTML)
+    cooking_impact = load_existing_cooking_impact(OUTPUT_HTML)
 
     if os.environ.get("BAD_ORDERS_HTML_ONLY"):
         if not existing:
             raise RuntimeError("No existing data in HTML for BAD_ORDERS_HTML_ONLY")
+        # Keep waiting banner until after-week exists; don't wipe impact.
+        if not cooking_impact.get("ready"):
+            cooking_impact = empty_cooking_impact()
+            baseline = load_cooking_baseline()
+            if baseline:
+                cooking_impact["baseline_saved_at"] = baseline.get("saved_at", "")
+                cooking_impact["before_week_start"] = baseline.get("before_week_start", "")
+                cooking_impact["before_week_label"] = baseline.get("before_week_label", "")
+                cooking_impact["message"] = (
+                    "Базовий cooking time зафіксовано "
+                    f"({cooking_impact['before_week_label'] or 'до змін'}). "
+                    "Повний аналіз впливу з’явиться в понеділок після оновлення тижня "
+                    "13.07–19.07."
+                )
         generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-        OUTPUT_HTML.write_text(build_html(existing, prep_data, generated_at), encoding="utf-8")
+        OUTPUT_HTML.write_text(
+            build_html(existing, prep_data, generated_at, cooking_impact),
+            encoding="utf-8",
+        )
         print(f"Rebuilt HTML only: {OUTPUT_HTML}")
         return
 
@@ -1419,11 +1793,22 @@ def main() -> None:
 
         prep_data = fetch_prep_time_data(conn)
         print(f"  Preparation time rows: {len(prep_data.get('rows', []))}")
+
+        if not COOKING_BASELINE_PATH.exists():
+            ensure_cooking_baseline(prep_data)
+        cooking_impact = build_cooking_impact(conn, prep_data, existing)
+        print(
+            f"  Cooking impact: ready={cooking_impact.get('ready')} "
+            f"changed={cooking_impact.get('changed_count', 0)}"
+        )
     finally:
         conn.close()
 
     generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-    OUTPUT_HTML.write_text(build_html(existing, prep_data, generated_at), encoding="utf-8")
+    OUTPUT_HTML.write_text(
+        build_html(existing, prep_data, generated_at, cooking_impact),
+        encoding="utf-8",
+    )
     print(f"Written {OUTPUT_HTML} ({len(existing)} week(s))")
 
     # Also write week-specific snapshot for weeks in report
@@ -1432,7 +1817,10 @@ def main() -> None:
         snap = SCRIPT_DIR / f"Bad Orders {ws:%d.%m}-{ws + timedelta(days=6):%d.%m.%Y}.html"
         if not snap.exists() or os.environ.get("BAD_ORDERS_FORCE_REFRESH"):
             single = {key: data}
-            snap.write_text(build_html(single, prep_data, generated_at), encoding="utf-8")
+            snap.write_text(
+                build_html(single, prep_data, generated_at, cooking_impact),
+                encoding="utf-8",
+            )
             print(f"  Snapshot: {snap.name}")
 
 
