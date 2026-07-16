@@ -13,9 +13,34 @@
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
       font-size:14px;line-height:1.55;color:#1a1a1a;background:var(--gray-100)}
-    .header{background:var(--black);padding:28px 40px;display:flex;align-items:center;
+    .header{background:var(--black);padding:20px 40px;display:flex;align-items:flex-start;
       justify-content:space-between;border-bottom:4px solid var(--green);flex-wrap:wrap;gap:16px}
-    .header-logo{display:flex;align-items:center;gap:14px}
+    .header-left{display:flex;align-items:center;gap:14px;flex:1;min-width:240px}
+    .header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+    .header-search-wrap{position:relative;width:min(320px,100%)}
+    .header-search-btn{
+      width:100%;padding:9px 14px;border:1px solid #333;border-radius:8px;background:#1a1a1a;
+      color:var(--gray-400);font-size:13px;text-align:left;cursor:pointer;display:flex;
+      align-items:center;gap:8px}
+    .header-search-btn:hover{border-color:var(--green);color:#fff}
+    .header-search-btn svg{flex-shrink:0;opacity:.8}
+    .search-panel{
+      display:none;position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;
+      border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:10px;z-index:50;
+      border:1px solid #e8e8e8}
+    .search-panel.open{display:block}
+    .search-panel input{
+      width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none}
+    .search-panel input:focus{border-color:var(--green-d)}
+    .search-results{max-height:280px;overflow-y:auto;margin-top:8px}
+    .search-results:empty{display:none}
+    .search-result-item{
+      display:block;width:100%;text-align:left;padding:9px 10px;border:none;background:transparent;
+      border-radius:6px;cursor:pointer;font-size:13px;color:var(--gray-700)}
+    .search-result-item:hover,.search-result-item.active{background:#e6faf2}
+    .search-result-item small{display:block;font-size:11px;color:var(--gray-400);margin-top:2px}
+    .search-empty{font-size:12px;color:var(--gray-400);padding:8px 4px;display:none}
+    .search-empty.visible{display:block}
     .bolt-logo{width:44px;height:44px;background:var(--green);border-radius:10px;
       display:flex;align-items:center;justify-content:center}
     .header-title h1{font-size:22px;font-weight:700;color:#fff}
@@ -26,15 +51,10 @@
     .container{max-width:1320px;margin:0 auto;padding:28px 40px 48px}
     .period-bar{background:#fff;border-radius:12px;padding:14px 20px;margin-bottom:20px;
       display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-    .search-bar{background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:24px;
-      box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;flex-wrap:wrap;gap:12px;align-items:center;
-      position:sticky;top:0;z-index:20;border-bottom:2px solid var(--green)}
-    .search-bar label{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray-700)}
-    .search-bar input,.search-bar select{
-      flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;
-      font-size:14px;outline:none}
-    .search-bar input:focus,.search-bar select:focus{border-color:var(--green-d)}
-    .search-count{font-size:12px;color:var(--gray-400);white-space:nowrap}
+    .promo-tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;margin-top:6px;margin-right:4px}
+    .promo-tag.smart{background:#f3e8ff;color:#6b21a8}
+    .promo-tag.sl{background:#dbeafe;color:#1d4ed8}
+    .promo-tags{min-height:0}
     .section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
       color:var(--gray-700);padding-bottom:10px;border-bottom:2px solid var(--green);margin:28px 0 10px}
     .section-hint{font-size:12px;color:var(--gray-400);margin-bottom:14px}
@@ -95,13 +115,14 @@
     .footer span{color:var(--green)}
     @media(max-width:700px){
       .container{padding:16px} .charts-grid{grid-template-columns:1fr}
-      .header{padding:20px} .search-bar{position:static}
+      .header{padding:16px} .header-right{align-items:stretch;width:100%}
+      .header-search-wrap{width:100%}
     }
   </style>
 </head>
 <body>
 <header class="header">
-  <div class="header-logo">
+  <div class="header-left">
     <div class="bolt-logo">
       <svg viewBox="0 0 24 24" width="26" height="26"><path d="M13 2L4.5 13.5H11L10 22L19.5 10.5H13V2Z" fill="#0d0d0d"/></svg>
     </div>
@@ -110,11 +131,23 @@
       <p>Bolt Food · Щотижневий звіт · Poltava</p>
     </div>
   </div>
-  <div class="header-meta">
-    <div>Період: <strong>18.05.2026 — 12.07.2026</strong></div>
-    <div>Тижнів: <strong>8 завершених</strong></div>
-    <div>Локацій: <strong>14</strong></div>
-    <div>Оновлено: <strong>16.07.2026 11:28</strong></div>
+  <div class="header-right">
+    <div class="header-meta">
+      <div>Період: <strong>18.05.2026 — 12.07.2026</strong></div>
+      <div>Тижнів: <strong>8 завершених</strong> · Локацій: <strong>14</strong></div>
+      <div>Оновлено: <strong>16.07.2026 11:38</strong></div>
+    </div>
+    <div class="header-search-wrap" id="header-search-wrap">
+      <button type="button" class="header-search-btn" id="search-open-btn" aria-expanded="false" aria-controls="search-panel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+        Пошук локації…
+      </button>
+      <div class="search-panel" id="search-panel" role="dialog" aria-label="Пошук локації">
+        <input id="loc-search" type="search" placeholder="Назва, зона або ID…" autocomplete="off"/>
+        <div class="search-empty" id="search-empty">Нічого не знайдено</div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -135,6 +168,7 @@
     <div class="kpi-card"><div class="kpi-label">Acceptance</div><div class="kpi-value">100.0%</div></div>
     <div class="kpi-card"><div class="kpi-label">Active Users</div><div class="kpi-value">101</div></div>
     <div class="kpi-card"><div class="kpi-label">Rating</div><div class="kpi-value">4.52</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bad Orders (партнер)</div><div class="kpi-value">4 · 3.8%</div></div>
   </div>
 
   <div class="section-title">1. Продажі — увесь бренд</div><p class="section-hint">Сума / середнє по всіх локаціях #ARIZONA · 8 тижнів</p><div class="charts-grid">
@@ -735,6 +769,98 @@
           <div class="bar" style="height:99%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="section-title">2a. Bad Orders (вина партнера) — увесь бренд</div><p class="section-hint">Сума / середнє по всіх локаціях #ARIZONA · 8 тижнів</p><div class="charts-grid">
+    <div class="chart-card" id="brand-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:7%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">15</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">12</div>
+          <div class="bar" style="height:80%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">7</div>
+          <div class="bar" style="height:47%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">6</div>
+          <div class="bar" style="height:40%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">5</div>
+          <div class="bar" style="height:33%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2</div>
+          <div class="bar" style="height:13%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">4</div>
+          <div class="bar" style="height:27%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="brand-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.8%</div>
+          <div class="bar" style="height:7%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">10.5%</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">9.4%</div>
+          <div class="bar" style="height:89%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">5.7%</div>
+          <div class="bar" style="height:54%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">4.5%</div>
+          <div class="bar" style="height:43%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">4.3%</div>
+          <div class="bar" style="height:41%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1.4%</div>
+          <div class="bar" style="height:13%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3.8%</div>
+          <div class="bar" style="height:36%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="section-title">3. Клієнти та їх поведінка — увесь бренд</div><p class="section-hint">Сума / середнє по всіх локаціях #ARIZONA · 8 тижнів</p><div class="charts-grid">
     <div class="chart-card" id="brand-active_users">
       <h3>Active Users</h3>
@@ -1198,18 +1324,7 @@
     </div></div>
 
   <div class="section-title">Локації бренду</div>
-  <p class="section-hint">Пошук і фільтр по назві / зоні · кожна локація містить усі метрики гістограмами по тижнях</p>
-
-  <div class="search-bar">
-    <label for="loc-search">Пошук локації</label>
-    <input id="loc-search" type="search" placeholder="Назва, зона або ID…" autocomplete="off"/>
-    <label for="loc-select">Швидкий вибір</label>
-    <select id="loc-select">
-      <option value="">Усі локації</option>
-      <option value="137455">Ace Burger</option><option value="123575">Arizona</option><option value="115669">Big Bro Burgers</option><option value="117449">Fellini Pizza</option><option value="136693">Fitnes shaurma</option><option value="137451">GANGSTER DOG</option><option value="136690">Luciano pizza by#AriZona</option><option value="136694">Original sushi by #AriZona</option><option value="136685">Prima Pasta</option><option value="109500">Salatoria</option><option value="172714">Академія шаурми</option><option value="137454">Золотий дракон</option><option value="110411">Самурай</option><option value="115868">Шава від Шефа</option>
-    </select>
-    <span class="search-count" id="search-count">Показано: 14 / 14</span>
-  </div>
+  <p class="section-hint">Пошук — у шапці звіту · кожна локація містить усі метрики, bad orders (вина партнера) та гістограми по тижнях</p>
 
   <div id="locations">
     
@@ -1218,12 +1333,13 @@
         <div>
           <h2>Ace Burger</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137455</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>8</strong></div>
           <div><span>Gross</span><strong>5 920 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-20% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -1824,6 +1940,98 @@
           <div class="bar" style="height:48%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-137455-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-137455-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-137455-active_users">
       <h3>Active Users</h3>
@@ -2292,12 +2500,13 @@
         <div>
           <h2>Arizona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 123575</p>
+          <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> <span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>28</strong></div>
           <div><span>Gross</span><strong>25 029 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>1 · 3.6%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-32% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -2898,6 +3107,98 @@
           <div class="bar" style="height:95%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-123575-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2</div>
+          <div class="bar" style="height:67%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3</div>
+          <div class="bar" style="height:100%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-123575-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">2.4%</div>
+          <div class="bar" style="height:25%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2.6%</div>
+          <div class="bar" style="height:27%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">6.7%</div>
+          <div class="bar" style="height:71%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">9.4%</div>
+          <div class="bar" style="height:100%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3.0%</div>
+          <div class="bar" style="height:32%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2.4%</div>
+          <div class="bar" style="height:26%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3.6%</div>
+          <div class="bar" style="height:38%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-123575-active_users">
       <h3>Active Users</h3>
@@ -3366,12 +3667,13 @@
         <div>
           <h2>Big Bro Burgers</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 115669</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>0</strong></div>
           <div><span>Gross</span><strong>0 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-100% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -3972,6 +4274,98 @@
           <div class="bar" style="height:4%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-115669-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-115669-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">16.7%</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-115669-active_users">
       <h3>Active Users</h3>
@@ -4440,12 +4834,13 @@
         <div>
           <h2>Fellini Pizza</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 117449</p>
+          <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>7</strong></div>
           <div><span>Gross</span><strong>3 917 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-stable">+0% WoW</strong></div>
-          <div><span>Тренд</span><strong>→ стабільно</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -5046,6 +5441,98 @@
           <div class="bar" style="height:77%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-117449-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:50%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2</div>
+          <div class="bar" style="height:100%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-117449-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">14.3%</div>
+          <div class="bar" style="height:50%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">28.6%</div>
+          <div class="bar" style="height:100%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-117449-active_users">
       <h3>Active Users</h3>
@@ -5514,12 +6001,13 @@
         <div>
           <h2>Fitnes shaurma</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136693</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>5</strong></div>
           <div><span>Gross</span><strong>2 133 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>1 · 20.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-38% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -6120,6 +6608,98 @@
           <div class="bar" style="height:74%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-136693-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-136693-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">20.0%</div>
+          <div class="bar" style="height:100%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-136693-active_users">
       <h3>Active Users</h3>
@@ -6588,12 +7168,13 @@
         <div>
           <h2>GANGSTER DOG</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137451</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>8</strong></div>
           <div><span>Gross</span><strong>4 958 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-20% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -7194,6 +7775,98 @@
           <div class="bar" style="height:75%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-137451-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-137451-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">33.3%</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">20.0%</div>
+          <div class="bar" style="height:60%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-137451-active_users">
       <h3>Active Users</h3>
@@ -7662,12 +8335,13 @@
         <div>
           <h2>Luciano pizza by#AriZona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136690</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>9</strong></div>
           <div><span>Gross</span><strong>6 758 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>1 · 11.1%</strong></div>
           <div><span>WoW</span><strong class="trend-up">+29% WoW</strong></div>
-          <div><span>Тренд</span><strong>📈 ріст</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -8268,6 +8942,98 @@
           <div class="bar" style="height:59%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-136690-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:50%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:50%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-136690-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">13.3%</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">11.1%</div>
+          <div class="bar" style="height:83%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">11.1%</div>
+          <div class="bar" style="height:83%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-136690-active_users">
       <h3>Active Users</h3>
@@ -8736,12 +9502,13 @@
         <div>
           <h2>Original sushi by #AriZona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136694</p>
+          <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>4</strong></div>
           <div><span>Gross</span><strong>2 388 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-up">+300% WoW</strong></div>
-          <div><span>Тренд</span><strong>📈 ріст</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -9342,6 +10109,98 @@
           <div class="bar" style="height:90%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-136694-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-136694-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-136694-active_users">
       <h3>Active Users</h3>
@@ -9810,12 +10669,13 @@
         <div>
           <h2>Prima Pasta</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136685</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>1</strong></div>
           <div><span>Gross</span><strong>735 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-stable">+0% WoW</strong></div>
-          <div><span>Тренд</span><strong>→ стабільно</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -10416,6 +11276,98 @@
           <div class="bar" style="height:46%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-136685-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-136685-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">14.3%</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-136685-active_users">
       <h3>Active Users</h3>
@@ -10884,12 +11836,13 @@
         <div>
           <h2>Salatoria</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 109500</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>0</strong></div>
           <div><span>Gross</span><strong>0 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-stable">—</strong></div>
-          <div><span>Тренд</span><strong>→ стабільно</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -11490,6 +12443,98 @@
           <div class="bar" style="height:4%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-109500-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-109500-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">100.0%</div>
+          <div class="bar" style="height:100%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-109500-active_users">
       <h3>Active Users</h3>
@@ -11958,12 +13003,13 @@
         <div>
           <h2>Академія шаурми</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 172714</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>3</strong></div>
           <div><span>Gross</span><strong>1 810 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-62% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -12564,6 +13610,98 @@
           <div class="bar" style="height:78%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-172714-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-172714-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">33.3%</div>
+          <div class="bar" style="height:100%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-172714-active_users">
       <h3>Active Users</h3>
@@ -13032,12 +14170,13 @@
         <div>
           <h2>Золотий дракон</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137454</p>
+          <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>8</strong></div>
           <div><span>Gross</span><strong>6 381 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>1 · 12.5%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-38% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -13638,6 +14777,98 @@
           <div class="bar" style="height:61%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-137454-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3</div>
+          <div class="bar" style="height:100%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:33%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-137454-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">14.3%</div>
+          <div class="bar" style="height:52%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">27.3%</div>
+          <div class="bar" style="height:100%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">7.1%</div>
+          <div class="bar" style="height:26%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">12.5%</div>
+          <div class="bar" style="height:46%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-137454-active_users">
       <h3>Active Users</h3>
@@ -14106,12 +15337,13 @@
         <div>
           <h2>Самурай</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 110411</p>
+          <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> </div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>24</strong></div>
           <div><span>Gross</span><strong>25 029 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-23% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -14712,6 +15944,98 @@
           <div class="bar" style="height:94%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-110411-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">11</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">4</div>
+          <div class="bar" style="height:36%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3</div>
+          <div class="bar" style="height:27%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">2</div>
+          <div class="bar" style="height:18%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:9%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-110411-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">33.3%</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">11.8%</div>
+          <div class="bar" style="height:35%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">9.4%</div>
+          <div class="bar" style="height:28%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">6.7%</div>
+          <div class="bar" style="height:20%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">3.2%</div>
+          <div class="bar" style="height:10%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-110411-active_users">
       <h3>Active Users</h3>
@@ -15180,12 +16504,13 @@
         <div>
           <h2>Шава від Шефа</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 115868</p>
+          <div class="promo-tags"></div>
         </div>
         <div class="loc-kpis">
           <div><span>Замовлення</span><strong>1</strong></div>
           <div><span>Gross</span><strong>378 ₴</strong></div>
+          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
           <div><span>WoW</span><strong class="trend-down">-75% WoW</strong></div>
-          <div><span>Тренд</span><strong>📉 падіння</strong></div>
         </div>
       </div>
       <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
@@ -15786,6 +17111,98 @@
           <div class="bar" style="height:34%;background:#c8f0da"></div>
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
+    </div></div><div class="loc-section-title">2a. Bad Orders (вина партнера)</div><div class="charts-grid">
+    <div class="chart-card" id="c-115868-bad_provider_count">
+      <h3>Bad Orders — вина партнера</h3>
+      <p class="metric-desc">Кількість bad orders, де винним визнано заклад (provider at fault)</p>
+      <p class="unit">Одиниця: шт. · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">1</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
+    </div>
+    <div class="chart-card" id="c-115868-bad_provider_pct">
+      <h3>Bad Orders — вина партнера (%)</h3>
+      <p class="metric-desc">Частка доставлених замовлень із bad order через вину партнера</p>
+      <p class="unit">Одиниця: % · 8 тижнів</p>
+      <div class="bars-scroll"><div class="bars">
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#0a5c38"></div>
+          <div class="bar-lbl">18.05–24.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">7.7%</div>
+          <div class="bar" style="height:100%;background:#0d8a52"></div>
+          <div class="bar-lbl">25.05–31.05</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#12a35f"></div>
+          <div class="bar-lbl">01.06–07.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#34D186"></div>
+          <div class="bar-lbl">08.06–14.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#5cdb9a"></div>
+          <div class="bar-lbl">15.06–21.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#7ee0ad"></div>
+          <div class="bar-lbl">22.06–28.06</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#a3e8c4"></div>
+          <div class="bar-lbl">29.06–05.07</div>
+        </div>
+        <div class="bar-col">
+          <div class="bar-val">0.0%</div>
+          <div class="bar" style="height:4%;background:#c8f0da"></div>
+          <div class="bar-lbl">06.07–12.07</div>
+        </div></div></div>
     </div></div><div class="loc-section-title">3. Клієнти та їх поведінка</div><div class="charts-grid">
     <div class="chart-card" id="c-115868-active_users">
       <h3>Active Users</h3>
@@ -16269,22 +17686,6 @@
     <div class="analysis-grid">
         <div class="analysis-card sev-high">
           <div class="analysis-head">
-            <h3>Big Bro Burgers</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>2</b> → <b>0</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 2).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 0.0%.</li><li>Падіння замовлень супроводжується зменшенням знижок (263 → 0 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
             <h3>Fitnes shaurma</h3>
             <span class="sev-badge">Пріоритет</span>
           </div>
@@ -16293,59 +17694,12 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>2.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>20.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>20.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 5 (попередній: 8).</li><li>Висока частка компенсацій — 20.0%.</li><li>Низький рейтинг — 2.00 з 5.</li><li>Падіння замовлень супроводжується зменшенням знижок (777 → 323 ₴).</li></ul>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 5 (попередній: 8).</li><li>Висока частка компенсацій — 20.0%.</li><li>Низький рейтинг — 2.00 з 5.</li><li>Падіння замовлень супроводжується зменшенням знижок (777 → 323 ₴).</li><li>Висока частка bad orders з вини партнера — 20.0% (1 зам.).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Prima Pasta</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>1</b> → <b>1</b></span>
-            <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 1).</li><li>За 8 тижнів замовлення впали з 5 до 1 (-80%).</li><li>Довгий час приготування — 45.3 хв.</li><li>Довга доставка — 56.8 хв загалом.</li><li>Слабка конверсія меню → кошик — 12.5%.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Salatoria</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>0</b> → <b>0</b></span>
-            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
-            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 0).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 11.1%.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Академія шаурми</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>8</b> → <b>3</b></span>
-            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 3 (попередній: 8).</li><li>Низький рейтинг — 4.00 з 5.</li><li>Слабка конверсія в меню — 5.5% при 1218 сесіях.</li><li>Слабка конверсія меню → кошик — 13.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (876 → 425 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~8.0× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16357,27 +17711,29 @@
             <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>12.5%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 13).</li><li>Довгий час приготування — 36.2 хв.</li><li>Довга доставка — 53.0 хв загалом.</li><li>Слабка конверсія в меню — 4.9% при 1005 сесіях.</li><li>Слабка конверсія меню → кошик — 22.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (2 506 → 1 112 ₴).</li></ul>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 13).</li><li>Довгий час приготування — 36.2 хв.</li><li>Довга доставка — 53.0 хв загалом.</li><li>Слабка конверсія в меню — 4.9% при 1005 сесіях.</li><li>Слабка конверсія меню → кошик — 22.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (2 506 → 1 112 ₴).</li><li>Висока частка bad orders з вини партнера — 12.5% (1 зам.).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
-            <h3>Шава від Шефа</h3>
+            <h3>Big Bro Burgers</h3>
             <span class="sev-badge">Пріоритет</span>
           </div>
           <div class="analysis-kpi">
-            <span>Замовлення: <b>4</b> → <b>1</b></span>
+            <span>Замовлення: <b>2</b> → <b>0</b></span>
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 4).</li><li>За 8 тижнів замовлення впали з 10 до 1 (-90%).</li><li>Довгий час приготування — 36.0 хв.</li><li>Слабка конверсія меню → кошик — 22.2%.</li><li>Падіння замовлень супроводжується зменшенням знижок (491 → 103 ₴).</li></ul>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 2).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 0.0%.</li><li>Падіння замовлень супроводжується зменшенням знижок (263 → 0 ₴).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16389,11 +17745,80 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>11.1%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>11.1%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 9 (попередній: 7).</li><li>Зростання замовлень WoW: 7 → 9 (+29%).</li><li>Висока частка компенсацій — 11.1%.</li><li>Низький рейтинг — 4.00 з 5.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li></ul>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 9 (попередній: 7).</li><li>Зростання замовлень WoW: 7 → 9 (+29%).</li><li>Висока частка компенсацій — 11.1%.</li><li>Низький рейтинг — 4.00 з 5.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li><li>Зростання bad orders (вина партнера): 0.0% → 11.1%.</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+        </div>
+        <div class="analysis-card sev-high">
+          <div class="analysis-head">
+            <h3>Prima Pasta</h3>
+            <span class="sev-badge">Пріоритет</span>
+          </div>
+          <div class="analysis-kpi">
+            <span>Замовлення: <b>1</b> → <b>1</b></span>
+            <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
+            <span>Рейтинг: <b>5.00</b> → <b>0.00</b></span>
+            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+          </div>
+          <h4>Слабкі місця / динаміка</h4>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 1).</li><li>За 8 тижнів замовлення впали з 5 до 1 (-80%).</li><li>Довгий час приготування — 45.3 хв.</li><li>Довга доставка — 56.8 хв загалом.</li><li>Слабка конверсія меню → кошик — 12.5%.</li></ul>
+          <h4>Поради для росту продажів</h4>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~4.2× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+        </div>
+        <div class="analysis-card sev-high">
+          <div class="analysis-head">
+            <h3>Salatoria</h3>
+            <span class="sev-badge">Пріоритет</span>
+          </div>
+          <div class="analysis-kpi">
+            <span>Замовлення: <b>0</b> → <b>0</b></span>
+            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
+            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
+            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+          </div>
+          <h4>Слабкі місця / динаміка</h4>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 0).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 11.1%.</li></ul>
+          <h4>Поради для росту продажів</h4>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+        </div>
+        <div class="analysis-card sev-high">
+          <div class="analysis-head">
+            <h3>Академія шаурми</h3>
+            <span class="sev-badge">Пріоритет</span>
+          </div>
+          <div class="analysis-kpi">
+            <span>Замовлення: <b>8</b> → <b>3</b></span>
+            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
+            <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
+            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+          </div>
+          <h4>Слабкі місця / динаміка</h4>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 3 (попередній: 8).</li><li>Низький рейтинг — 4.00 з 5.</li><li>Слабка конверсія в меню — 5.5% при 1218 сесіях.</li><li>Слабка конверсія меню → кошик — 13.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (876 → 425 ₴).</li></ul>
+          <h4>Поради для росту продажів</h4>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+        </div>
+        <div class="analysis-card sev-high">
+          <div class="analysis-head">
+            <h3>Шава від Шефа</h3>
+            <span class="sev-badge">Пріоритет</span>
+          </div>
+          <div class="analysis-kpi">
+            <span>Замовлення: <b>4</b> → <b>1</b></span>
+            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
+            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+          </div>
+          <h4>Слабкі місця / динаміка</h4>
+          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 4).</li><li>За 8 тижнів замовлення впали з 10 до 1 (-90%).</li><li>Довгий час приготування — 36.0 хв.</li><li>Слабка конверсія меню → кошик — 22.2%.</li><li>Падіння замовлень супроводжується зменшенням знижок (491 → 103 ₴).</li></ul>
+          <h4>Поради для росту продажів</h4>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~7.9× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16405,11 +17830,12 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
           <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Слабка конверсія в меню — 4.5% при 820 сесіях.</li><li>Слабка конверсія меню → кошик — 21.6%.</li><li>Падіння замовлень супроводжується зменшенням знижок (1 934 → 1 340 ₴).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16421,11 +17847,12 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
           <ul><li>Дуже мало замовлень за останній тиждень — лише 4 (попередній: 1).</li><li>Зростання замовлень WoW: 1 → 4 (+300%).</li><li>Довгий час приготування — 42.0 хв.</li><li>Довга доставка — 59.0 хв загалом.</li><li>Слабка конверсія меню → кошик — 23.5%.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16437,11 +17864,12 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>4.20</b> → <b>5.00</b></span>
             <span>Refunds: <b>2.4%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>1</b> → <b>1</b> · <b>3.6%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
           <ul><li>Різке падіння замовлень WoW: 41 → 28 (-32%).</li><li>За 8 тижнів замовлення впали з 42 до 28 (-33%).</li><li>Падіння замовлень супроводжується зменшенням знижок (10 612 → 7 266 ₴).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Обидва продукти вже підключені — оптимізуйте бюджет і когорти за ROAS.</li><li>Підтримуйте комбінацію SL + Розумних акцій: SL для нових показів, Smart Promo — для конверсії.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16453,11 +17881,12 @@
             <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>3.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
           <ul><li>Дуже мало замовлень за останній тиждень — лише 7 (попередній: 7).</li><li>Низький рейтинг — 3.00 з 5.</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16469,11 +17898,12 @@
             <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
             <span>Рейтинг: <b>4.09</b> → <b>5.00</b></span>
             <span>Refunds: <b>3.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>1</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Зменшення замовлень WoW: 31 → 24 (-23%).</li><li>Довгий час приготування — 41.1 хв.</li><li>Довга доставка — 59.7 хв загалом.</li><li>Слабка конверсія в меню — 7.5% при 1804 сесіях.</li><li>Падіння замовлень супроводжується зменшенням знижок (9 461 → 6 969 ₴).</li></ul>
+          <ul><li>Зменшення замовлень WoW: 31 → 24 (-23%).</li><li>Довгий час приготування — 41.1 хв.</li><li>Довга доставка — 59.7 хв загалом.</li><li>Слабка конверсія в меню — 7.5% при 1804 сесіях.</li><li>Падіння замовлень супроводжується зменшенням знижок (9 461 → 6 969 ₴).</li><li>Bad orders з вини партнера зникли за останній тиждень — позитивна динаміка.</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Розумні акції вже активні. Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.</li></ul>
         </div>
         <div class="analysis-card sev-high">
           <div class="analysis-head">
@@ -16485,11 +17915,12 @@
             <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
             <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
             <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
           </div>
           <h4>Слабкі місця / динаміка</h4>
           <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Падіння замовлень супроводжується зменшенням знижок (1 666 → 999 ₴).</li></ul>
           <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li></ul>
+          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div></div>
 </div>
 
@@ -16500,36 +17931,96 @@
 
 <script>
 (function() {
+  const LOCATIONS = [{"id": 137455, "name": "Ace Burger", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 123575, "name": "Arizona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 115669, "name": "Big Bro Burgers", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 117449, "name": "Fellini Pizza", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136693, "name": "Fitnes shaurma", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 137451, "name": "GANGSTER DOG", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136690, "name": "Luciano pizza by#AriZona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136694, "name": "Original sushi by #AriZona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136685, "name": "Prima Pasta", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 109500, "name": "Salatoria", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 172714, "name": "Академія шаурми", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 137454, "name": "Золотий дракон", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 110411, "name": "Самурай", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 115868, "name": "Шава від Шефа", "zone": "Poltava - Center", "city": "Poltava"}];
+  const wrap = document.getElementById('header-search-wrap');
+  const panel = document.getElementById('search-panel');
+  const openBtn = document.getElementById('search-open-btn');
   const input = document.getElementById('loc-search');
-  const select = document.getElementById('loc-select');
-  const cards = Array.from(document.querySelectorAll('.loc-card'));
-  const countEl = document.getElementById('search-count');
-  const total = cards.length;
+  const resultsEl = document.getElementById('search-results');
+  const emptyEl = document.getElementById('search-empty');
+  let activeIdx = -1;
 
-  function applyFilter() {
-    const q = (input.value || '').trim().toLowerCase();
-    const sel = select.value;
-    let shown = 0;
-    cards.forEach(card => {
-      const matchText = !q || (card.dataset.search || '').includes(q);
-      const matchSel = !sel || card.id === ('loc-' + sel);
-      const ok = matchText && matchSel;
-      card.classList.toggle('hidden', !ok);
-      if (ok) shown++;
-    });
-    countEl.textContent = 'Показано: ' + shown + ' / ' + total;
+  function closePanel() {
+    panel.classList.remove('open');
+    openBtn.setAttribute('aria-expanded', 'false');
+    input.value = '';
+    resultsEl.innerHTML = '';
+    emptyEl.classList.remove('visible');
+    activeIdx = -1;
   }
 
-  input.addEventListener('input', applyFilter);
-  select.addEventListener('change', function() {
-    if (select.value) {
-      input.value = '';
-      const el = document.getElementById('loc-' + select.value);
-      applyFilter();
-      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-    } else {
-      applyFilter();
+  function openPanel() {
+    panel.classList.add('open');
+    openBtn.setAttribute('aria-expanded', 'true');
+    input.focus();
+  }
+
+  function renderResults(q) {
+    const query = (q || '').trim().toLowerCase();
+    resultsEl.innerHTML = '';
+    emptyEl.classList.remove('visible');
+    activeIdx = -1;
+    if (!query) return;
+
+    const matches = LOCATIONS.filter(loc => {
+      const blob = (loc.name + ' ' + loc.zone + ' ' + loc.city + ' ' + loc.id).toLowerCase();
+      return blob.includes(query);
+    }).slice(0, 10);
+
+    if (!matches.length) {
+      emptyEl.classList.add('visible');
+      return;
     }
+
+    matches.forEach((loc, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'search-result-item';
+      btn.dataset.id = loc.id;
+      btn.innerHTML = loc.name + '<small>' + (loc.zone || loc.city) + ' · ID ' + loc.id + '</small>';
+      btn.addEventListener('click', () => goTo(loc.id));
+      resultsEl.appendChild(btn);
+    });
+  }
+
+  function goTo(id) {
+    const el = document.getElementById('loc-' + id);
+    closePanel();
+    if (el) {
+      el.scrollIntoView({behavior: 'smooth', block: 'start'});
+      el.style.outline = '2px solid var(--green)';
+      setTimeout(() => { el.style.outline = ''; }, 2000);
+    }
+  }
+
+  openBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (panel.classList.contains('open')) closePanel();
+    else openPanel();
+  });
+
+  input.addEventListener('input', () => renderResults(input.value));
+
+  input.addEventListener('keydown', (e) => {
+    const items = Array.from(resultsEl.querySelectorAll('.search-result-item'));
+    if (e.key === 'Escape') { closePanel(); return; }
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      goTo(items[activeIdx].dataset.id);
+      return;
+    } else return;
+    items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!wrap.contains(e.target)) closePanel();
   });
 })();
 </script>
