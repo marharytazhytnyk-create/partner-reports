@@ -85,7 +85,7 @@ CHART_SECTIONS: list[tuple[str, list[str]]] = [
         "avail", "accept", "refunds",
         "del_time", "acc_time", "prep_time", "wait_time", "c2m_time", "c2e_time",
     ]),
-    ("2a. Bad Orders (вина партнера)", ["bad_provider_count", "bad_provider_pct"]),
+    ("2a. Погані замовлення з вини закладу", ["bad_provider_count", "bad_provider_pct"]),
     ("3. Клієнти та їх поведінка", [
         "active_users", "freq", "new_users", "sessions", "imp_menu", "menu_prod", "rating",
     ]),
@@ -96,15 +96,23 @@ SL_ROAS_THRESHOLD = 3.0
 
 PROMO_OFFER_HINTS = {
     "sl": (
-        "Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: "
-        "розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» "
-        "для більшої видимості у пошуку та на головному екрані."
+        "Щоб отримати більше показів у застосунку Bolt Food, увімкніть спонсоровані оголошення "
+        "(Sponsored Listing): у порталі для ресторанів відкрийте «Промоакції» → "
+        "«Налаштувати інші акції» → «Запустити платне просування»."
     ),
     "smart": (
-        "Smart Promotions (Розумні акції) — співінвестиція 50/50 з Bolt для когорт активних, "
-        "нових та «давно не замовляли» клієнтів; запуск у розділі «Промоакції» → блок «Розумні акції»."
+        "Щоб залучити більше гостей зі знижкою, підключіть Розумні акції (Smart Promotions): "
+        "у порталі для ресторанів відкрийте «Промоакції» → перший блок «Розумні акції». "
+        "Bolt ділить витрати на знижку з вами (50/50) для активних, нових і тих, хто давно не замовляв."
     ),
 }
+
+BAD_ORDERS_EXPLAIN_UA = (
+    "Погані замовлення (Bad Orders) — це доставлені замовлення, з якими у клієнта виникла "
+    "проблема: затримка з вини закладу, неповний склад, холодна/неякісна їжа, відмова чи "
+    "інша скарга, яку система віднесла до відповідальності ресторану. "
+    "Високий показник знижує рейтинг і зменшує шанс, що гість замовить знову."
+)
 
 METRIC_UK: dict[str, tuple[str, str, str]] = {
     "gross": ("Gross Sales (загальні продажі)", "Сума вартості доставлених замовлень до знижок", "₴"),
@@ -112,8 +120,8 @@ METRIC_UK: dict[str, tuple[str, str, str]] = {
     "orders": ("Delivered Orders", "Кількість успішно доставлених замовлень", "шт."),
     "aov": ("AOV (середній чек)", "Середня сума одного доставленого замовлення до знижок", "₴"),
     "avail": ("Availability Rate", "Частка часу, коли заклад був онлайн", "%"),
-    "accept": ("Acceptance Rate", "Частка замовлень, прийнятих партнером вчасно", "%"),
-    "refunds": ("Orders with Refunds", "Частка замовлень із компенсацією клієнту", "%"),
+    "accept": ("Acceptance Rate (прийняття замовлень)", "Частка замовлень, які ви прийняли вчасно", "%"),
+    "refunds": ("Orders with Refunds (компенсації)", "Частка замовлень, за які клієнту повернули кошти", "%"),
     "del_time": ("Average Delivery Time", "Середній повний час доставки", "хв"),
     "acc_time": ("Avg. Merchant Acceptance Time", "Середній час прийняття замовлення партнером", "хв"),
     "prep_time": ("Avg. Preparation Time", "Середній час приготування страв", "хв"),
@@ -129,15 +137,17 @@ METRIC_UK: dict[str, tuple[str, str, str]] = {
     "rating": ("Average Merchant Rating", "Середня оцінка закладу клієнтами", "з 5"),
     "discounts": ("Total Discounts for Users", "Загальна сума знижок для клієнтів", "₴"),
     "camp_bolt": ("Campaigns Spend by Bolt", "Витрати Bolt на знижки та промо", "₴"),
-    "camp_merch": ("Campaigns Spend by Merchant", "Витрати партнера на знижки та промо", "₴"),
+    "camp_merch": ("Campaigns Spend by Merchant", "Скільки ви вклали у знижки та промо для гостей", "₴"),
     "bad_provider_count": (
-        "Bad Orders — вина партнера",
-        "Кількість bad orders, де винним визнано заклад (provider at fault)",
+        "Погані замовлення з вини закладу",
+        "Скільки доставлених замовлень мали проблему, яку система віднесла до відповідальності вашого закладу "
+        "(затримка кухні, комплектація, якість тощо)",
         "шт.",
     ),
     "bad_provider_pct": (
-        "Bad Orders — вина партнера (%)",
-        "Частка доставлених замовлень із bad order через вину партнера",
+        "Погані замовлення з вини закладу (%)",
+        "Який відсоток доставлених замовлень був «поганим» через причини з боку вашого закладу. "
+        "Чим нижче — тим краще для рейтингу та повторних замовлень",
         "%",
     ),
 }
@@ -579,69 +589,75 @@ def recommend_promo(loc: dict, city_median_conv: float, city_median_impr: float)
     vis_gap = round(city_median_impr / max(m["impressions_per_week"], 1), 2)
 
     if cp < 0:
-        product = "Спочатку операційні показники"
+        product = "Спочатку якість і доступність"
         reason = (
-            "Від'ємна маржа — перед промо варто стабілізувати якість і доступність. "
-            "Після покращення — легке Sponsored Listing для тесту видимості."
+            "Спочатку варто стабілізувати якість страв і час онлайн у застосунку. "
+            "Після цього має сенс спробувати спонсоровані оголошення для більшої видимості."
         )
     elif not has_sl and conv >= max(city_median_conv, 2.5) and vis_gap >= 1.25 and roas >= SL_ROAS_THRESHOLD:
-        product = "Sponsored Listing"
+        product = "Спонсоровані оголошення"
         reason = (
-            f"Сильна конверсія ({conv:.1f}% vs медіана {city_median_conv:.1f}%), але нижча видимість "
-            f"(gap {vis_gap:.1f}×). Прогнозований ROAS ~{roas:.1f}× — платне просування має окупитися."
+            f"Гості часто замовляють після перегляду меню ({conv:.1f}%), але заклад бачать рідше "
+            f"за типовий рівень у місті. Платне просування допоможе зʼявитися частіше в пошуку."
         )
     elif conv < 2.0 and gross >= 150000:
-        product = "Sponsored Listing → Smart Promotions"
+        product = "Спонсоровані оголошення → Розумні акції"
         reason = (
-            "Високий GMV, але низька конверсія з показів — спочатку Sponsored Listing для видимості, "
-            "потім Розумні акції для зростання замовлень."
+            "Продажі хороші, але з показів у стрічці менше замовлень, ніж могло б бути. "
+            "Спочатку підсильте видимість спонсорованими оголошеннями, потім підключіть Розумні акції."
         )
     elif conv >= 3.0 and cp >= 10 and vis_gap < 1.2:
-        product = "Smart Promotions"
+        product = "Розумні акції"
         reason = (
-            "Сильна конверсія та позитивна маржа — Розумні акції зі співінвестом Bolt "
-            "дозволять масштабувати замовлення без надмірного навантаження на маржу."
+            "Гості добре конвертують перегляди в замовлення. "
+            "Розумні акції допоможуть залучити більше постійних і нових клієнтів."
         )
     elif gross >= 400000 or orders >= 400:
-        product = "Smart Promotions + Sponsored Listing"
+        product = "Розумні акції + спонсоровані оголошення"
         reason = (
-            "Топовий обсяг продажів — комбінуйте видимість (Sponsored Listing) "
-            "та залучення когорт (Розумні акції) для максимального ефекту."
+            "У вас сильний обсяг продажів — поєднання більшої видимості та акцій "
+            "для окремих груп гостей дасть найкращий ефект."
         )
     elif orders >= 80:
-        product = "Smart Promotions"
+        product = "Розумні акції"
         reason = (
-            "Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів "
-            "допоможуть прискорити зростання GMV."
+            "Замовлень уже стабільно багато — Розумні акції для активних і нових гостей "
+            "допоможуть швидше наростити продажі."
         )
     elif roas >= SL_ROAS_THRESHOLD and vis_gap >= 1.1:
-        product = "Sponsored Listing"
-        reason = f"Прогнозований ROAS ~{roas:.1f}× — почніть з платного просування в пошуку."
+        product = "Спонсоровані оголошення"
+        reason = "Варто почати з платного просування в пошуку, щоб більше гостей побачили заклад."
     else:
-        product = "Sponsored Listing"
+        product = "Спонсоровані оголошення"
         reason = (
-            "Середній обсяг — почніть з Sponsored Listing для підвищення показів, "
-            "далі додайте Розумні акції за результатами."
+            "Почніть зі спонсорованих оголошень, щоб збільшити покази. "
+            "Після зростання видимості додайте Розумні акції."
         )
 
     if has_smart and has_sl:
-        return product, "Обидва продукти вже підключені — оптимізуйте бюджет і когорти за ROAS."
-    if has_smart and "Smart" in product and "Sponsored" not in product:
-        return product, f"Розумні акції вже активні. {reason}"
-    if has_sl and product.startswith("Sponsored") and "Smart" not in product:
-        return product, f"Sponsored Listing вже активний. {reason}"
+        return product, (
+            "У вас уже підключені і Розумні акції, і спонсоровані оголошення — "
+            "слідкуйте за результатом і тримайте активними вигідні кампанії."
+        )
+    if has_smart and ("Розумн" in product or "Smart" in product) and "оголошен" not in product.lower():
+        return product, f"Розумні акції вже увімкнені. {reason}"
+    if has_sl and ("оголошен" in product.lower() or product.startswith("Sponsored")) and "Розумн" not in product:
+        return product, f"Спонсоровані оголошення вже увімкнені. {reason}"
     return product, reason
 
 
 def _promo_advice(loc: dict, city_median_conv: float, city_median_impr: float) -> list[str]:
     product, reason = recommend_promo(loc, city_median_conv, city_median_impr)
-    tips: list[str] = [f"Промо: {product} — {reason}"]
-    if not loc.get("has_sponsored_listing") and ("Sponsored" in product or "Listing" in product):
+    tips: list[str] = [f"Що варто підключити: {product}. {reason}"]
+    if not loc.get("has_sponsored_listing") and ("оголошен" in product.lower() or "Sponsored" in product or "Listing" in product):
         tips.append(PROMO_OFFER_HINTS["sl"])
-    if not loc.get("has_smart_promotion") and ("Smart" in product or "Розумн" in product):
+    if not loc.get("has_smart_promotion") and ("Розумн" in product or "Smart" in product):
         tips.append(PROMO_OFFER_HINTS["smart"])
     if loc.get("has_smart_promotion") and loc.get("has_sponsored_listing"):
-        tips.append("Підтримуйте комбінацію SL + Розумних акцій: SL для нових показів, Smart Promo — для конверсії.")
+        tips.append(
+            "Тримайте разом спонсоровані оголошення (щоб вас частіше бачили) "
+            "і Розумні акції (щоб більше гостей оформлювали замовлення)."
+        )
     return tips
 
 
@@ -667,114 +683,179 @@ def analyze_location(loc: dict, city_median_conv: float = 2.5, city_median_impr:
 
     if last["orders"] < 15:
         issues.append(
-            f"Дуже мало замовлень за останній тиждень — лише {last['orders']} "
-            f"(попередній: {prev['orders']})."
+            f"За останній тиждень дуже мало замовлень — лише {last['orders']} "
+            f"(тиждень раніше було {prev['orders']})."
         )
-        advice.append("Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.")
+        advice.append(
+            "Перевірте години роботи в застосунку, головне фото та опис меню. "
+            "Переконайтеся, що заклад видно в зоні доставки в обід і ввечері."
+        )
         severity += 3
     elif o_chg is not None and o_chg <= -25:
         issues.append(
-            f"Різке падіння замовлень WoW: {prev['orders']} → {last['orders']} ({o_chg:.0f}%)."
+            f"Різке падіння замовлень порівняно з минулим тижнем: "
+            f"{prev['orders']} → {last['orders']} ({o_chg:.0f}%)."
+        )
+        advice.append(
+            "Перегляньте, чи не було довгих пауз офлайн, змін у меню чи акцій. "
+            "Порівняйте з тижнем, коли замовлень було більше, і поверніть те, що працювало."
         )
         severity += 2
     elif o_chg is not None and o_chg <= -10:
         issues.append(
-            f"Зменшення замовлень WoW: {prev['orders']} → {last['orders']} ({o_chg:.0f}%)."
+            f"Замовлень стало менше, ніж тиждень тому: "
+            f"{prev['orders']} → {last['orders']} ({o_chg:.0f}%)."
         )
         severity += 1
 
     if o_chg is not None and o_chg >= 20:
         issues.append(
-            f"Зростання замовлень WoW: {prev['orders']} → {last['orders']} (+{o_chg:.0f}%)."
+            f"Гарне зростання замовлень порівняно з минулим тижнем: "
+            f"{prev['orders']} → {last['orders']} (+{o_chg:.0f}%)."
         )
 
     if o_trend is not None and o_trend <= -30:
         issues.append(
-            f"За 8 тижнів замовлення впали з {first['orders']} до {last['orders']} ({o_trend:.0f}%)."
+            f"За 8 тижнів замовлення зменшилися з {first['orders']} до {last['orders']} ({o_trend:.0f}%)."
         )
-        advice.append("Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.")
+        advice.append(
+            "Варто посилити видимість і акції (Розумні акції / спонсоровані оголошення) "
+            "та перевірити, щоб заклад був онлайн у пікові години."
+        )
         severity += 2
 
     if last["avail"] < 90:
-        issues.append(f"Низька доступність — {last['avail']:.1f}%.")
-        advice.append("Тримати заклад онлайн у пікові години (обід / вечір), зменшити ручні паузи.")
+        issues.append(
+            f"Заклад був доступний для замовлення лише {last['avail']:.1f}% часу — "
+            "гості часто не бачили вас онлайн."
+        )
+        advice.append(
+            "Тримайте заклад увімкненим в обід і ввечері. "
+            "Уникайте довгих ручних пауз, якщо кухня може приймати замовлення."
+        )
         severity += 2
 
     if last["accept"] < 97:
-        issues.append(f"Acceptance Rate нижче норми — {last['accept']:.1f}%.")
-        advice.append("Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).")
+        issues.append(f"Не всі замовлення приймаються вчасно — {last['accept']:.1f}%.")
+        advice.append(
+            "Приймайте замовлення якомога швидше в застосунку для ресторанів "
+            "(орієнтир — менше 1 хвилини)."
+        )
         severity += 2
 
     if last["refunds"] >= 5:
-        issues.append(f"Висока частка компенсацій — {last['refunds']:.1f}%.")
-        advice.append("Перевірити completeness меню, якість збірки та час приготування.")
+        issues.append(
+            f"Часто доводиться компенсувати клієнтам кошти — {last['refunds']:.1f}% замовлень."
+        )
+        advice.append(
+            "Перевірте, чи всі позиції в меню актуальні, чи правильно збирають замовлення "
+            "і чи встигає кухня в зазначений час приготування."
+        )
         severity += 2
     elif last["refunds"] >= 3 and last["refunds"] > prev["refunds"] + 1:
-        issues.append(f"Зростання refunds: {prev['refunds']:.1f}% → {last['refunds']:.1f}%.")
+        issues.append(
+            f"Компенсацій клієнтам стало більше: {prev['refunds']:.1f}% → {last['refunds']:.1f}%."
+        )
         severity += 1
 
     if last["prep_time"] >= 30:
-        issues.append(f"Довгий час приготування — {last['prep_time']:.1f} хв.")
-        advice.append("Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.")
+        issues.append(f"Страви готуються довго — у середньому {last['prep_time']:.1f} хв.")
+        advice.append(
+            "У пікові години розподіліть навантаження на кухні або оновіть час приготування "
+            "у кабінеті, щоб курʼєр не чекав зайве."
+        )
         severity += 1
 
     if last["acc_time"] >= 2.5:
-        issues.append(f"Повільне прийняття — {last['acc_time']:.1f} хв.")
-        advice.append("Призначити відповідального за планшет / звукові сповіщення.")
+        issues.append(f"Замовлення приймаються повільно — {last['acc_time']:.1f} хв.")
+        advice.append(
+            "Призначте відповідального за планшет і увімкніть звукові сповіщення, "
+            "щоб не пропускати нові замовлення."
+        )
         severity += 1
 
     if last["del_time"] >= 50:
-        issues.append(f"Довга доставка — {last['del_time']:.1f} хв загалом.")
+        issues.append(
+            f"Повний час доставки для гостя довгий — {last['del_time']:.1f} хв. "
+            "Часто це повʼязано з часом приготування або очікуванням на видачі."
+        )
         severity += 1
 
     if last["rating"] and last["rating"] < 4.4:
-        issues.append(f"Низький рейтинг — {last['rating']:.2f} з 5.")
-        advice.append("Розібрати останні низькі оцінки: комплектація, температура, запізнення.")
+        issues.append(f"Середня оцінка закладу нижча за комфортну — {last['rating']:.2f} з 5.")
+        advice.append(
+            "Подивіться останні низькі відгуки: комплектація, температура страв, "
+            "запізнення. Виправте найчастіші причини."
+        )
         severity += 2
 
     if last["imp_menu"] < 8 and last["sessions"] > 800:
-        issues.append(f"Слабка конверсія в меню — {last['imp_menu']:.1f}% при {last['sessions']} сесіях.")
-        advice.append("Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.")
+        issues.append(
+            f"З усіх переглядів у стрічці лише {last['imp_menu']:.1f}% відкривають меню "
+            f"(переглядів: {last['sessions']})."
+        )
+        advice.append(
+            "Оновіть головне фото, назву та бейджі акцій — щоб гість охочіше натискав на заклад."
+        )
         severity += 1
 
     if last["menu_prod"] < 25 and last["sessions"] > 200:
-        issues.append(f"Слабка конверсія меню → кошик — {last['menu_prod']:.1f}%.")
-        advice.append("Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.")
+        issues.append(
+            f"Після відкриття меню мало хто додає страви в кошик — {last['menu_prod']:.1f}%."
+        )
+        advice.append(
+            "Підсвітіть хіти та комбо на початку меню, додайте зрозумілі описи й актуальні ціни."
+        )
         severity += 1
 
     disc_chg = _pct_change(prev["discounts"], last["discounts"])
     if o_chg is not None and o_chg < -10 and disc_chg is not None and disc_chg < -20:
         issues.append(
-            f"Падіння замовлень супроводжується зменшенням знижок "
+            f"Разом із падінням замовлень зменшилася сума знижок для гостей "
             f"({prev['discounts']:,.0f} → {last['discounts']:,.0f} ₴).".replace(",", "\u202f")
         )
-        advice.append("Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.")
+        advice.append(
+            "На слабкі дні варто знову запропонувати гостям акцію через Розумні акції "
+            "або власну знижку в меню — це часто повертає замовлення."
+        )
         severity += 1
 
     if o_chg is not None and o_chg > 15 and last["camp_bolt"] + last["camp_merch"] > prev["camp_bolt"] + prev["camp_merch"]:
-        issues.append("Зростання замовлень збігається з активнішими кампаніями знижок.")
+        issues.append("Зростання замовлень збіглося з активнішими акціями для гостей — хороший сигнал.")
 
     if last["bad_provider_pct"] >= 12:
         issues.append(
-            f"Висока частка bad orders з вини партнера — {last['bad_provider_pct']:.1f}% "
+            f"Багато поганих замовлень через причини з боку закладу — {last['bad_provider_pct']:.1f}% "
             f"({last['bad_provider_count']} зам.)."
         )
-        advice.append("Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.")
+        advice.append(
+            "Розіберіть, чому гості залишаються незадоволеними: довге приготування, "
+            "неповний склад, відмова від замовлення чи низька оцінка страв. "
+            "Виправлення цих причин покращить рейтинг і повторні замовлення."
+        )
         severity += 2
     elif last["bad_provider_pct"] >= 8 and last["bad_provider_pct"] > prev["bad_provider_pct"] + 2:
         issues.append(
-            f"Зростання bad orders (вина партнера): {prev['bad_provider_pct']:.1f}% → "
-            f"{last['bad_provider_pct']:.1f}%."
+            f"Поганих замовлень з вини закладу стало більше: "
+            f"{prev['bad_provider_pct']:.1f}% → {last['bad_provider_pct']:.1f}%."
+        )
+        advice.append(
+            "Зверніть увагу на якість збірки та час видачі — це найчастіші причини скарг гостей."
         )
         severity += 1
 
     if prev["bad_provider_count"] and last["bad_provider_count"] == 0:
-        issues.append("Bad orders з вини партнера зникли за останній тиждень — позитивна динаміка.")
+        issues.append(
+            "За останній тиждень не було поганих замовлень з вини закладу — відмінний результат."
+        )
 
     advice.extend(_promo_advice(loc, city_median_conv, city_median_impr))
 
     if not advice and severity >= 1:
-        advice.append("Сфокусуватися на доступності >95%, acceptance >98% і стабільних промо.")
+        advice.append(
+            "Тримайте заклад онлайн понад 95% часу в робочі години, "
+            "приймайте замовлення швидко та слідкуйте за якістю видачі."
+        )
 
     trend = "stable"
     if o_chg is not None:
@@ -809,37 +890,37 @@ def build_brand_insights(brand_weeks: list[dict], analyses: list[dict]) -> list[
     g_chg = _pct_change(a["gross"], b["gross"])
     o_chg = _pct_change(a["orders"], b["orders"])
     if g_chg is not None and g_chg > 5:
-        add("positive", "Продажі бренду зростають",
-            f"Gross Sales: {a['gross']:,.0f} → {b['gross']:,.0f} ₴ ({g_chg:+.0f}%). "
-            f"Замовлення: {o_chg:+.0f}%.".replace(",", "\u202f"))
+        add("positive", "Продажі зростають",
+            f"Загальні продажі: {a['gross']:,.0f} → {b['gross']:,.0f} ₴ ({g_chg:+.0f}%). "
+            f"Замовлень: {o_chg:+.0f}% до минулого тижня.".replace(",", "\u202f"))
     elif g_chg is not None and g_chg < -5:
-        add("warning", "Продажі бренду падають",
-            f"Gross Sales: {a['gross']:,.0f} → {b['gross']:,.0f} ₴ ({g_chg:.0f}%). "
-            f"Замовлення: {o_chg:.0f}% WoW.".replace(",", "\u202f"))
+        add("warning", "Продажі знизилися",
+            f"Загальні продажі: {a['gross']:,.0f} → {b['gross']:,.0f} ₴ ({g_chg:.0f}%). "
+            f"Замовлень: {o_chg:.0f}% до минулого тижня.".replace(",", "\u202f"))
 
     if b["avail"] < 92:
-        add("warning", "Доступність мережі",
-            f"Середня Availability Rate за останній тиждень — {b['avail']:.1f}%. "
-            "Клієнти втрачають можливість замовити.")
+        add("warning", "Заклади часто офлайн",
+            f"У середньому мережа була доступна для замовлення {b['avail']:.1f}% часу. "
+            "Коли заклад вимкнений, гості не можуть замовити.")
 
     if b["refunds"] > a["refunds"] + 1:
-        add("warning", "Зростання компенсацій",
-            f"Orders with Refunds: {a['refunds']:.1f}% → {b['refunds']:.1f}%.")
+        add("warning", "Більше компенсацій клієнтам",
+            f"Частка замовлень із поверненням коштів: {a['refunds']:.1f}% → {b['refunds']:.1f}%.")
 
     problem = [x for x in analyses if x["severity"] >= 2]
     if problem:
         names = ", ".join(p["name"] for p in problem[:4])
-        add("warning", "Локації під увагою",
-            f"Найвищий пріоритет: {names}. Натисніть «Відкрити інформацію» біля локації для деталей.")
+        add("warning", "Локації, на які варто звернути увагу",
+            f"Відкрийте деталі по точках: {names}.")
 
     growing = [x for x in analyses if x["trend"] == "up"]
     if growing:
-        add("positive", "Точки росту",
-            "Зростання замовлень WoW: " + ", ".join(g["name"] for g in growing[:5]) + ".")
+        add("positive", "Локації з ростом",
+            "Замовлень стало більше: " + ", ".join(g["name"] for g in growing[:5]) + ".")
 
     if not insights:
         add("info", "Стабільний тиждень",
-            "Ключові показники бренду без різких змін. Тримайте якість і доступність.")
+            "Основні показники без різких змін. Продовжуйте тримати якість і доступність.")
     return insights
 
 
@@ -885,24 +966,25 @@ def _location_analysis_block(analysis: dict) -> str:
     prev, last = analysis["prev"], analysis["last"]
     sev = "high" if analysis["severity"] >= 3 else ("mid" if analysis["severity"] >= 1 else "ok")
     issues = "".join(f"<li>{i}</li>" for i in analysis["issues"]) or "<li>Критичних відхилень немає.</li>"
-    advice = "".join(f"<li>{i}</li>" for i in analysis["advice"]) or "<li>Підтримувати поточний рівень сервісу.</li>"
-    badge = "Пріоритет" if analysis["severity"] >= 2 else "Огляд"
+    advice = "".join(f"<li>{i}</li>" for i in analysis["advice"]) or "<li>Підтримуйте поточний рівень сервісу — так і далі.</li>"
+    badge = "Потребує уваги" if analysis["severity"] >= 2 else "Огляд"
     return f"""
     <div class="loc-analysis sev-{sev}">
       <div class="loc-analysis-head">
-        <h3>Аналіз та поради</h3>
+        <h3>Що помітили і що зробити</h3>
         <span class="sev-badge">{badge}</span>
       </div>
+      <p class="bad-explain">{BAD_ORDERS_EXPLAIN_UA}</p>
       <div class="analysis-kpi">
         <span>Замовлення: <b>{prev['orders']}</b> → <b>{last['orders']}</b></span>
         <span>Доступність: <b>{prev['avail']:.1f}%</b> → <b>{last['avail']:.1f}%</b></span>
         <span>Рейтинг: <b>{prev['rating']:.2f}</b> → <b>{last['rating']:.2f}</b></span>
-        <span>Refunds: <b>{prev['refunds']:.1f}%</b> → <b>{last['refunds']:.1f}%</b></span>
-        <span>Bad (партнер): <b>{prev['bad_provider_count']}</b> → <b>{last['bad_provider_count']}</b> · <b>{last['bad_provider_pct']:.1f}%</b></span>
+        <span>Компенсації: <b>{prev['refunds']:.1f}%</b> → <b>{last['refunds']:.1f}%</b></span>
+        <span>Погані замовлення (заклад): <b>{prev['bad_provider_count']}</b> → <b>{last['bad_provider_count']}</b> · <b>{last['bad_provider_pct']:.1f}%</b></span>
       </div>
-      <h4>Слабкі місця / динаміка</h4>
+      <h4>Що відбувається</h4>
       <ul>{issues}</ul>
-      <h4>Поради для росту продажів</h4>
+      <h4>Поради для вас</h4>
       <ul class="advice">{advice}</ul>
     </div>"""
 
@@ -1093,6 +1175,8 @@ def generate_html(data: dict) -> str:
     .loc-analysis h4{{font-size:12px;margin:10px 0 4px;color:var(--gray-700)}}
     .loc-analysis ul{{margin-left:18px;font-size:13px}}
     .loc-analysis ul.advice{{color:var(--green-d)}}
+    .bad-explain{{font-size:12px;color:var(--gray-700);line-height:1.45;margin:0 0 12px;
+      padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee}}
     .loc-meta{{font-size:12px;color:var(--gray-400);margin-top:2px}}
     .loc-list{{display:flex;flex-direction:column;gap:0}}
     .loc-section-title{{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
@@ -1175,8 +1259,9 @@ def generate_html(data: dict) -> str:
     <div class="kpi-card"><div class="kpi-label">Acceptance</div><div class="kpi-value">{last['accept']:.1f}%</div></div>
     <div class="kpi-card"><div class="kpi-label">Active Users</div><div class="kpi-value">{last['active_users']}</div></div>
     <div class="kpi-card"><div class="kpi-label">Rating</div><div class="kpi-value">{last['rating']:.2f}</div></div>
-    <div class="kpi-card"><div class="kpi-label">Bad Orders (партнер)</div><div class="kpi-value">{last['bad_provider_count']} · {last['bad_provider_pct']:.1f}%</div></div>
+    <div class="kpi-card"><div class="kpi-label">Погані замовлення (заклад)</div><div class="kpi-value">{last['bad_provider_count']} · {last['bad_provider_pct']:.1f}%</div></div>
   </div>
+  <p class="section-hint" style="margin-top:8px">{BAD_ORDERS_EXPLAIN_UA}</p>
 
   {brand_charts}
 
