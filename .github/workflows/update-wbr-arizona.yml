@@ -1,0 +1,39 @@
+name: Update WBR Arizona
+
+on:
+  schedule:
+    # 13:00 Kyiv (EEST, UTC+3) every Monday
+    - cron: '0 10 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-wbr-arizona:
+    name: WBR Arizona — 8 weeks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate WBR Arizona report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python "WBR Arizona/generate_wbr_arizona.py"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "WBR Arizona/"
+          git diff --staged --quiet || git commit -m "WBR Arizona — auto-update $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
