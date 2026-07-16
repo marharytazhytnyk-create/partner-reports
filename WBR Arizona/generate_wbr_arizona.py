@@ -878,6 +878,101 @@ def analyze_location(loc: dict, city_median_conv: float = 2.5, city_median_impr:
     }
 
 
+def rank_strongest_locations(locations: list[dict], analyses: list[dict], top_n: int = 5) -> list[dict]:
+    """Найсильніші локації для партнера: продажі + якість + динаміка."""
+    by_id = {a["provider_id"]: a for a in analyses}
+    max_orders = max((loc["weeks"][-1]["orders"] for loc in locations), default=1) or 1
+    max_gross = max((loc["weeks"][-1]["gross"] for loc in locations), default=1) or 1
+    ranked: list[dict] = []
+
+    for loc in locations:
+        last = loc["weeks"][-1]
+        analysis = by_id.get(loc["provider_id"], {})
+        o_chg = analysis.get("o_chg")
+        reasons: list[str] = []
+        score = 0.0
+
+        # Обсяг
+        ord_score = last["orders"] / max_orders * 35
+        gross_score = last["gross"] / max_gross * 20
+        score += ord_score + gross_score
+        if last["orders"] >= max_orders * 0.7:
+            reasons.append(f"Багато замовлень за тиждень — {last['orders']} шт.")
+        if last["gross"] >= max_gross * 0.7:
+            reasons.append(
+                f"Високі продажі — {last['gross']:,.0f} ₴.".replace(",", "\u202f")
+            )
+
+        # Якість / операції
+        if last["avail"] >= 95:
+            score += 10
+            reasons.append(f"Заклад майже завжди онлайн — {last['avail']:.1f}%.")
+        elif last["avail"] >= 90:
+            score += 5
+
+        if last["accept"] >= 98:
+            score += 8
+            reasons.append(f"Замовлення приймаються вчасно — {last['accept']:.1f}%.")
+        elif last["accept"] >= 95:
+            score += 4
+
+        if last["rating"] >= 4.7:
+            score += 10
+            reasons.append(f"Високий рейтинг від гостей — {last['rating']:.2f} з 5.")
+        elif last["rating"] >= 4.5:
+            score += 5
+            reasons.append(f"Добрий рейтинг — {last['rating']:.2f} з 5.")
+
+        if last["bad_provider_pct"] <= 5 and last["orders"] >= 10:
+            score += 10
+            reasons.append(
+                f"Мало поганих замовлень з вини закладу — {last['bad_provider_pct']:.1f}%."
+            )
+        elif last["bad_provider_pct"] <= 8 and last["orders"] >= 10:
+            score += 5
+
+        if last["refunds"] <= 2 and last["orders"] >= 10:
+            score += 5
+            reasons.append(f"Мало компенсацій клієнтам — {last['refunds']:.1f}%.")
+
+        # Динаміка
+        if o_chg is not None and o_chg >= 15:
+            score += 12
+            reasons.append(f"Замовлення зростають до минулого тижня — {o_chg:+.0f}%.")
+        elif o_chg is not None and o_chg >= 5:
+            score += 6
+            reasons.append(f"Помірне зростання замовлень — {o_chg:+.0f}%.")
+        elif analysis.get("trend") == "up":
+            score += 4
+
+        # Штраф за проблеми
+        score -= min(analysis.get("severity", 0) * 4, 20)
+
+        if not reasons:
+            reasons.append("Стабільні показники серед локацій мережі.")
+
+        ranked.append({
+            "provider_id": loc["provider_id"],
+            "name": loc["name"],
+            "zone": loc.get("zone", ""),
+            "city": loc.get("city", ""),
+            "score": round(score, 1),
+            "orders": last["orders"],
+            "gross": last["gross"],
+            "avail": last["avail"],
+            "accept": last["accept"],
+            "rating": last["rating"],
+            "bad_provider_pct": last["bad_provider_pct"],
+            "o_chg": o_chg,
+            "reasons": reasons[:4],
+            "has_smart_promotion": loc.get("has_smart_promotion", False),
+            "has_sponsored_listing": loc.get("has_sponsored_listing", False),
+        })
+
+    ranked.sort(key=lambda x: (-x["score"], -x["orders"], -x["gross"]))
+    return ranked[:top_n]
+
+
 def build_brand_insights(brand_weeks: list[dict], analyses: list[dict]) -> list[dict]:
     if len(brand_weeks) < 2:
         return []
@@ -1026,6 +1121,47 @@ def _location_block(loc: dict, analysis: dict) -> str:
     </section>"""
 
 
+def _strongest_tab_html(strongest: list[dict]) -> str:
+    if not strongest:
+        return '<div class="problem-none">Недостатньо даних, щоб виділити найсильніші локації.</div>'
+
+    cards = ""
+    for i, s in enumerate(strongest, 1):
+        chg = s.get("o_chg")
+        chg_txt = f"{chg:+.0f}%" if chg is not None else "—"
+        reasons = "".join(f"<li>{r}</li>" for r in s["reasons"])
+        promo = ""
+        if s.get("has_smart_promotion"):
+            promo += '<span class="promo-tag smart">Розумні акції</span> '
+        if s.get("has_sponsored_listing"):
+            promo += '<span class="promo-tag sl">Sponsored Listing</span> '
+        cards += f"""
+        <div class="strong-card">
+          <div class="strong-rank">#{i}</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>{s['name']}</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="{s['provider_id']}">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">{s.get('city','')} · {s.get('zone','')}</p>
+            <div class="promo-tags">{promo}</div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>{s['orders']}</b></span>
+              <span>Продажі: <b>{s['gross']:,.0f} ₴</b></span>
+              <span>Доступність: <b>{s['avail']:.1f}%</b></span>
+              <span>Рейтинг: <b>{s['rating']:.2f}</b></span>
+              <span>Погані зам.: <b>{s['bad_provider_pct']:.1f}%</b></span>
+              <span>До минулого тижня: <b>{chg_txt}</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice">{reasons}</ul>
+          </div>
+        </div>""".replace(",", "\u202f")
+    return f'<div class="strong-grid">{cards}</div>'
+
+
 def _analysis_html(insights: list[dict]) -> str:
     icons = {"positive": "✅", "warning": "⚠️", "info": "ℹ️"}
     insight_cards = "\n".join(
@@ -1048,6 +1184,7 @@ def generate_html(data: dict) -> str:
     city_median_impr = data.get("city_median_impr", 1000)
     analyses = [analyze_location(loc, city_median_conv, city_median_impr) for loc in locations]
     insights = build_brand_insights(brand_weeks, analyses)
+    strongest = rank_strongest_locations(locations, analyses, top_n=min(5, len(locations)))
     last = brand_weeks[-1] if brand_weeks else EMPTY_WEEK
     period = data["period_label"]
     gen = data["generated_at"]
@@ -1179,6 +1316,26 @@ def generate_html(data: dict) -> str:
       padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee}}
     .loc-meta{{font-size:12px;color:var(--gray-400);margin-top:2px}}
     .loc-list{{display:flex;flex-direction:column;gap:0}}
+    .report-tabs{{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 14px}}
+    .report-tab{{
+      padding:10px 18px;border:1px solid #ddd;border-radius:999px;background:#fff;
+      font-size:13px;font-weight:600;color:var(--gray-700);cursor:pointer}}
+    .report-tab:hover{{border-color:var(--green-d);color:var(--green-d)}}
+    .report-tab.active{{background:var(--green-d);border-color:var(--green-d);color:#fff}}
+    .tab-panel{{display:none}}
+    .tab-panel.active{{display:block}}
+    .strong-grid{{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}}
+    .strong-card{{display:flex;gap:14px;background:#fff;border-radius:12px;padding:16px 18px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #e6faf2}}
+    .strong-rank{{
+      flex-shrink:0;width:42px;height:42px;border-radius:10px;background:var(--green);
+      color:var(--black);font-weight:800;font-size:16px;display:flex;align-items:center;
+      justify-content:center}}
+    .strong-body{{flex:1;min-width:0}}
+    .strong-head{{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}}
+    .strong-head h3{{font-size:16px;color:var(--black)}}
+    .strong-card h4{{font-size:12px;margin:10px 0 4px;color:var(--gray-700)}}
+    .strong-card ul{{margin-left:18px;font-size:13px}}
     .loc-section-title{{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
       color:var(--green-d);margin:18px 0 10px}}
     .insights-grid,.analysis-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
@@ -1265,11 +1422,26 @@ def generate_html(data: dict) -> str:
 
   {brand_charts}
 
-  <div class="section-title">Локації бренду</div>
-  <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
+  <div class="report-tabs" role="tablist">
+    <button type="button" class="report-tab active" data-tab="all" role="tab" aria-selected="true">Усі локації</button>
+    <button type="button" class="report-tab" data-tab="strong" role="tab" aria-selected="false">Найсильніші</button>
+  </div>
 
-  <div id="locations" class="loc-list">
-    {loc_blocks}
+  <div class="tab-panel active" id="tab-all" role="tabpanel">
+    <div class="section-title">Локації бренду</div>
+    <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
+    <div id="locations" class="loc-list">
+      {loc_blocks}
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-strong" role="tabpanel">
+    <div class="section-title">Найсильніші локації</div>
+    <p class="section-hint">
+      Топ за останній тиждень: продажі, доступність, рейтинг, мало поганих замовлень і зростання порівняно з попереднім тижнем.
+      Це точки, на які варто орієнтуватися всьому бренду.
+    </p>
+    {_strongest_tab_html(strongest)}
   </div>
 
   {_analysis_html(insights)}
@@ -1304,7 +1476,29 @@ def generate_html(data: dict) -> str:
   window.openLocation = function(id) {{ toggleLocation(id, true); }};
 
   document.querySelectorAll('.loc-open-btn').forEach(btn => {{
-    btn.addEventListener('click', () => toggleLocation(btn.dataset.locId));
+    btn.addEventListener('click', () => {{
+      if (btn.dataset.goto) {{
+        showTab('all');
+        openLocation(btn.dataset.goto);
+        return;
+      }}
+      toggleLocation(btn.dataset.locId);
+    }});
+  }});
+
+  function showTab(name) {{
+    document.querySelectorAll('.report-tab').forEach(t => {{
+      const on = t.dataset.tab === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    }});
+    document.querySelectorAll('.tab-panel').forEach(p => {{
+      p.classList.toggle('active', p.id === ('tab-' + name));
+    }});
+  }}
+
+  document.querySelectorAll('.report-tab').forEach(tab => {{
+    tab.addEventListener('click', () => showTab(tab.dataset.tab));
   }});
 
   const wrap = document.getElementById('header-search-wrap');
@@ -1360,6 +1554,7 @@ def generate_html(data: dict) -> str:
 
   function goTo(id) {{
     closePanel();
+    showTab('all');
     openLocation(id);
   }}
 

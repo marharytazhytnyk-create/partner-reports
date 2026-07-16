@@ -103,6 +103,26 @@
       padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee}
     .loc-meta{font-size:12px;color:var(--gray-400);margin-top:2px}
     .loc-list{display:flex;flex-direction:column;gap:0}
+    .report-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 14px}
+    .report-tab{
+      padding:10px 18px;border:1px solid #ddd;border-radius:999px;background:#fff;
+      font-size:13px;font-weight:600;color:var(--gray-700);cursor:pointer}
+    .report-tab:hover{border-color:var(--green-d);color:var(--green-d)}
+    .report-tab.active{background:var(--green-d);border-color:var(--green-d);color:#fff}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .strong-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+    .strong-card{display:flex;gap:14px;background:#fff;border-radius:12px;padding:16px 18px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #e6faf2}
+    .strong-rank{
+      flex-shrink:0;width:42px;height:42px;border-radius:10px;background:var(--green);
+      color:var(--black);font-weight:800;font-size:16px;display:flex;align-items:center;
+      justify-content:center}
+    .strong-body{flex:1;min-width:0}
+    .strong-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .strong-head h3{font-size:16px;color:var(--black)}
+    .strong-card h4{font-size:12px;margin:10px 0 4px;color:var(--gray-700)}
+    .strong-card ul{margin-left:18px;font-size:13px}
     .loc-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
       color:var(--green-d);margin:18px 0 10px}
     .insights-grid,.analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
@@ -150,7 +170,7 @@
     <div class="header-meta">
       <div>Період: <strong>18.05.2026 — 12.07.2026</strong></div>
       <div>Тижнів: <strong>8 завершених</strong> · Локацій: <strong>14</strong></div>
-      <div>Оновлено: <strong>16.07.2026 12:51</strong></div>
+      <div>Оновлено: <strong>16.07.2026 14:04</strong></div>
     </div>
     <div class="header-search-wrap" id="header-search-wrap">
       <button type="button" class="header-search-btn" id="search-open-btn" aria-expanded="false" aria-controls="search-panel">
@@ -465,8 +485,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="brand-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -1339,11 +1359,16 @@
         </div></div></div>
     </div></div>
 
-  <div class="section-title">Локації бренду</div>
-  <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
+  <div class="report-tabs" role="tablist">
+    <button type="button" class="report-tab active" data-tab="all" role="tab" aria-selected="true">Усі локації</button>
+    <button type="button" class="report-tab" data-tab="strong" role="tab" aria-selected="false">Найсильніші</button>
+  </div>
 
-  <div id="locations" class="loc-list">
-    
+  <div class="tab-panel active" id="tab-all" role="tabpanel">
+    <div class="section-title">Локації бренду</div>
+    <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
+    <div id="locations" class="loc-list">
+      
     <section class="loc-card" data-search="ace burger poltava - center poltava 137455" data-name="Ace Burger" id="loc-137455">
       <div class="loc-row">
         <div class="loc-row-info">
@@ -1634,8 +1659,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-137455-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -2819,8 +2844,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-123575-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -4004,8 +4029,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-115669-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -5189,8 +5214,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-117449-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -6374,8 +6399,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-136693-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -7559,8 +7584,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-137451-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -8744,8 +8769,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-136690-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -9929,8 +9954,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-136694-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -11114,8 +11139,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-136685-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -12299,8 +12324,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-109500-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -13484,8 +13509,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-172714-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -14669,8 +14694,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-137454-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -15854,8 +15879,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-110411-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -17039,8 +17064,8 @@
         </div></div></div>
     </div>
     <div class="chart-card" id="c-115868-refunds">
-      <h3>Orders with Refunds</h3>
-      <p class="metric-desc">Частка замовлень із компенсацією клієнту</p>
+      <h3>Orders with Refunds (компенсації)</h3>
+      <p class="metric-desc">Частка замовлень, за які клієнту повернули кошти</p>
       <p class="unit">Одиниця: % · 8 тижнів</p>
       <div class="bars-scroll"><div class="bars">
         <div class="bar-col">
@@ -17933,6 +17958,131 @@
     </div>
       </div>
     </section>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-strong" role="tabpanel">
+    <div class="section-title">Найсильніші локації</div>
+    <p class="section-hint">
+      Топ за останній тиждень: продажі, доступність, рейтинг, мало поганих замовлень і зростання порівняно з попереднім тижнем.
+      Це точки, на які варто орієнтуватися всьому бренду.
+    </p>
+    <div class="strong-grid">
+        <div class="strong-card">
+          <div class="strong-rank">#1</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>Arizona</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="123575">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">Poltava · Poltava - Center</p>
+            <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> <span class="promo-tag sl">Sponsored Listing</span> </div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>28</b></span>
+              <span>Продажі: <b>25 029 ₴</b></span>
+              <span>Доступність: <b>99.9%</b></span>
+              <span>Рейтинг: <b>5.00</b></span>
+              <span>Погані зам.: <b>3.6%</b></span>
+              <span>До минулого тижня: <b>-32%</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice"><li>Багато замовлень за тиждень — 28 шт.</li><li>Високі продажі — 25 029 ₴.</li><li>Заклад майже завжди онлайн — 99.9%.</li><li>Замовлення приймаються вчасно — 100.0%.</li></ul>
+          </div>
+        </div>
+        <div class="strong-card">
+          <div class="strong-rank">#2</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>Самурай</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="110411">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">Poltava · Poltava - Center</p>
+            <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> </div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>24</b></span>
+              <span>Продажі: <b>25 029 ₴</b></span>
+              <span>Доступність: <b>99.7%</b></span>
+              <span>Рейтинг: <b>5.00</b></span>
+              <span>Погані зам.: <b>0.0%</b></span>
+              <span>До минулого тижня: <b>-23%</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice"><li>Багато замовлень за тиждень — 24 шт.</li><li>Високі продажі — 25 029 ₴.</li><li>Заклад майже завжди онлайн — 99.7%.</li><li>Замовлення приймаються вчасно — 100.0%.</li></ul>
+          </div>
+        </div>
+        <div class="strong-card">
+          <div class="strong-rank">#3</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>Original sushi by #AriZona</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="136694">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">Poltava · Poltava - Center</p>
+            <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>4</b></span>
+              <span>Продажі: <b>2 388 ₴</b></span>
+              <span>Доступність: <b>99.9%</b></span>
+              <span>Рейтинг: <b>5.00</b></span>
+              <span>Погані зам.: <b>0.0%</b></span>
+              <span>До минулого тижня: <b>+300%</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice"><li>Заклад майже завжди онлайн — 99.9%.</li><li>Замовлення приймаються вчасно — 100.0%.</li><li>Високий рейтинг від гостей — 5.00 з 5.</li><li>Замовлення зростають до минулого тижня — +300%.</li></ul>
+          </div>
+        </div>
+        <div class="strong-card">
+          <div class="strong-rank">#4</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>Luciano pizza by#AriZona</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="136690">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">Poltava · Poltava - Center</p>
+            <div class="promo-tags"></div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>9</b></span>
+              <span>Продажі: <b>6 758 ₴</b></span>
+              <span>Доступність: <b>99.9%</b></span>
+              <span>Рейтинг: <b>4.00</b></span>
+              <span>Погані зам.: <b>11.1%</b></span>
+              <span>До минулого тижня: <b>+29%</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice"><li>Заклад майже завжди онлайн — 99.9%.</li><li>Замовлення приймаються вчасно — 100.0%.</li><li>Замовлення зростають до минулого тижня — +29%.</li></ul>
+          </div>
+        </div>
+        <div class="strong-card">
+          <div class="strong-rank">#5</div>
+          <div class="strong-body">
+            <div class="strong-head">
+              <h3>GANGSTER DOG</h3>
+              <button type="button" class="loc-open-btn strong-goto" data-goto="137451">
+                Відкрити інформацію
+              </button>
+            </div>
+            <p class="loc-meta">Poltava · Poltava - Center</p>
+            <div class="promo-tags"></div>
+            <div class="analysis-kpi">
+              <span>Замовлення: <b>8</b></span>
+              <span>Продажі: <b>4 958 ₴</b></span>
+              <span>Доступність: <b>99.9%</b></span>
+              <span>Рейтинг: <b>5.00</b></span>
+              <span>Погані зам.: <b>0.0%</b></span>
+              <span>До минулого тижня: <b>-20%</b></span>
+            </div>
+            <h4>Чому ця локація сильна</h4>
+            <ul class="advice"><li>Заклад майже завжди онлайн — 99.9%.</li><li>Замовлення приймаються вчасно — 100.0%.</li><li>Високий рейтинг від гостей — 5.00 з 5.</li></ul>
+          </div>
+        </div></div>
   </div>
 
   
@@ -17980,7 +18130,29 @@
   window.openLocation = function(id) { toggleLocation(id, true); };
 
   document.querySelectorAll('.loc-open-btn').forEach(btn => {
-    btn.addEventListener('click', () => toggleLocation(btn.dataset.locId));
+    btn.addEventListener('click', () => {
+      if (btn.dataset.goto) {
+        showTab('all');
+        openLocation(btn.dataset.goto);
+        return;
+      }
+      toggleLocation(btn.dataset.locId);
+    });
+  });
+
+  function showTab(name) {
+    document.querySelectorAll('.report-tab').forEach(t => {
+      const on = t.dataset.tab === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.id === ('tab-' + name));
+    });
+  }
+
+  document.querySelectorAll('.report-tab').forEach(tab => {
+    tab.addEventListener('click', () => showTab(tab.dataset.tab));
   });
 
   const wrap = document.getElementById('header-search-wrap');
@@ -18036,6 +18208,7 @@
 
   function goTo(id) {
     closePanel();
+    showTab('all');
     openLocation(id);
   }
 
