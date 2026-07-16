@@ -830,7 +830,7 @@ def build_brand_insights(brand_weeks: list[dict], analyses: list[dict]) -> list[
     if problem:
         names = ", ".join(p["name"] for p in problem[:4])
         add("warning", "Локації під увагою",
-            f"Найвищий пріоритет: {names}. Деталі — у блоці аналізу нижче.")
+            f"Найвищий пріоритет: {names}. Натисніть «Відкрити інформацію» біля локації для деталей.")
 
     growing = [x for x in analyses if x["trend"] == "up"]
     if growing:
@@ -880,12 +880,36 @@ def _histogram(key: str, weeks: list[dict], chart_id: str) -> str:
     </div>"""
 
 
+def _location_analysis_block(analysis: dict) -> str:
+    """Блок аналізу та порад для однієї локації (всередині розгорнутої картки)."""
+    prev, last = analysis["prev"], analysis["last"]
+    sev = "high" if analysis["severity"] >= 3 else ("mid" if analysis["severity"] >= 1 else "ok")
+    issues = "".join(f"<li>{i}</li>" for i in analysis["issues"]) or "<li>Критичних відхилень немає.</li>"
+    advice = "".join(f"<li>{i}</li>" for i in analysis["advice"]) or "<li>Підтримувати поточний рівень сервісу.</li>"
+    badge = "Пріоритет" if analysis["severity"] >= 2 else "Огляд"
+    return f"""
+    <div class="loc-analysis sev-{sev}">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">{badge}</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>{prev['orders']}</b> → <b>{last['orders']}</b></span>
+        <span>Доступність: <b>{prev['avail']:.1f}%</b> → <b>{last['avail']:.1f}%</b></span>
+        <span>Рейтинг: <b>{prev['rating']:.2f}</b> → <b>{last['rating']:.2f}</b></span>
+        <span>Refunds: <b>{prev['refunds']:.1f}%</b> → <b>{last['refunds']:.1f}%</b></span>
+        <span>Bad (партнер): <b>{prev['bad_provider_count']}</b> → <b>{last['bad_provider_count']}</b> · <b>{last['bad_provider_pct']:.1f}%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul>{issues}</ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice">{advice}</ul>
+    </div>"""
+
+
 def _location_block(loc: dict, analysis: dict) -> str:
     pid = loc["provider_id"]
     search_blob = f"{loc['name']} {loc.get('zone','')} {loc.get('city','')} {pid}".lower()
-    trend = analysis.get("trend", "stable")
-    o_chg = analysis.get("o_chg")
-    chg_txt = f"{o_chg:+.0f}% WoW" if o_chg is not None else "—"
 
     charts = ""
     for section_title, keys in CHART_SECTIONS:
@@ -895,32 +919,32 @@ def _location_block(loc: dict, analysis: dict) -> str:
             charts += _histogram(key, loc["weeks"], f"c-{pid}-{key}")
         charts += "</div>"
 
-    last = loc["weeks"][-1]
     promo_tags = ""
     if loc.get("has_smart_promotion"):
         promo_tags += '<span class="promo-tag smart">Розумні акції</span> '
     if loc.get("has_sponsored_listing"):
         promo_tags += '<span class="promo-tag sl">Sponsored Listing</span> '
+
     return f"""
     <section class="loc-card" data-search="{search_blob}" data-name="{loc['name']}" id="loc-{pid}">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>{loc['name']}</h2>
           <p class="loc-meta">{loc.get('city','')} · {loc.get('zone','')} · ID {pid}</p>
           <div class="promo-tags">{promo_tags}</div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>{last['orders']}</strong></div>
-          <div><span>Gross</span><strong>{_fmt(last['gross'], 'gross')} ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>{last['bad_provider_count']} · {_fmt(last['bad_provider_pct'], 'bad_provider_pct')}</strong></div>
-          <div><span>WoW</span><strong class="trend-{trend}">{chg_txt}</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="{pid}" aria-expanded="false" aria-controls="loc-body-{pid}">
+          Відкрити інформацію
+        </button>
       </div>
-      {charts}
+      <div class="loc-body" id="loc-body-{pid}" hidden>
+        {charts}
+        {_location_analysis_block(analysis)}
+      </div>
     </section>"""
 
 
-def _analysis_html(analyses: list[dict], insights: list[dict]) -> str:
+def _analysis_html(insights: list[dict]) -> str:
     icons = {"positive": "✅", "warning": "⚠️", "info": "ℹ️"}
     insight_cards = "\n".join(
         f"""<div class="insight-card {ins['type']}">
@@ -930,43 +954,9 @@ def _analysis_html(analyses: list[dict], insights: list[dict]) -> str:
         for ins in insights
     )
 
-    cards = ""
-    ranked = sorted(analyses, key=lambda x: -x["severity"])
-    for a in ranked:
-        if not a["issues"] and a["severity"] == 0:
-            continue
-        issues = "".join(f"<li>{i}</li>" for i in a["issues"]) or "<li>Критичних відхилень немає.</li>"
-        advice = "".join(f"<li>{i}</li>" for i in a["advice"]) or "<li>Підтримувати поточний рівень сервісу.</li>"
-        prev, last = a["prev"], a["last"]
-        sev = "high" if a["severity"] >= 3 else ("mid" if a["severity"] >= 1 else "ok")
-        cards += f"""
-        <div class="analysis-card sev-{sev}">
-          <div class="analysis-head">
-            <h3>{a['name']}</h3>
-            <span class="sev-badge">{'Пріоритет' if a['severity'] >= 2 else 'Огляд'}</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>{prev['orders']}</b> → <b>{last['orders']}</b></span>
-            <span>Доступність: <b>{prev['avail']:.1f}%</b> → <b>{last['avail']:.1f}%</b></span>
-            <span>Рейтинг: <b>{prev['rating']:.2f}</b> → <b>{last['rating']:.2f}</b></span>
-            <span>Refunds: <b>{prev['refunds']:.1f}%</b> → <b>{last['refunds']:.1f}%</b></span>
-            <span>Bad (партнер): <b>{prev['bad_provider_count']}</b> → <b>{last['bad_provider_count']}</b> · <b>{last['bad_provider_pct']:.1f}%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul>{issues}</ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice">{advice}</ul>
-        </div>"""
-
-    if not cards:
-        cards = '<div class="problem-none">За ключовими метриками критичних відхилень немає.</div>'
-
     return f"""
     <div class="section-title">Висновки по бренду</div>
-    <div class="insights-grid">{insight_cards}</div>
-    <div class="section-title">Аналіз локацій — слабкі місця та поради</div>
-    <p class="section-hint">Порівняння останнього завершеного тижня з попереднім · причини падіння/росту · рекомендації</p>
-    <div class="analysis-grid">{cards}</div>"""
+    <div class="insights-grid">{insight_cards}</div>"""
 
 
 def generate_html(data: dict) -> str:
@@ -1080,18 +1070,31 @@ def generate_html(data: dict) -> str:
       max-width:48px;line-height:1.15}}
     .bar{{width:36px;border-radius:5px 5px 0 0;min-height:4px}}
     .bar-lbl{{font-size:8px;color:var(--gray-400);margin-top:3px;text-align:center;line-height:1.2}}
-    .loc-card{{background:#fff;border-radius:14px;padding:22px 24px;margin:24px 0;
-      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #eee}}
-    .loc-card.hidden{{display:none}}
-    .loc-head{{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
-      margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0f0f0}}
-    .loc-head h2{{font-size:18px;color:var(--black)}}
-    .loc-meta{{font-size:12px;color:var(--gray-400);margin-top:4px}}
-    .loc-kpis{{display:flex;gap:14px;flex-wrap:wrap}}
-    .loc-kpis div{{background:var(--gray-100);border-radius:8px;padding:8px 12px;min-width:90px}}
-    .loc-kpis span{{display:block;font-size:10px;color:var(--gray-400);text-transform:uppercase}}
-    .loc-kpis strong{{font-size:14px}}
-    .trend-up{{color:var(--positive)}} .trend-down{{color:var(--danger)}} .trend-stable{{color:var(--gray-700)}}
+    .loc-card{{background:#fff;border-radius:12px;padding:0;margin:0 0 10px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #eee;overflow:hidden}}
+    .loc-row{{display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:14px 18px;flex-wrap:wrap}}
+    .loc-row-info{{flex:1;min-width:180px}}
+    .loc-row-info h2{{font-size:15px;color:var(--black);font-weight:700}}
+    .loc-open-btn{{
+      flex-shrink:0;padding:9px 16px;border:none;border-radius:8px;background:var(--green-d);
+      color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}}
+    .loc-open-btn:hover{{background:var(--green);color:var(--black)}}
+    .loc-open-btn[aria-expanded="true"]{{background:#eee;color:var(--gray-700)}}
+    .loc-body{{padding:0 18px 20px;border-top:1px solid #f0f0f0}}
+    .loc-body[hidden]{{display:none}}
+    .loc-analysis{{background:var(--gray-100);border-radius:10px;padding:16px 18px;margin-top:20px;
+      border-left:4px solid var(--gray-400)}}
+    .loc-analysis.sev-high{{border-left-color:var(--danger);background:#fff8f6}}
+    .loc-analysis.sev-mid{{border-left-color:var(--warning);background:#fffaf3}}
+    .loc-analysis.sev-ok{{border-left-color:var(--positive)}}
+    .loc-analysis-head{{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}}
+    .loc-analysis-head h3{{font-size:14px;color:var(--gray-700)}}
+    .loc-analysis h4{{font-size:12px;margin:10px 0 4px;color:var(--gray-700)}}
+    .loc-analysis ul{{margin-left:18px;font-size:13px}}
+    .loc-analysis ul.advice{{color:var(--green-d)}}
+    .loc-meta{{font-size:12px;color:var(--gray-400);margin-top:2px}}
+    .loc-list{{display:flex;flex-direction:column;gap:0}}
     .loc-section-title{{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
       color:var(--green-d);margin:18px 0 10px}}
     .insights-grid,.analysis-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
@@ -1178,13 +1181,13 @@ def generate_html(data: dict) -> str:
   {brand_charts}
 
   <div class="section-title">Локації бренду</div>
-  <p class="section-hint">Пошук — у шапці звіту · кожна локація містить усі метрики, bad orders (вина партнера) та гістограми по тижнях</p>
+  <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
 
-  <div id="locations">
+  <div id="locations" class="loc-list">
     {loc_blocks}
   </div>
 
-  {_analysis_html(analyses, insights)}
+  {_analysis_html(insights)}
 </div>
 
 <footer class="footer">
@@ -1195,6 +1198,30 @@ def generate_html(data: dict) -> str:
 <script>
 (function() {{
   const LOCATIONS = {search_items};
+
+  function toggleLocation(id, forceOpen) {{
+    const card = document.getElementById('loc-' + id);
+    const body = document.getElementById('loc-body-' + id);
+    const btn = card && card.querySelector('.loc-open-btn');
+    if (!card || !body || !btn) return;
+    const open = forceOpen !== undefined ? forceOpen : body.hidden;
+    body.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Згорнути' : 'Відкрити інформацію';
+    if (open) {{
+      card.classList.add('loc-expanded');
+      card.scrollIntoView({{behavior: 'smooth', block: 'start'}});
+    }} else {{
+      card.classList.remove('loc-expanded');
+    }}
+  }}
+
+  window.openLocation = function(id) {{ toggleLocation(id, true); }};
+
+  document.querySelectorAll('.loc-open-btn').forEach(btn => {{
+    btn.addEventListener('click', () => toggleLocation(btn.dataset.locId));
+  }});
+
   const wrap = document.getElementById('header-search-wrap');
   const panel = document.getElementById('search-panel');
   const openBtn = document.getElementById('search-open-btn');
@@ -1247,13 +1274,8 @@ def generate_html(data: dict) -> str:
   }}
 
   function goTo(id) {{
-    const el = document.getElementById('loc-' + id);
     closePanel();
-    if (el) {{
-      el.scrollIntoView({{behavior: 'smooth', block: 'start'}});
-      el.style.outline = '2px solid var(--green)';
-      setTimeout(() => {{ el.style.outline = ''; }}, 2000);
-    }}
+    openLocation(id);
   }}
 
   openBtn.addEventListener('click', (e) => {{

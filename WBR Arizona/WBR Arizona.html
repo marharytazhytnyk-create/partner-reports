@@ -76,18 +76,31 @@
       max-width:48px;line-height:1.15}
     .bar{width:36px;border-radius:5px 5px 0 0;min-height:4px}
     .bar-lbl{font-size:8px;color:var(--gray-400);margin-top:3px;text-align:center;line-height:1.2}
-    .loc-card{background:#fff;border-radius:14px;padding:22px 24px;margin:24px 0;
-      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #eee}
-    .loc-card.hidden{display:none}
-    .loc-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
-      margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid #f0f0f0}
-    .loc-head h2{font-size:18px;color:var(--black)}
-    .loc-meta{font-size:12px;color:var(--gray-400);margin-top:4px}
-    .loc-kpis{display:flex;gap:14px;flex-wrap:wrap}
-    .loc-kpis div{background:var(--gray-100);border-radius:8px;padding:8px 12px;min-width:90px}
-    .loc-kpis span{display:block;font-size:10px;color:var(--gray-400);text-transform:uppercase}
-    .loc-kpis strong{font-size:14px}
-    .trend-up{color:var(--positive)} .trend-down{color:var(--danger)} .trend-stable{color:var(--gray-700)}
+    .loc-card{background:#fff;border-radius:12px;padding:0;margin:0 0 10px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #eee;overflow:hidden}
+    .loc-row{display:flex;align-items:center;justify-content:space-between;gap:16px;
+      padding:14px 18px;flex-wrap:wrap}
+    .loc-row-info{flex:1;min-width:180px}
+    .loc-row-info h2{font-size:15px;color:var(--black);font-weight:700}
+    .loc-open-btn{
+      flex-shrink:0;padding:9px 16px;border:none;border-radius:8px;background:var(--green-d);
+      color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .loc-open-btn:hover{background:var(--green);color:var(--black)}
+    .loc-open-btn[aria-expanded="true"]{background:#eee;color:var(--gray-700)}
+    .loc-body{padding:0 18px 20px;border-top:1px solid #f0f0f0}
+    .loc-body[hidden]{display:none}
+    .loc-analysis{background:var(--gray-100);border-radius:10px;padding:16px 18px;margin-top:20px;
+      border-left:4px solid var(--gray-400)}
+    .loc-analysis.sev-high{border-left-color:var(--danger);background:#fff8f6}
+    .loc-analysis.sev-mid{border-left-color:var(--warning);background:#fffaf3}
+    .loc-analysis.sev-ok{border-left-color:var(--positive)}
+    .loc-analysis-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+    .loc-analysis-head h3{font-size:14px;color:var(--gray-700)}
+    .loc-analysis h4{font-size:12px;margin:10px 0 4px;color:var(--gray-700)}
+    .loc-analysis ul{margin-left:18px;font-size:13px}
+    .loc-analysis ul.advice{color:var(--green-d)}
+    .loc-meta{font-size:12px;color:var(--gray-400);margin-top:2px}
+    .loc-list{display:flex;flex-direction:column;gap:0}
     .loc-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
       color:var(--green-d);margin:18px 0 10px}
     .insights-grid,.analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
@@ -135,7 +148,7 @@
     <div class="header-meta">
       <div>Період: <strong>18.05.2026 — 12.07.2026</strong></div>
       <div>Тижнів: <strong>8 завершених</strong> · Локацій: <strong>14</strong></div>
-      <div>Оновлено: <strong>16.07.2026 11:38</strong></div>
+      <div>Оновлено: <strong>16.07.2026 12:27</strong></div>
     </div>
     <div class="header-search-wrap" id="header-search-wrap">
       <button type="button" class="header-search-btn" id="search-open-btn" aria-expanded="false" aria-controls="search-panel">
@@ -1324,25 +1337,23 @@
     </div></div>
 
   <div class="section-title">Локації бренду</div>
-  <p class="section-hint">Пошук — у шапці звіту · кожна локація містить усі метрики, bad orders (вина партнера) та гістограми по тижнях</p>
+  <p class="section-hint">Пошук — у шапці · натисніть «Відкрити інформацію», щоб побачити гістограми та поради по локації</p>
 
-  <div id="locations">
+  <div id="locations" class="loc-list">
     
     <section class="loc-card" data-search="ace burger poltava - center poltava 137455" data-name="Ace Burger" id="loc-137455">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Ace Burger</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137455</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>8</strong></div>
-          <div><span>Gross</span><strong>5 920 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-20% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="137455" aria-expanded="false" aria-controls="loc-body-137455">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-137455" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-137455-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -2493,23 +2504,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>10</b> → <b>8</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Слабка конверсія в меню — 4.5% при 820 сесіях.</li><li>Слабка конверсія меню → кошик — 21.6%.</li><li>Падіння замовлень супроводжується зменшенням знижок (1 934 → 1 340 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="arizona poltava - center poltava 123575" data-name="Arizona" id="loc-123575">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Arizona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 123575</p>
           <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> <span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>28</strong></div>
-          <div><span>Gross</span><strong>25 029 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>1 · 3.6%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-32% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="123575" aria-expanded="false" aria-controls="loc-body-123575">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-123575" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-123575-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -3660,23 +3688,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>41</b> → <b>28</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>4.20</b> → <b>5.00</b></span>
+        <span>Refunds: <b>2.4%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>1</b> → <b>1</b> · <b>3.6%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Різке падіння замовлень WoW: 41 → 28 (-32%).</li><li>За 8 тижнів замовлення впали з 42 до 28 (-33%).</li><li>Падіння замовлень супроводжується зменшенням знижок (10 612 → 7 266 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Обидва продукти вже підключені — оптимізуйте бюджет і когорти за ROAS.</li><li>Підтримуйте комбінацію SL + Розумних акцій: SL для нових показів, Smart Promo — для конверсії.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="big bro burgers poltava - center poltava 115669" data-name="Big Bro Burgers" id="loc-115669">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Big Bro Burgers</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 115669</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>0</strong></div>
-          <div><span>Gross</span><strong>0 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-100% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="115669" aria-expanded="false" aria-controls="loc-body-115669">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-115669" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-115669-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -4827,23 +4872,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>2</b> → <b>0</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 2).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 0.0%.</li><li>Падіння замовлень супроводжується зменшенням знижок (263 → 0 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="fellini pizza poltava - center poltava 117449" data-name="Fellini Pizza" id="loc-117449">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Fellini Pizza</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 117449</p>
           <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>7</strong></div>
-          <div><span>Gross</span><strong>3 917 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-stable">+0% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="117449" aria-expanded="false" aria-controls="loc-body-117449">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-117449" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-117449-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -5994,23 +6056,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>7</b> → <b>7</b></span>
+        <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>3.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 7 (попередній: 7).</li><li>Низький рейтинг — 3.00 з 5.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="fitnes shaurma poltava - center poltava 136693" data-name="Fitnes shaurma" id="loc-136693">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Fitnes shaurma</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136693</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>5</strong></div>
-          <div><span>Gross</span><strong>2 133 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>1 · 20.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-38% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="136693" aria-expanded="false" aria-controls="loc-body-136693">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-136693" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-136693-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -7161,23 +7240,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>8</b> → <b>5</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>2.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>20.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>20.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 5 (попередній: 8).</li><li>Висока частка компенсацій — 20.0%.</li><li>Низький рейтинг — 2.00 з 5.</li><li>Падіння замовлень супроводжується зменшенням знижок (777 → 323 ₴).</li><li>Висока частка bad orders з вини партнера — 20.0% (1 зам.).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~8.0× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="gangster dog poltava - center poltava 137451" data-name="GANGSTER DOG" id="loc-137451">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>GANGSTER DOG</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137451</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>8</strong></div>
-          <div><span>Gross</span><strong>4 958 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-20% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="137451" aria-expanded="false" aria-controls="loc-body-137451">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-137451" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-137451-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -8328,23 +8424,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>10</b> → <b>8</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Падіння замовлень супроводжується зменшенням знижок (1 666 → 999 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="luciano pizza by#arizona poltava - center poltava 136690" data-name="Luciano pizza by#AriZona" id="loc-136690">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Luciano pizza by#AriZona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136690</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>9</strong></div>
-          <div><span>Gross</span><strong>6 758 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>1 · 11.1%</strong></div>
-          <div><span>WoW</span><strong class="trend-up">+29% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="136690" aria-expanded="false" aria-controls="loc-body-136690">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-136690" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-136690-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -9495,23 +9608,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>7</b> → <b>9</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>11.1%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>11.1%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 9 (попередній: 7).</li><li>Зростання замовлень WoW: 7 → 9 (+29%).</li><li>Висока частка компенсацій — 11.1%.</li><li>Низький рейтинг — 4.00 з 5.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li><li>Зростання bad orders (вина партнера): 0.0% → 11.1%.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="original sushi by #arizona poltava - center poltava 136694" data-name="Original sushi by #AriZona" id="loc-136694">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Original sushi by #AriZona</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136694</p>
           <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>4</strong></div>
-          <div><span>Gross</span><strong>2 388 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-up">+300% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="136694" aria-expanded="false" aria-controls="loc-body-136694">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-136694" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-136694-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -10662,23 +10792,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>1</b> → <b>4</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 4 (попередній: 1).</li><li>Зростання замовлень WoW: 1 → 4 (+300%).</li><li>Довгий час приготування — 42.0 хв.</li><li>Довга доставка — 59.0 хв загалом.</li><li>Слабка конверсія меню → кошик — 23.5%.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="prima pasta poltava - center poltava 136685" data-name="Prima Pasta" id="loc-136685">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Prima Pasta</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 136685</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>1</strong></div>
-          <div><span>Gross</span><strong>735 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-stable">+0% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="136685" aria-expanded="false" aria-controls="loc-body-136685">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-136685" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-136685-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -11829,23 +11976,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>1</b> → <b>1</b></span>
+        <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>0.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 1).</li><li>За 8 тижнів замовлення впали з 5 до 1 (-80%).</li><li>Довгий час приготування — 45.3 хв.</li><li>Довга доставка — 56.8 хв загалом.</li><li>Слабка конверсія меню → кошик — 12.5%.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~4.2× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="salatoria poltava - center poltava 109500" data-name="Salatoria" id="loc-109500">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Salatoria</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 109500</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>0</strong></div>
-          <div><span>Gross</span><strong>0 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-stable">—</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="109500" aria-expanded="false" aria-controls="loc-body-109500">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-109500" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-109500-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -12996,23 +13160,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>0</b> → <b>0</b></span>
+        <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
+        <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 0).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 11.1%.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="академія шаурми poltava - center poltava 172714" data-name="Академія шаурми" id="loc-172714">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Академія шаурми</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 172714</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>3</strong></div>
-          <div><span>Gross</span><strong>1 810 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-62% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="172714" aria-expanded="false" aria-controls="loc-body-172714">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-172714" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-172714-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -14163,23 +14344,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>8</b> → <b>3</b></span>
+        <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 3 (попередній: 8).</li><li>Низький рейтинг — 4.00 з 5.</li><li>Слабка конверсія в меню — 5.5% при 1218 сесіях.</li><li>Слабка конверсія меню → кошик — 13.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (876 → 425 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="золотий дракон poltava - center poltava 137454" data-name="Золотий дракон" id="loc-137454">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Золотий дракон</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 137454</p>
           <div class="promo-tags"><span class="promo-tag sl">Sponsored Listing</span> </div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>8</strong></div>
-          <div><span>Gross</span><strong>6 381 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>1 · 12.5%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-38% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="137454" aria-expanded="false" aria-controls="loc-body-137454">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-137454" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-137454-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -15330,23 +15528,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>13</b> → <b>8</b></span>
+        <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
+        <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>12.5%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 13).</li><li>Довгий час приготування — 36.2 хв.</li><li>Довга доставка — 53.0 хв загалом.</li><li>Слабка конверсія в меню — 4.9% при 1005 сесіях.</li><li>Слабка конверсія меню → кошик — 22.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (2 506 → 1 112 ₴).</li><li>Висока частка bad orders з вини партнера — 12.5% (1 зам.).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="самурай poltava - center poltava 110411" data-name="Самурай" id="loc-110411">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Самурай</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 110411</p>
           <div class="promo-tags"><span class="promo-tag smart">Розумні акції</span> </div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>24</strong></div>
-          <div><span>Gross</span><strong>25 029 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-23% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="110411" aria-expanded="false" aria-controls="loc-body-110411">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-110411" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-110411-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -16497,23 +16712,40 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>31</b> → <b>24</b></span>
+        <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
+        <span>Рейтинг: <b>4.09</b> → <b>5.00</b></span>
+        <span>Refunds: <b>3.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>1</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Зменшення замовлень WoW: 31 → 24 (-23%).</li><li>Довгий час приготування — 41.1 хв.</li><li>Довга доставка — 59.7 хв загалом.</li><li>Слабка конверсія в меню — 7.5% при 1804 сесіях.</li><li>Падіння замовлень супроводжується зменшенням знижок (9 461 → 6 969 ₴).</li><li>Bad orders з вини партнера зникли за останній тиждень — позитивна динаміка.</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Розумні акції вже активні. Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.</li></ul>
+    </div>
+      </div>
     </section>
 
     <section class="loc-card" data-search="шава від шефа poltava - center poltava 115868" data-name="Шава від Шефа" id="loc-115868">
-      <div class="loc-head">
-        <div>
+      <div class="loc-row">
+        <div class="loc-row-info">
           <h2>Шава від Шефа</h2>
           <p class="loc-meta">Poltava · Poltava - Center · ID 115868</p>
           <div class="promo-tags"></div>
         </div>
-        <div class="loc-kpis">
-          <div><span>Замовлення</span><strong>1</strong></div>
-          <div><span>Gross</span><strong>378 ₴</strong></div>
-          <div><span>Bad (партнер)</span><strong>0 · 0.0%</strong></div>
-          <div><span>WoW</span><strong class="trend-down">-75% WoW</strong></div>
-        </div>
+        <button type="button" class="loc-open-btn" data-loc-id="115868" aria-expanded="false" aria-controls="loc-body-115868">
+          Відкрити інформацію
+        </button>
       </div>
-      <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
+      <div class="loc-body" id="loc-body-115868" hidden>
+        <div class="loc-section-title">1. Продажі</div><div class="charts-grid">
     <div class="chart-card" id="c-115868-gross">
       <h3>Gross Sales (загальні продажі)</h3>
       <p class="metric-desc">Сума вартості доставлених замовлень до знижок</p>
@@ -17664,6 +17896,25 @@
           <div class="bar-lbl">06.07–12.07</div>
         </div></div></div>
     </div></div>
+        
+    <div class="loc-analysis sev-high">
+      <div class="loc-analysis-head">
+        <h3>Аналіз та поради</h3>
+        <span class="sev-badge">Пріоритет</span>
+      </div>
+      <div class="analysis-kpi">
+        <span>Замовлення: <b>4</b> → <b>1</b></span>
+        <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
+        <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
+        <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
+        <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
+      </div>
+      <h4>Слабкі місця / динаміка</h4>
+      <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 4).</li><li>За 8 тижнів замовлення впали з 10 до 1 (-90%).</li><li>Довгий час приготування — 36.0 хв.</li><li>Слабка конверсія меню → кошик — 22.2%.</li><li>Падіння замовлень супроводжується зменшенням знижок (491 → 103 ₴).</li></ul>
+      <h4>Поради для росту продажів</h4>
+      <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~7.9× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
+    </div>
+      </div>
     </section>
   </div>
 
@@ -17675,252 +17926,11 @@
         </div>
 <div class="insight-card warning">
           <div class="insight-title">⚠️ Локації під увагою</div>
-          <p>Найвищий пріоритет: Ace Burger, Arizona, Big Bro Burgers, Fellini Pizza. Деталі — у блоці аналізу нижче.</p>
+          <p>Найвищий пріоритет: Ace Burger, Arizona, Big Bro Burgers, Fellini Pizza. Натисніть «Відкрити інформацію» біля локації для деталей.</p>
         </div>
 <div class="insight-card positive">
           <div class="insight-title">✅ Точки росту</div>
           <p>Зростання замовлень WoW: Luciano pizza by#AriZona, Original sushi by #AriZona.</p>
-        </div></div>
-    <div class="section-title">Аналіз локацій — слабкі місця та поради</div>
-    <p class="section-hint">Порівняння останнього завершеного тижня з попереднім · причини падіння/росту · рекомендації</p>
-    <div class="analysis-grid">
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Fitnes shaurma</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>8</b> → <b>5</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>2.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>20.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>20.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 5 (попередній: 8).</li><li>Висока частка компенсацій — 20.0%.</li><li>Низький рейтинг — 2.00 з 5.</li><li>Падіння замовлень супроводжується зменшенням знижок (777 → 323 ₴).</li><li>Висока частка bad orders з вини партнера — 20.0% (1 зам.).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~8.0× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Золотий дракон</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>13</b> → <b>8</b></span>
-            <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>12.5%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 13).</li><li>Довгий час приготування — 36.2 хв.</li><li>Довга доставка — 53.0 хв загалом.</li><li>Слабка конверсія в меню — 4.9% при 1005 сесіях.</li><li>Слабка конверсія меню → кошик — 22.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (2 506 → 1 112 ₴).</li><li>Висока частка bad orders з вини партнера — 12.5% (1 зам.).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Розібрати причини bad orders: час приготування, комплектація, відмови, рейтинг страв.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Big Bro Burgers</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>2</b> → <b>0</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 2).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 0.0%.</li><li>Падіння замовлень супроводжується зменшенням знижок (263 → 0 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Luciano pizza by#AriZona</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>7</b> → <b>9</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>11.1%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>1</b> · <b>11.1%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 9 (попередній: 7).</li><li>Зростання замовлень WoW: 7 → 9 (+29%).</li><li>Висока частка компенсацій — 11.1%.</li><li>Низький рейтинг — 4.00 з 5.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li><li>Зростання bad orders (вина партнера): 0.0% → 11.1%.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Перевірити completeness меню, якість збірки та час приготування.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Prima Pasta</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>1</b> → <b>1</b></span>
-            <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 1).</li><li>За 8 тижнів замовлення впали з 5 до 1 (-80%).</li><li>Довгий час приготування — 45.3 хв.</li><li>Довга доставка — 56.8 хв загалом.</li><li>Слабка конверсія меню → кошик — 12.5%.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~4.2× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Salatoria</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>0</b> → <b>0</b></span>
-            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
-            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 0 (попередній: 0).</li><li>За 8 тижнів замовлення впали з 2 до 0 (-100%).</li><li>Acceptance Rate нижче норми — 0.0%.</li><li>Слабка конверсія меню → кошик — 11.1%.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Прискорити прийняття замовлень у застосунку партнера (ціль < 1 хв).</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~3.7× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Академія шаурми</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>8</b> → <b>3</b></span>
-            <span>Доступність: <b>93.7%</b> → <b>98.7%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>4.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 3 (попередній: 8).</li><li>Низький рейтинг — 4.00 з 5.</li><li>Слабка конверсія в меню — 5.5% при 1218 сесіях.</li><li>Слабка конверсія меню → кошик — 13.4%.</li><li>Падіння замовлень супроводжується зменшенням знижок (876 → 425 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Шава від Шефа</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>4</b> → <b>1</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>0.00</b> → <b>0.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 1 (попередній: 4).</li><li>За 8 тижнів замовлення впали з 10 до 1 (-90%).</li><li>Довгий час приготування — 36.0 хв.</li><li>Слабка конверсія меню → кошик — 22.2%.</li><li>Падіння замовлень супроводжується зменшенням знижок (491 → 103 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Прогнозований ROAS ~7.9× — почніть з платного просування в пошуку.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Ace Burger</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>10</b> → <b>8</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Слабка конверсія в меню — 4.5% при 820 сесіях.</li><li>Слабка конверсія меню → кошик — 21.6%.</li><li>Падіння замовлень супроводжується зменшенням знижок (1 934 → 1 340 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Original sushi by #AriZona</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>1</b> → <b>4</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 4 (попередній: 1).</li><li>Зростання замовлень WoW: 1 → 4 (+300%).</li><li>Довгий час приготування — 42.0 хв.</li><li>Довга доставка — 59.0 хв загалом.</li><li>Слабка конверсія меню → кошик — 23.5%.</li><li>Зростання замовлень збігається з активнішими кампаніями знижок.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Підсвітити хіти, комбо та зрозумілі описи/ціни позицій.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Arizona</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>41</b> → <b>28</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>4.20</b> → <b>5.00</b></span>
-            <span>Refunds: <b>2.4%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>1</b> → <b>1</b> · <b>3.6%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Різке падіння замовлень WoW: 41 → 28 (-32%).</li><li>За 8 тижнів замовлення впали з 42 до 28 (-33%).</li><li>Падіння замовлень супроводжується зменшенням знижок (10 612 → 7 266 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Порівняти динаміку знижок і доступності з топ-локаціями бренду; посилити промо.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Обидва продукти вже підключені — оптимізуйте бюджет і когорти за ROAS.</li><li>Підтримуйте комбінацію SL + Розумних акцій: SL для нових показів, Smart Promo — для конверсії.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Fellini Pizza</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>7</b> → <b>7</b></span>
-            <span>Доступність: <b>99.6%</b> → <b>100.0%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>3.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 7 (попередній: 7).</li><li>Низький рейтинг — 3.00 з 5.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Розібрати останні низькі оцінки: комплектація, температура, запізнення.</li><li>Промо: Sponsored Listing — Sponsored Listing вже активний. Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>Самурай</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>31</b> → <b>24</b></span>
-            <span>Доступність: <b>99.3%</b> → <b>99.7%</b></span>
-            <span>Рейтинг: <b>4.09</b> → <b>5.00</b></span>
-            <span>Refunds: <b>3.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>1</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Зменшення замовлень WoW: 31 → 24 (-23%).</li><li>Довгий час приготування — 41.1 хв.</li><li>Довга доставка — 59.7 хв загалом.</li><li>Слабка конверсія в меню — 7.5% при 1804 сесіях.</li><li>Падіння замовлень супроводжується зменшенням знижок (9 461 → 6 969 ₴).</li><li>Bad orders з вини партнера зникли за останній тиждень — позитивна динаміка.</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Оптимізувати кухню в пік або скоригувати cooking time у кабінеті.</li><li>Оновити головне фото, рейтинг і бейджі акцій — щоб клієнт клікав у меню.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Smart Promotions — Розумні акції вже активні. Стабільний обсяг замовлень — Розумні акції для активних/нових клієнтів допоможуть прискорити зростання GMV.</li></ul>
-        </div>
-        <div class="analysis-card sev-high">
-          <div class="analysis-head">
-            <h3>GANGSTER DOG</h3>
-            <span class="sev-badge">Пріоритет</span>
-          </div>
-          <div class="analysis-kpi">
-            <span>Замовлення: <b>10</b> → <b>8</b></span>
-            <span>Доступність: <b>99.7%</b> → <b>99.9%</b></span>
-            <span>Рейтинг: <b>5.00</b> → <b>5.00</b></span>
-            <span>Refunds: <b>0.0%</b> → <b>0.0%</b></span>
-            <span>Bad (партнер): <b>0</b> → <b>0</b> · <b>0.0%</b></span>
-          </div>
-          <h4>Слабкі місця / динаміка</h4>
-          <ul><li>Дуже мало замовлень за останній тиждень — лише 8 (попередній: 10).</li><li>Падіння замовлень супроводжується зменшенням знижок (1 666 → 999 ₴).</li></ul>
-          <h4>Поради для росту продажів</h4>
-          <ul class="advice"><li>Перевірити години роботи, фото/опис меню та наявність акцій у зоні доставки.</li><li>Повернути співфінансування промо (Bolt + партнер) на слабкі дні тижня.</li><li>Промо: Sponsored Listing — Середній обсяг — почніть з Sponsored Listing для підвищення показів, далі додайте Розумні акції за результатами.</li><li>Sponsored Listing (спонсоровані оголошення) — платне просування на порталі партнера: розділ «Промоакції» → «Налаштувати інші акції» → «Запусти платне просування» для більшої видимості у пошуку та на головному екрані.</li></ul>
         </div></div>
 </div>
 
@@ -17932,6 +17942,30 @@
 <script>
 (function() {
   const LOCATIONS = [{"id": 137455, "name": "Ace Burger", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 123575, "name": "Arizona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 115669, "name": "Big Bro Burgers", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 117449, "name": "Fellini Pizza", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136693, "name": "Fitnes shaurma", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 137451, "name": "GANGSTER DOG", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136690, "name": "Luciano pizza by#AriZona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136694, "name": "Original sushi by #AriZona", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 136685, "name": "Prima Pasta", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 109500, "name": "Salatoria", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 172714, "name": "Академія шаурми", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 137454, "name": "Золотий дракон", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 110411, "name": "Самурай", "zone": "Poltava - Center", "city": "Poltava"}, {"id": 115868, "name": "Шава від Шефа", "zone": "Poltava - Center", "city": "Poltava"}];
+
+  function toggleLocation(id, forceOpen) {
+    const card = document.getElementById('loc-' + id);
+    const body = document.getElementById('loc-body-' + id);
+    const btn = card && card.querySelector('.loc-open-btn');
+    if (!card || !body || !btn) return;
+    const open = forceOpen !== undefined ? forceOpen : body.hidden;
+    body.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? 'Згорнути' : 'Відкрити інформацію';
+    if (open) {
+      card.classList.add('loc-expanded');
+      card.scrollIntoView({behavior: 'smooth', block: 'start'});
+    } else {
+      card.classList.remove('loc-expanded');
+    }
+  }
+
+  window.openLocation = function(id) { toggleLocation(id, true); };
+
+  document.querySelectorAll('.loc-open-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleLocation(btn.dataset.locId));
+  });
+
   const wrap = document.getElementById('header-search-wrap');
   const panel = document.getElementById('search-panel');
   const openBtn = document.getElementById('search-open-btn');
@@ -17984,13 +18018,8 @@
   }
 
   function goTo(id) {
-    const el = document.getElementById('loc-' + id);
     closePanel();
-    if (el) {
-      el.scrollIntoView({behavior: 'smooth', block: 'start'});
-      el.style.outline = '2px solid var(--green)';
-      setTimeout(() => { el.style.outline = ''; }, 2000);
-    }
+    openLocation(id);
   }
 
   openBtn.addEventListener('click', (e) => {
