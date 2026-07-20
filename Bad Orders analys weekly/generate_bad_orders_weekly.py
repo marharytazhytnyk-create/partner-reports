@@ -1579,7 +1579,7 @@ def build_html(
     return out;
   }}
 
-  function topBadBrands(wk, cityFilter, limit = 10) {{
+  function topBadBrands(wk, cityFilter, limit = 30) {{
     const byBrand = {{}};
     Object.values(wk.partners || {{}}).forEach(p => {{
       if (cityFilter && p.city_ua !== cityFilter) return;
@@ -1612,7 +1612,7 @@ def build_html(
   function renderPortfolioKpis(wk) {{
     const p = wk.portfolio || {{}};
     const city = $('selCity').value;
-    const top = topBadBrands(wk, city, 10);
+    const top = topBadBrands(wk, city, 30);
     const topRows = top.map((b, i) => `<tr>
       <td class="num">${{i + 1}}</td>
       <td><button type="button" class="link-brand" data-brand="${{b.brand.replace(/"/g, '&quot;')}}" style="background:none;border:none;color:var(--provider);font-weight:700;cursor:pointer;padding:0;text-align:left;font-size:inherit">${{b.brand}}</button></td>
@@ -1654,7 +1654,7 @@ def build_html(
         </div>
       </div>
 
-      <h2 class="bad-h">ТОП-10 брендів за Bad Orders %</h2>
+      <h2 class="bad-h">ТОП-30 брендів за Bad Orders %</h2>
       <p style="font-size:.82rem;color:var(--muted);margin:-4px 0 12px">
         ${{city ? `Фільтр міста: <strong>${{city}}</strong>. ` : 'По всьому портфоліо. '}}
         Натисніть на бренд, щоб відкрити деталі.
@@ -1671,7 +1671,7 @@ def build_html(
             <th>Failed</th>
           </tr></thead>
           <tbody>${{topRows}}</tbody>
-        </table>` : '<p class="empty" style="padding:20px">Немає даних для ТОП-10.</p>'}}
+        </table>` : '<p class="empty" style="padding:20px">Немає даних для ТОП-30.</p>'}}
       </div>
     `;
 

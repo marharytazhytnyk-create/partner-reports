@@ -232,7 +232,7 @@
   </div>
 
   <div class="wrap">
-    <div class="meta" id="metaLine">Згенеровано: 2026-07-20 13:21 UTC</div>
+    <div class="meta" id="metaLine">Згенеровано: 2026-07-20 13:36 UTC</div>
     <div id="viewBad">
       <div id="portfolioKpis"></div>
       <div id="content">
@@ -733,7 +733,7 @@
     return out;
   }
 
-  function topBadBrands(wk, cityFilter, limit = 10) {
+  function topBadBrands(wk, cityFilter, limit = 30) {
     const byBrand = {};
     Object.values(wk.partners || {}).forEach(p => {
       if (cityFilter && p.city_ua !== cityFilter) return;
@@ -766,7 +766,7 @@
   function renderPortfolioKpis(wk) {
     const p = wk.portfolio || {};
     const city = $('selCity').value;
-    const top = topBadBrands(wk, city, 10);
+    const top = topBadBrands(wk, city, 30);
     const topRows = top.map((b, i) => `<tr>
       <td class="num">${i + 1}</td>
       <td><button type="button" class="link-brand" data-brand="${b.brand.replace(/"/g, '&quot;')}" style="background:none;border:none;color:var(--provider);font-weight:700;cursor:pointer;padding:0;text-align:left;font-size:inherit">${b.brand}</button></td>
