@@ -1080,7 +1080,7 @@ def build_html(
   <div class="wrap">
     <div class="meta" id="metaLine">Згенеровано: {html.escape(generated_at)} UTC</div>
     <div id="viewBad">
-      <div id="portfolioNote" class="portfolio-note" style="display:none"></div>
+      <div id="portfolioKpis"></div>
       <div id="content">
         <div class="empty">Оберіть місто та бренд, щоб переглянути деталі.</div>
       </div>
@@ -1583,19 +1583,54 @@ def build_html(
     return out;
   }}
 
+  function renderPortfolioKpis(wk) {{
+    const p = wk.portfolio || {{}};
+    $('portfolioKpis').innerHTML = `
+      <h2 style="margin-top:0">Портфоліо · ${{wk.label}}</h2>
+      <div class="kpi-row">
+        <div class="kpi bad">
+          <div class="n">${{p.bad_pct != null ? p.bad_pct : '—'}}%</div>
+          <div class="l">Bad Orders (портфоліо)</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:6px">
+            ${{p.bad_count || 0}} з ${{p.delivered || 0}} доставлених
+          </div>
+        </div>
+        <div class="kpi fail">
+          <div class="n">${{p.failed_pct != null ? p.failed_pct : '—'}}%</div>
+          <div class="l">Failed Orders (портфоліо)</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:6px">
+            ${{p.failed_count || 0}} невдалих замовлень
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="n">${{p.delivered || 0}}</div>
+          <div class="l">Доставлено</div>
+        </div>
+        <div class="kpi">
+          <div class="n">${{p.bad_count || 0}}</div>
+          <div class="l">Поганих (шт.)</div>
+        </div>
+        <div class="kpi">
+          <div class="n">${{p.failed_count || 0}}</div>
+          <div class="l">Невдалих (шт.)</div>
+        </div>
+      </div>
+    `;
+  }}
+
   function render() {{
     const wk = currentWeek();
     const city = $('selCity').value;
     const brand = $('selBrand').value;
     const el = $('content');
-    const note = $('portfolioNote');
 
-    if (!wk) {{ el.innerHTML = '<div class="empty">Немає даних.</div>'; return; }}
+    if (!wk) {{
+      $('portfolioKpis').innerHTML = '';
+      el.innerHTML = '<div class="empty">Немає даних.</div>';
+      return;
+    }}
 
-    note.style.display = 'block';
-    note.innerHTML = `<strong>Портфоліо за тиждень ${{wk.label}}:</strong> `
-      + `Bad Orders ${{wk.portfolio.bad_pct}}% (${{wk.portfolio.bad_count}} з ${{wk.portfolio.delivered}} доставлених), `
-      + `Failed Orders ${{wk.portfolio.failed_pct}}% (${{wk.portfolio.failed_count}}).`;
+    renderPortfolioKpis(wk);
 
     if (!brand) {{
       el.innerHTML = '<div class="empty">Оберіть бренд (партнера) для детального аналізу.</div>';
@@ -1628,8 +1663,8 @@ def build_html(
         ${{partner.brand}} · ${{titleCity}}
       </h2>
       <div class="kpi-row">
-        <div class="kpi bad"><div class="n">${{partner.bad_pct}}%</div><div class="l">Bad Orders</div></div>
-        <div class="kpi fail"><div class="n">${{partner.failed_pct}}%</div><div class="l">Failed Orders</div></div>
+        <div class="kpi bad"><div class="n">${{partner.bad_pct}}%</div><div class="l">Bad Orders (партнер)</div></div>
+        <div class="kpi fail"><div class="n">${{partner.failed_pct}}%</div><div class="l">Failed Orders (партнер)</div></div>
         <div class="kpi"><div class="n">${{partner.bad_count}}</div><div class="l">Поганих замовлень</div></div>
         <div class="kpi"><div class="n">${{partner.failed_count}}</div><div class="l">Невдалих замовлень</div></div>
         <div class="kpi"><div class="n">${{partner.delivered}}</div><div class="l">Доставлено</div></div>
