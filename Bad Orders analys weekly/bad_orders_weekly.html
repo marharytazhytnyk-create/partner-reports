@@ -232,7 +232,7 @@
   </div>
 
   <div class="wrap">
-    <div class="meta" id="metaLine">Згенеровано: 2026-07-20 13:11 UTC</div>
+    <div class="meta" id="metaLine">Згенеровано: 2026-07-20 13:21 UTC</div>
     <div id="viewBad">
       <div id="portfolioKpis"></div>
       <div id="content">
@@ -584,57 +584,53 @@
     return (partner.bad_orders || []).filter(isProviderFault);
   }
 
+  function ukOrdersWord(n) {
+    const abs = Math.abs(n) % 100;
+    const d = abs % 10;
+    if (abs > 10 && abs < 20) return 'замовлень';
+    if (d === 1) return 'замовлення';
+    if (d >= 2 && d <= 4) return 'замовлення';
+    return 'замовлень';
+  }
+
+  function cleanReasonForPartner(reason) {
+    let r = (reason || '—').trim();
+    r = r.replace(/^Заклад:\s*/i, '');
+    return r || '—';
+  }
+
   function buildPartnerMessage(partner, weekLabel, brand, cityLabel) {
     const orders = providerBadOrders(partner);
     if (!orders.length) return '';
 
-    const byReason = {};
-    orders.forEach(o => {
-      const reason = o.reason_ua || '—';
-      if (!byReason[reason]) byReason[reason] = [];
-      byReason[reason].push(o);
-    });
-
     const lines = [
       'Вітаю!',
       '',
-      `Це Marharyta Zhytnyk, ваш акаунт-менеджер Bolt Food.`,
+      `Звертаю вашу увагу на невдалі замовлення за період ${weekLabel} у закладі ${brand} (${cityLabel}).`,
       '',
-      `Звертаю вашу увагу на погані замовлення за період ${weekLabel} у закладі ${brand} (${cityLabel}).`,
+      `За результатами тижневого аналізу, ${orders.length} ${ukOrdersWord(orders.length)} мають причини, пов'язані з роботою закладу. Загальний показник поганих замовлень за тиждень: ${partner.bad_pct}% (${partner.bad_count} з ${partner.delivered} доставлених).`,
       '',
-      `За результатами тижневого аналізу, ${orders.length} замовлень мають причини, пов'язані з роботою закладу. Загальний показник поганих замовлень за тиждень: ${partner.bad_pct}% (${partner.bad_count} з ${partner.delivered} доставлених).`,
+      'Деталі по замовленнях:',
       '',
-      'Основні причини:',
     ];
 
-    Object.entries(byReason)
-      .sort((a, b) => b[1].length - a[1].length)
-      .forEach(([reason, list]) => {
-        lines.push(`• ${reason} — ${list.length} замовлень`);
-      });
-
-    lines.push('', 'Деталі по замовленнях:', '');
     orders.forEach(o => {
-      lines.push(`— Код замовлення: ${o.order_ref || '—'} | ${o.location}`);
-      lines.push(`  Причина: ${o.reason_ua || '—'}`);
-      if (o.comment && o.comment !== '—') lines.push(`  Коментар: ${o.comment}`);
+      lines.push(`Номер замовлення: ${o.order_ref || '—'}`);
+      lines.push(`Заклад: ${o.location || '—'}`);
+      lines.push(`Причина: ${cleanReasonForPartner(o.reason_ua)}`);
+      lines.push('');
     });
 
     lines.push(
-      '',
       'Прошу перевірити:',
       '1. Наявність позицій у меню та своєчасне оновлення стоп-листу',
       '2. Якість пакування та правильність комплектації замовлень',
       '3. Час приготування та передачу замовлень курʼєру',
       '4. Стабільність прийняття замовлень протягом робочого дня',
       '',
-      'Зниження частки поганих замовлень позитивно вплине на рейтинг закладу, задоволеність клієнтів та обсяг замовлень на платформі.',
+      'Зниження частки поганих замовлень позитивно вплине на рейтинг закладу, задоволеність клієнтів та обсяг замовлень, і відповідно на ваш прибуток.',
       '',
-      'Якщо потрібна допомога — напишіть мені, з радістю допоможу.',
-      '',
-      'З повагою,',
-      'Marharyta Zhytnyk',
-      'Акаунт-менеджер Bolt Food',
+      'Якщо потрібна допомога - рада буду допомогти.',
     );
     return lines.join('\n');
   }
@@ -737,8 +733,50 @@
     return out;
   }
 
+  function topBadBrands(wk, cityFilter, limit = 10) {
+    const byBrand = {};
+    Object.values(wk.partners || {}).forEach(p => {
+      if (cityFilter && p.city_ua !== cityFilter) return;
+      const key = p.brand;
+      if (!byBrand[key]) {
+        byBrand[key] = {
+          brand: p.brand,
+          delivered: 0,
+          bad_count: 0,
+          failed_count: 0,
+          cities: new Set(),
+        };
+      }
+      byBrand[key].delivered += p.delivered || 0;
+      byBrand[key].bad_count += p.bad_count || 0;
+      byBrand[key].failed_count += p.failed_count || 0;
+      if (p.city_ua) byBrand[key].cities.add(p.city_ua);
+    });
+    return Object.values(byBrand)
+      .filter(b => b.delivered > 0 && b.bad_count > 0)
+      .map(b => ({
+        ...b,
+        bad_pct: +(b.bad_count / b.delivered * 100).toFixed(2),
+        cities_label: [...b.cities].sort((a, c) => a.localeCompare(c, 'uk')).join(', '),
+      }))
+      .sort((a, b) => b.bad_pct - a.bad_pct || b.bad_count - a.bad_count)
+      .slice(0, limit);
+  }
+
   function renderPortfolioKpis(wk) {
     const p = wk.portfolio || {};
+    const city = $('selCity').value;
+    const top = topBadBrands(wk, city, 10);
+    const topRows = top.map((b, i) => `<tr>
+      <td class="num">${i + 1}</td>
+      <td><button type="button" class="link-brand" data-brand="${b.brand.replace(/"/g, '&quot;')}" style="background:none;border:none;color:var(--provider);font-weight:700;cursor:pointer;padding:0;text-align:left;font-size:inherit">${b.brand}</button></td>
+      <td>${b.cities_label || '—'}</td>
+      <td class="num"><strong style="color:var(--fail)">${b.bad_pct}%</strong></td>
+      <td class="num">${b.bad_count}</td>
+      <td class="num">${b.delivered}</td>
+      <td class="num">${b.failed_count}</td>
+    </tr>`).join('');
+
     $('portfolioKpis').innerHTML = `
       <h2 style="margin-top:0">Портфоліо · ${wk.label}</h2>
       <div class="kpi-row">
@@ -769,7 +807,42 @@
           <div class="l">Невдалих (шт.)</div>
         </div>
       </div>
+
+      <h2 class="bad-h">ТОП-10 брендів за Bad Orders %</h2>
+      <p style="font-size:.82rem;color:var(--muted);margin:-4px 0 12px">
+        ${city ? `Фільтр міста: <strong>${city}</strong>. ` : 'По всьому портфоліо. '}
+        Натисніть на бренд, щоб відкрити деталі.
+      </p>
+      <div class="prep-table-wrap">
+        ${top.length ? `<table>
+          <thead><tr>
+            <th>#</th>
+            <th>Бренд</th>
+            <th>Місто</th>
+            <th>Bad Orders %</th>
+            <th>Поганих</th>
+            <th>Доставлено</th>
+            <th>Failed</th>
+          </tr></thead>
+          <tbody>${topRows}</tbody>
+        </table>` : '<p class="empty" style="padding:20px">Немає даних для ТОП-10.</p>'}
+      </div>
     `;
+
+    document.querySelectorAll('.link-brand').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const brand = btn.dataset.brand;
+        const selBrand = $('selBrand');
+        if (![...selBrand.options].some(o => o.value === brand)) {
+          const o = document.createElement('option');
+          o.value = brand; o.textContent = brand;
+          selBrand.appendChild(o);
+        }
+        selBrand.value = brand;
+        render();
+        $('content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
   }
 
   function render() {
