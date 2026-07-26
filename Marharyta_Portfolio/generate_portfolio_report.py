@@ -1214,7 +1214,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <canvas id="chartDemandRefunds"></canvas>
       </div>
       <div class="chart-card" style="border-top:3px solid #7B1FA2">
-        <h4 style="color:#4A148C">📦 Refunds: кур'єри (€/тиж)</h4>
+        <h4 style="color:#4A148C">📦 Refunds: кур\u2019єри (€/тиж)</h4>
         <canvas id="chartSupplyRefunds"></canvas>
       </div>
     </div>
@@ -1262,7 +1262,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <h4 style="color:#B71C1C">🔄 Refunds: покупці (€/тиж)</h4><canvas id="locChartDemandRefunds"></canvas>
           </div>
           <div class="chart-card" style="border-top:3px solid #7B1FA2">
-            <h4 style="color:#4A148C">📦 Refunds: кур'єри (€/тиж)</h4><canvas id="locChartSupplyRefunds"></canvas>
+            <h4 style="color:#4A148C">📦 Refunds: кур\u2019єри (€/тиж)</h4><canvas id="locChartSupplyRefunds"></canvas>
           </div>
         </div>
       </div>
@@ -1458,10 +1458,10 @@ function renderCharts() {{
 
   // Знижки та refunds (brand-level)
   if (d.partner_discount_eur && d.partner_discount_eur.length) {{
-    makeOrUpdate('chartPartnerDiscount', labels, d.partner_discount_eur, '#FB8C00', 'Знижки партнера, €', false);
-    makeOrUpdate('chartBoltDiscount',    labels, d.bolt_discount_eur,    GREEN,     'Знижки Bolt, €',     false);
-    makeOrUpdate('chartDemandRefunds',   labels, d.demand_refunds_eur,   RED,       'Refunds покупці, €', false);
-    makeOrUpdate('chartSupplyRefunds',   labels, d.supply_refunds_eur,   PURPLE,    'Refunds кур\'єри, €',false);
+    makeOrUpdate('chartPartnerDiscount', labels, d.partner_discount_eur, '#FB8C00', 'Знижки партнера, \u20ac', false);
+    makeOrUpdate('chartBoltDiscount',    labels, d.bolt_discount_eur,    GREEN,     'Знижки Bolt, \u20ac',     false);
+    makeOrUpdate('chartDemandRefunds',   labels, d.demand_refunds_eur,   RED,       'Refunds покупці, \u20ac', false);
+    makeOrUpdate('chartSupplyRefunds',   labels, d.supply_refunds_eur,   PURPLE,    'Refunds кур\u2019єри, \u20ac', false);
   }}
 
   // ── Per-location conversion section ──────────────────────────────────────
@@ -1544,10 +1544,10 @@ function renderLocationCharts(loc) {{
   makeOrUpdate('locChartAcceptance',  labels, loc.acceptance,         GREEN,  'Acceptance Rate, %',         false);
   makeOrUpdate('locChartAvailability',labels, loc.availability,       TEAL,   'Availability, %',            false);
   // Знижки та refunds
-  makeOrUpdate('locChartPartnerDiscount', labels, loc.partner_discount, '#FB8C00', 'Знижки партнера, €', false);
-  makeOrUpdate('locChartBoltDiscount',    labels, loc.bolt_discount,    GREEN,     'Знижки Bolt, €',      false);
-  makeOrUpdate('locChartDemandRefunds',   labels, loc.demand_refunds,   RED,       'Refunds покупці, €',  false);
-  makeOrUpdate('locChartSupplyRefunds',   labels, loc.supply_refunds,   PURPLE,    "Refunds кур'єри, €",  false);
+  makeOrUpdate('locChartPartnerDiscount', labels, loc.partner_discount, '#FB8C00', 'Знижки партнера, \u20ac', false);
+  makeOrUpdate('locChartBoltDiscount',    labels, loc.bolt_discount,    GREEN,     'Знижки Bolt, \u20ac',      false);
+  makeOrUpdate('locChartDemandRefunds',   labels, loc.demand_refunds,   RED,       'Refunds покупці, \u20ac',  false);
+  makeOrUpdate('locChartSupplyRefunds',   labels, loc.supply_refunds,   PURPLE,    'Refunds кур\u2019єри, \u20ac', false);
 }}
 
 function funnelStep(label, value, color) {{
