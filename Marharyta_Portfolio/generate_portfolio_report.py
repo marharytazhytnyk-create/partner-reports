@@ -312,7 +312,14 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
         ROUND(SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
         ROUND(SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
-            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct,
+        -- Знижки та refunds
+        ROUND(SUM(f.total_provider_campaign_spend_provider_eur), 2) AS partner_discount_eur,
+        ROUND(SUM(f.total_provider_campaign_spend_bolt_eur), 2)     AS bolt_discount_eur,
+        ROUND(SUM(f.total_invoiced_demand_refunds_eur), 2)          AS demand_refunds_eur,
+        ROUND(SUM(f.total_invoiced_supply_refunds_eur), 2)          AS supply_refunds_eur,
+        ROUND(SUM(COALESCE(f.total_invoiced_demand_refunds_eur,0)
+                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
         ON p.provider_id = f.provider_id
@@ -380,7 +387,14 @@ def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
         ROUND(SUM(f.provider_acceptance_rate_value * f.delivered_orders_count)
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
         ROUND(SUM(f.provider_active_rate_value * f.delivered_orders_count)
-            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS availability_pct
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS availability_pct,
+        -- Знижки та refunds
+        ROUND(SUM(f.total_provider_campaign_spend_provider_eur), 2) AS partner_discount_eur,
+        ROUND(SUM(f.total_provider_campaign_spend_bolt_eur), 2)     AS bolt_discount_eur,
+        ROUND(SUM(f.total_invoiced_demand_refunds_eur), 2)          AS demand_refunds_eur,
+        ROUND(SUM(f.total_invoiced_supply_refunds_eur), 2)          AS supply_refunds_eur,
+        ROUND(SUM(COALESCE(f.total_invoiced_demand_refunds_eur,0)
+                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
         ON p.provider_id = f.provider_id
@@ -1184,6 +1198,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <div class="chart-card"><h4>⏰ Late Delivery Rate (%)</h4><canvas id="chartLate"></canvas></div>
     </div>
 
+    <!-- Знижки та Refunds -->
+    <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin:20px 0 12px">💸 Знижки та Refunds</div>
+    <div class="charts-grid">
+      <div class="chart-card" style="border-top:3px solid #FB8C00">
+        <h4 style="color:#E65100">🤝 Знижки партнера (€/тиж)</h4>
+        <canvas id="chartPartnerDiscount"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #1DC462">
+        <h4 style="color:#1A5E35">⚡ Знижки Bolt Food (€/тиж)</h4>
+        <canvas id="chartBoltDiscount"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #E53935">
+        <h4 style="color:#B71C1C">🔄 Refunds: покупці (€/тиж)</h4>
+        <canvas id="chartDemandRefunds"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #7B1FA2">
+        <h4 style="color:#4A148C">📦 Refunds: кур'єри (€/тиж)</h4>
+        <canvas id="chartSupplyRefunds"></canvas>
+      </div>
+    </div>
+
     <!-- Per-location conversion section -->
     <div id="locSection" style="display:none;margin-top:8px">
       <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:4px">
@@ -1212,6 +1247,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="chart-card"><h4>🍽️ Перегляди меню</h4><canvas id="locChartMenuViews"></canvas></div>
           <div class="chart-card"><h4>✅ Acceptance Rate (%)</h4><canvas id="locChartAcceptance"></canvas></div>
           <div class="chart-card"><h4>🟢 Availability (%)</h4><canvas id="locChartAvailability"></canvas></div>
+        </div>
+
+        <!-- Знижки та refunds по локації -->
+        <div style="font-size:12px;font-weight:700;color:var(--bolt-dark);margin:16px 0 10px">💸 Знижки та Refunds — ця локація</div>
+        <div class="charts-grid">
+          <div class="chart-card" style="border-top:3px solid #FB8C00">
+            <h4 style="color:#E65100">🤝 Знижки партнера (€/тиж)</h4><canvas id="locChartPartnerDiscount"></canvas>
+          </div>
+          <div class="chart-card" style="border-top:3px solid #1DC462">
+            <h4 style="color:#1A5E35">⚡ Знижки Bolt Food (€/тиж)</h4><canvas id="locChartBoltDiscount"></canvas>
+          </div>
+          <div class="chart-card" style="border-top:3px solid #E53935">
+            <h4 style="color:#B71C1C">🔄 Refunds: покупці (€/тиж)</h4><canvas id="locChartDemandRefunds"></canvas>
+          </div>
+          <div class="chart-card" style="border-top:3px solid #7B1FA2">
+            <h4 style="color:#4A148C">📦 Refunds: кур'єри (€/тиж)</h4><canvas id="locChartSupplyRefunds"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -1404,6 +1456,14 @@ function renderCharts() {{
   makeOrUpdate('chartAcceptance',labels, d.acceptance_rate_pct,     INDIGO, 'Acceptance Rate, %', false);
   makeOrUpdate('chartLate',      labels, d.late_delivery_rate_pct,  AMBER,  'Late Delivery, %', false);
 
+  // Знижки та refunds (brand-level)
+  if (d.partner_discount_eur && d.partner_discount_eur.length) {{
+    makeOrUpdate('chartPartnerDiscount', labels, d.partner_discount_eur, '#FB8C00', 'Знижки партнера, €', false);
+    makeOrUpdate('chartBoltDiscount',    labels, d.bolt_discount_eur,    GREEN,     'Знижки Bolt, €',     false);
+    makeOrUpdate('chartDemandRefunds',   labels, d.demand_refunds_eur,   RED,       'Refunds покупці, €', false);
+    makeOrUpdate('chartSupplyRefunds',   labels, d.supply_refunds_eur,   PURPLE,    'Refunds кур\'єри, €',false);
+  }}
+
   // ── Per-location conversion section ──────────────────────────────────────
   if (locCount === 0) {{
     locSection.style.display = 'none';
@@ -1483,6 +1543,11 @@ function renderLocationCharts(loc) {{
   makeOrUpdate('locChartMenuViews',   labels, loc.menu_views,         '#8D6E63', 'Перегляди меню',          false);
   makeOrUpdate('locChartAcceptance',  labels, loc.acceptance,         GREEN,  'Acceptance Rate, %',         false);
   makeOrUpdate('locChartAvailability',labels, loc.availability,       TEAL,   'Availability, %',            false);
+  // Знижки та refunds
+  makeOrUpdate('locChartPartnerDiscount', labels, loc.partner_discount, '#FB8C00', 'Знижки партнера, €', false);
+  makeOrUpdate('locChartBoltDiscount',    labels, loc.bolt_discount,    GREEN,     'Знижки Bolt, €',      false);
+  makeOrUpdate('locChartDemandRefunds',   labels, loc.demand_refunds,   RED,       'Refunds покупці, €',  false);
+  makeOrUpdate('locChartSupplyRefunds',   labels, loc.supply_refunds,   PURPLE,    "Refunds кур'єри, €",  false);
 }}
 
 function funnelStep(label, value, color) {{
@@ -1531,25 +1596,35 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
     # ── Brand-level aggregate trends ──────────────────────────────────────────
     for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
                 "cp_l2_margin_pct", "failed_order_rate_pct",
-                "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct"]:
+                "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct",
+                "partner_discount_eur", "bolt_discount_eur",
+                "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur"]:
         if col in df_trends.columns:
             df_trends[col] = pd.to_numeric(df_trends[col], errors="coerce")
 
     for (brand, city), grp in df_trends.groupby(["brand_name", "city_name"], sort=False):
         key = f"{brand}|||{city}"
         grp = grp.sort_values("week_start")
+        def gcol(col_name):
+            return [clean(v) for v in grp[col_name]] if col_name in grp.columns else []
+
         data[key] = {
             "brand": brand,
             "city": city,
             "weeks": grp["week_start"].tolist(),
-            "delivered_orders":        [clean(v) for v in grp["delivered_orders"]],
-            "gmv_eur":                 [clean(v) for v in grp["gmv_eur"]],
-            "contribution_profit_eur": [clean(v) for v in grp["contribution_profit_eur"]],
-            "cp_l2_margin_pct":        [clean(v) for v in grp["cp_l2_margin_pct"]],
-            "failed_order_rate_pct":   [clean(v) for v in grp["failed_order_rate_pct"]],
-            "bad_order_rate_pct":      [clean(v) for v in grp["bad_order_rate_pct"]],
-            "acceptance_rate_pct":     [clean(v) for v in grp["acceptance_rate_pct"]],
-            "late_delivery_rate_pct":  [clean(v) for v in grp["late_delivery_rate_pct"]],
+            "delivered_orders":        gcol("delivered_orders"),
+            "gmv_eur":                 gcol("gmv_eur"),
+            "contribution_profit_eur": gcol("contribution_profit_eur"),
+            "cp_l2_margin_pct":        gcol("cp_l2_margin_pct"),
+            "failed_order_rate_pct":   gcol("failed_order_rate_pct"),
+            "bad_order_rate_pct":      gcol("bad_order_rate_pct"),
+            "acceptance_rate_pct":     gcol("acceptance_rate_pct"),
+            "late_delivery_rate_pct":  gcol("late_delivery_rate_pct"),
+            "partner_discount_eur":    gcol("partner_discount_eur"),
+            "bolt_discount_eur":       gcol("bolt_discount_eur"),
+            "demand_refunds_eur":      gcol("demand_refunds_eur"),
+            "supply_refunds_eur":      gcol("supply_refunds_eur"),
+            "total_refunds_eur":       gcol("total_refunds_eur"),
             "locations": {},  # filled below
         }
 
@@ -1560,7 +1635,9 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
                     "conversion_impression_to_order_pct", "conversion_menu_to_order_pct",
                     "conversion_impression_to_menu_pct",
                     "bad_order_rate_pct", "failed_order_rate_pct",
-                    "acceptance_rate_pct", "availability_pct"]:
+                    "acceptance_rate_pct", "availability_pct",
+                    "partner_discount_eur", "bolt_discount_eur",
+                    "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur"]:
             if col in df_loc.columns:
                 df_loc[col] = pd.to_numeric(df_loc[col], errors="coerce")
 
@@ -1571,23 +1648,31 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
             loc_name = str(grp["provider_name"].iloc[0])
             zone     = str(grp["zone_name"].iloc[0]) if "zone_name" in grp.columns else ""
 
+            def lc(col_name):
+                return [clean(v) for v in grp[col_name]] if col_name in grp.columns else []
+
             loc_data = {
                 "provider_id":   int(provider_id),
                 "name":          loc_name,
                 "zone":          zone,
                 "weeks":         grp["week_start"].tolist(),
-                "delivered_orders": [clean(v) for v in grp["delivered_orders"]],
-                "gmv_eur":          [clean(v) for v in grp["gmv_eur"]],
-                "impressions":      [clean(v) for v in grp["impressions_sessions"]],
-                "menu_views":       [clean(v) for v in grp["menu_viewed_sessions"]],
-                "orders_placed":    [clean(v) for v in grp["order_placed_sessions"]],
-                "conv_imp_to_order": [clean(v) for v in grp["conversion_impression_to_order_pct"]],
-                "conv_menu_to_order":[clean(v) for v in grp["conversion_menu_to_order_pct"]],
-                "conv_imp_to_menu":  [clean(v) for v in grp["conversion_impression_to_menu_pct"]],
-                "bad_order_rate":    [clean(v) for v in grp["bad_order_rate_pct"]],
-                "failed_rate":       [clean(v) for v in grp["failed_order_rate_pct"]],
-                "acceptance":        [clean(v) for v in grp["acceptance_rate_pct"]],
-                "availability":      [clean(v) for v in grp["availability_pct"]],
+                "delivered_orders":   lc("delivered_orders"),
+                "gmv_eur":            lc("gmv_eur"),
+                "impressions":        lc("impressions_sessions"),
+                "menu_views":         lc("menu_viewed_sessions"),
+                "orders_placed":      lc("order_placed_sessions"),
+                "conv_imp_to_order":  lc("conversion_impression_to_order_pct"),
+                "conv_menu_to_order": lc("conversion_menu_to_order_pct"),
+                "conv_imp_to_menu":   lc("conversion_impression_to_menu_pct"),
+                "bad_order_rate":     lc("bad_order_rate_pct"),
+                "failed_rate":        lc("failed_order_rate_pct"),
+                "acceptance":         lc("acceptance_rate_pct"),
+                "availability":       lc("availability_pct"),
+                "partner_discount":   lc("partner_discount_eur"),
+                "bolt_discount":      lc("bolt_discount_eur"),
+                "demand_refunds":     lc("demand_refunds_eur"),
+                "supply_refunds":     lc("supply_refunds_eur"),
+                "total_refunds":      lc("total_refunds_eur"),
             }
 
             if brand_key in data:
