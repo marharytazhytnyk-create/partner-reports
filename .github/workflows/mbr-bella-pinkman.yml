@@ -1,0 +1,39 @@
+name: MBR — Bella Mozzarella / Pinkman Bar
+
+on:
+  schedule:
+    # 1-го числа кожного місяця о 13:00 Київ (EEST UTC+3 = 10:00 UTC)
+    - cron: '0 10 1 * *'
+  workflow_dispatch:   # ручний запуск
+
+permissions:
+  contents: write
+
+jobs:
+  generate-mbr:
+    name: Generate MBR Bella Mozzarella / Pinkman Bar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate MBR report
+        env:
+          DATABRICKS_HOST:       ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN:      ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_CLUSTER_ID: ${{ secrets.DATABRICKS_CLUSTER_ID }}
+        run: python "MBR Bella Mozarella Pinkman Bar/generate_mbr.py"
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "MBR Bella Mozarella Pinkman Bar/"
+          git diff --staged --quiet || git commit -m "📊 MBR Bella Mozzarella / Pinkman Bar — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
