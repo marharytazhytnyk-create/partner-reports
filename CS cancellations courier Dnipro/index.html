@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CS скасування — провина кур'єра (Дніпро)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f3f6f8;
+      --surface: #fff;
+      --text: #15202b;
+      --muted: #5b6b7c;
+      --line: #dce3ea;
+      --accent: #0b6e4f;
+      --accent2: #144d6f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 18px 64px; }
+    header {
+      background: linear-gradient(135deg, #144d6f 0%, #0b6e4f 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px 30px;
+      margin-bottom: 18px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 1.75rem; letter-spacing: -0.02em; }
+    header p { margin: 4px 0; opacity: .93; }
+    header a { color: #dff5ea; }
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px;
+    }
+    .stat {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 12px; padding: 12px 14px;
+    }
+    .stat .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; opacity: .85; }
+    .stat .value { font-size: 1.55rem; font-weight: 700; margin-top: 2px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+    }
+    h2 { margin: 0 0 12px; font-size: 1.2rem; }
+    h3 { margin: 0 0 10px; font-size: 1rem; color: var(--muted); }
+    .charts {
+      display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px;
+    }
+    .chart-box {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .chart-wrap {
+      position: relative;
+      max-width: 520px;
+      margin: 0 auto;
+      height: 360px;
+    }
+    .chart-wrap.small { height: 300px; max-width: 380px; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .scroll { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+    .muted { color: var(--muted); }
+    .note {
+      background: #eef7f3; border: 1px solid #c6e6d8; color: #0b4f3a;
+      border-radius: 10px; padding: 12px 14px; font-size: .9rem; margin-bottom: 14px;
+    }
+    footer { margin-top: 20px; color: var(--muted); font-size: .85rem; }
+    @media (max-width: 860px) {
+      .stats { grid-template-columns: 1fr 1fr; }
+      .charts { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>CS скасування з вини курʼєра — Дніпро</h1>
+      <p>Портфоліо Marharyta Zhytnyk · червень–липень 2026</p>
+      <p>Детальні причини, чому служба підтримки скасовувала замовлення (actor = courier, reason = manually_failed_by_cs)</p>
+      <p><a href="https://marharytazhytnyk-create.github.io/partner-reports/Bad%20orders%20Dnipro/">← Повернутися до загального звіту Bad orders Dnipro</a></p>
+      <div class="stats">
+        <div class="stat"><div class="label">CS-скасувань</div><div class="value">177</div></div>
+        <div class="stat"><div class="label">Унікальних причин</div><div class="value">20</div></div>
+        <div class="stat"><div class="label">Червень</div><div class="value">23</div></div>
+        <div class="stat"><div class="label">Липень</div><div class="value">154</div></div>
+      </div>
+    </header>
+
+    <div class="note">
+      Діаграма показує <b>основну (primary) причину</b> зі CS-тікета на кожне замовлення.
+      Якщо в тікеті кілька issue — пріоритет віддається інцидентам курʼєра (ДТП, транспорт, personal incident), далі збоям доставки, далі запитам клієнта.
+    </div>
+
+    <div class="charts">
+      <div class="chart-box">
+        <h2>Кругова діаграма: детальні причини</h2>
+        <div class="chart-wrap">
+          <canvas id="pieReasons"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h2>Групи причин</h2>
+        <div class="chart-wrap small">
+          <canvas id="pieBuckets"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h2>Таблиця причин</h2>
+      <table>
+        <thead><tr><th>Причина зі CS-тікета</th><th class="num">К-сть</th><th class="num">%</th></tr></thead>
+        <tbody><tr><td>Проблема з транспортом кур&#x27;єра</td><td class='num'>68</td><td class='num'>38.4%</td></tr>
+<tr><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td class='num'>36</td><td class='num'>20.3%</td></tr>
+<tr><td>Особистий інцидент кур&#x27;єра</td><td class='num'>12</td><td class='num'>6.8%</td></tr>
+<tr><td>Перепризначення замовлення (redispatch)</td><td class='num'>10</td><td class='num'>5.6%</td></tr>
+<tr><td>Немає CS-тікета</td><td class='num'>6</td><td class='num'>3.4%</td></tr>
+<tr><td>Інший кур&#x27;єр забрав замовлення</td><td class='num'>5</td><td class='num'>2.8%</td></tr>
+<tr><td>Є тікет без issue</td><td class='num'>5</td><td class='num'>2.8%</td></tr>
+<tr><td>Клієнт відхилив / відмовився від замовлення</td><td class='num'>5</td><td class='num'>2.8%</td></tr>
+<tr><td>Помилка в додатку кур&#x27;єра</td><td class='num'>4</td><td class='num'>2.3%</td></tr>
+<tr><td>Клієнт попросив скасувати активне замовлення</td><td class='num'>4</td><td class='num'>2.3%</td></tr>
+<tr><td>Не призначено кур&#x27;єра (звернення клієнта)</td><td class='num'>4</td><td class='num'>2.3%</td></tr>
+<tr><td>Заклад закритий (повідомив кур&#x27;єр)</td><td class='num'>4</td><td class='num'>2.3%</td></tr>
+<tr><td>Кур&#x27;єр запізнився</td><td class='num'>3</td><td class='num'>1.7%</td></tr>
+<tr><td>Кур&#x27;єр не рухається</td><td class='num'>3</td><td class='num'>1.7%</td></tr>
+<tr><td>Замовлення пошкоджене</td><td class='num'>2</td><td class='num'>1.1%</td></tr>
+<tr><td>Неправильно порахована сума замовлення</td><td class='num'>2</td><td class='num'>1.1%</td></tr>
+<tr><td>Кур&#x27;єр запізнився на pickup</td><td class='num'>1</td><td class='num'>0.6%</td></tr>
+<tr><td>Кур&#x27;єр забрав не те замовлення</td><td class='num'>1</td><td class='num'>0.6%</td></tr>
+<tr><td>Заклад відхилив замовлення</td><td class='num'>1</td><td class='num'>0.6%</td></tr>
+<tr><td>Не призначено кур&#x27;єра (звернення закладу)</td><td class='num'>1</td><td class='num'>0.6%</td></tr>
+</tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>Агреговані групи</h2>
+      <table>
+        <thead><tr><th>Група</th><th class="num">К-сть</th><th class="num">%</th></tr></thead>
+        <tbody><tr><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td class='num'>116</td><td class='num'>65.5%</td></tr>
+<tr><td>Перепризначення / збій доставки кур&#x27;єром</td><td class='num'>24</td><td class='num'>13.6%</td></tr>
+<tr><td>Скасування на запит клієнта / відмова від замовлення</td><td class='num'>9</td><td class='num'>5.1%</td></tr>
+<tr><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td class='num'>6</td><td class='num'>3.4%</td></tr>
+<tr><td>Не призначено кур&#x27;єра</td><td class='num'>6</td><td class='num'>3.4%</td></tr>
+<tr><td>Немає CS-тікета</td><td class='num'>6</td><td class='num'>3.4%</td></tr>
+<tr><td>Є тікет без issue</td><td class='num'>5</td><td class='num'>2.8%</td></tr>
+<tr><td>Інше</td><td class='num'>5</td><td class='num'>2.8%</td></tr>
+</tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>По брендах</h2>
+      <table>
+        <thead><tr><th>Бренд</th><th class="num">CS-скасувань</th><th>Топ причини</th></tr></thead>
+        <tbody><tr><td>AMERICAN FOOD</td><td class='num'>1</td><td>Кур&#x27;єр запізнився (1)</td></tr>
+<tr><td>BLACK FOOD</td><td class='num'>1</td><td>Перепризначення замовлення (redispatch) (1)</td></tr>
+<tr><td>BURGER HOUSE</td><td class='num'>1</td><td>Заклад закритий (повідомив кур&#x27;єр) (1)</td></tr>
+<tr><td>CRAZYCRAB</td><td class='num'>12</td><td>Проблема з транспортом кур&#x27;єра (5); Кур&#x27;єр потрапив у ДТП / аварію (4)</td></tr>
+<tr><td>DNIPROVSKA REBERNYA</td><td class='num'>41</td><td>Проблема з транспортом кур&#x27;єра (19); Кур&#x27;єр потрапив у ДТП / аварію (10)</td></tr>
+<tr><td>DO DO DONER</td><td class='num'>2</td><td>Проблема з транспортом кур&#x27;єра (1); Клієнт попросив скасувати активне замовлення (1)</td></tr>
+<tr><td>DOMASHNYA YIZA</td><td class='num'>2</td><td>Проблема з транспортом кур&#x27;єра (2)</td></tr>
+<tr><td>DONO</td><td class='num'>1</td><td>Заклад закритий (повідомив кур&#x27;єр) (1)</td></tr>
+<tr><td>INTERMEZZO DP</td><td class='num'>54</td><td>Проблема з транспортом кур&#x27;єра (24); Кур&#x27;єр потрапив у ДТП / аварію (13)</td></tr>
+<tr><td>LITTLE MARIUPOL</td><td class='num'>4</td><td>Клієнт попросив скасувати активне замовлення (1); Не призначено кур&#x27;єра (звернення клієнта) (1)</td></tr>
+<tr><td>MAO SUSHI</td><td class='num'>1</td><td>Заклад закритий (повідомив кур&#x27;єр) (1)</td></tr>
+<tr><td>MON AMI BURUM</td><td class='num'>6</td><td>Проблема з транспортом кур&#x27;єра (2); Інший кур&#x27;єр забрав замовлення (1)</td></tr>
+<tr><td>NASLEDNIKI</td><td class='num'>8</td><td>Кур&#x27;єр потрапив у ДТП / аварію (4); Проблема з транспортом кур&#x27;єра (2)</td></tr>
+<tr><td>OBID TYT</td><td class='num'>1</td><td>Перепризначення замовлення (redispatch) (1)</td></tr>
+<tr><td>ONE GOGI</td><td class='num'>1</td><td>Кур&#x27;єр запізнився (1)</td></tr>
+<tr><td>PANASIAN TIGER</td><td class='num'>2</td><td>Заклад закритий (повідомив кур&#x27;єр) (1); Не призначено кур&#x27;єра (звернення клієнта) (1)</td></tr>
+<tr><td>PIZZA CELENTANO</td><td class='num'>11</td><td>Проблема з транспортом кур&#x27;єра (3); Є тікет без issue (2)</td></tr>
+<tr><td>PURI CHVENI</td><td class='num'>25</td><td>Проблема з транспортом кур&#x27;єра (8); Кур&#x27;єр потрапив у ДТП / аварію (5)</td></tr>
+<tr><td>SUSHI FAMILY</td><td class='num'>2</td><td>Проблема з транспортом кур&#x27;єра (1); Інший кур&#x27;єр забрав замовлення (1)</td></tr>
+<tr><td>VIKTORIA</td><td class='num'>1</td><td>Клієнт відхилив / відмовився від замовлення (1)</td></tr>
+</tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>Список замовлень</h2>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th><th>Order ref</th><th>Бренд</th><th>Заклад</th>
+              <th>Основна причина</th><th>Група</th><th>Усі issue</th>
+            </tr>
+          </thead>
+          <tbody><tr><td>2026-06-20</td><td>GSGXD</td><td>AMERICAN FOOD</td><td>American Food</td><td>Кур&#x27;єр запізнився</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Кур&#x27;єр запізнився, Клієнт попросив скасувати активне замовлення, Кур&#x27;єр запізнився на pickup, I want to know why my account is blocked</td></tr>
+<tr><td>2026-06-02</td><td>OHGUT</td><td>BLACK FOOD</td><td>Black Food Шаурма бульвар Слави</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Не призначено кур&#x27;єра (звернення закладу), Заклад закритий (повідомив кур&#x27;єр), Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-13</td><td>XBV80</td><td>BURGER HOUSE</td><td>Burger house вул. Магдебургского права, 2/1</td><td>Заклад закритий (повідомив кур&#x27;єр)</td><td>Інше</td><td>I&#x27;m unable to contact the courier, I want to know why my account is blocked, Заклад закритий (повідомив кур&#x27;єр)</td></tr>
+<tr><td>2026-06-30</td><td>ZHUCS</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Є тікет без issue</td><td>Є тікет без issue</td><td>—</td></tr>
+<tr><td>2026-07-02</td><td>LNSOJ</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>HQVGD</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Помилка в додатку кур&#x27;єра</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Потрібен додатковий кур&#x27;єр, Помилка в додатку кур&#x27;єра</td></tr>
+<tr><td>2026-07-05</td><td>X2ZPT</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-06</td><td>O3ESX</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-06</td><td>1O9SU</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Кур&#x27;єр запізнився</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Кур&#x27;єр запізнився</td></tr>
+<tr><td>2026-07-10</td><td>1FSMF</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-11</td><td>ED08X</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Проблема з транспортом кур&#x27;єра, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-17</td><td>FW7ZC</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-24</td><td>JM3M3</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-25</td><td>WNOUQ</td><td>CRAZYCRAB</td><td>Crazycrab Яворницкого пр-т</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-27</td><td>ZG59N</td><td>CRAZYCRAB</td><td>Crazycrab вул. Маршала Малиновського</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-06-11</td><td>VZVBY</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Помилка в додатку кур&#x27;єра</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Помилка в додатку кур&#x27;єра, Неправильно порахована сума замовлення, Не призначено кур&#x27;єра (звернення закладу), I want to leave a note to the restaurant, Клієнт попросив скасувати активне замовлення, I&#x27;m unable to contact the restaurant</td></tr>
+<tr><td>2026-06-12</td><td>CVDC0</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch), Замовлення зайняло більше часу, Кур&#x27;єр запізнився, Неможливо зв&#x27;язатися з кур&#x27;єром</td></tr>
+<tr><td>2026-06-30</td><td>RZDHQ</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-06-30</td><td>0HOT3</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-07-02</td><td>RAGVO</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>ZMDC6</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-05</td><td>4PWDJ</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-05</td><td>3902R</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-06</td><td>02V3K</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-06</td><td>2BKCX</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-06</td><td>7Y5JG</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-06</td><td>DX5LT</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-07</td><td>UX1AK</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-07</td><td>5FKB8</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-07-07</td><td>UAPTY</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-08</td><td>0ZQDP</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-09</td><td>URP9W</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-09</td><td>4UVGF</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-11</td><td>9JS61</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, My order is missing item(s)</td></tr>
+<tr><td>2026-07-11</td><td>PSQ47</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Клієнт відхилив / відмовився від замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-11</td><td>N847X</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-12</td><td>NHB0Y</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Замовлення відхилено закладом, Особистий інцидент кур&#x27;єра, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-12</td><td>XLZCS</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Кур&#x27;єр був грубим</td></tr>
+<tr><td>2026-07-13</td><td>73MFW</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-14</td><td>AJPBR</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-15</td><td>HXICJ</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-16</td><td>TT13E</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, I&#x27;m unable to contact the customer</td></tr>
+<tr><td>2026-07-17</td><td>DAJ3I</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-18</td><td>ZL10P</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, I didn&#x27;t receive a promised refund</td></tr>
+<tr><td>2026-07-20</td><td>HAWCP</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-21</td><td>TC3A5</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Courier doesn&#x27;t have any change, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-22</td><td>EFYB3</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр не рухається</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Кур&#x27;єр не рухається, Замовлення зайняло більше часу</td></tr>
+<tr><td>2026-07-22</td><td>VSQDO</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-23</td><td>8XGLC</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-24</td><td>AVSCM</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>33KFW</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-26</td><td>GU1WF</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-26</td><td>ASFBW</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-27</td><td>BBCL7</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-27</td><td>DW106</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-29</td><td>7IHL3</td><td>DNIPROVSKA REBERNYA</td><td>Дніпровська реберня</td><td>Є тікет без issue</td><td>Є тікет без issue</td><td>—</td></tr>
+<tr><td>2026-07-10</td><td>1FOOX</td><td>DO DO DONER</td><td>Do Do DONER пров. Вільний</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр забрав не те замовлення, Клієнт попросив скасувати активне замовлення, Кур&#x27;єр не рухається, Проблема з транспортом кур&#x27;єра, Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-20</td><td>WD9ZW</td><td>DO DO DONER</td><td>Do Do DONER Парусний</td><td>Клієнт попросив скасувати активне замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Замовлення зайняло більше часу, Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-07-01</td><td>M654K</td><td>DOMASHNYA YIZA</td><td>Домашня Їжа Виконкомівська</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-14</td><td>FZWPH</td><td>DOMASHNYA YIZA</td><td>Домашня Їжа Виконкомівська</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-11</td><td>FSZUN</td><td>DONO</td><td>Dono Піца Богдана Хмельницького</td><td>Заклад закритий (повідомив кур&#x27;єр)</td><td>Інше</td><td>Заклад закритий (повідомив кур&#x27;єр)</td></tr>
+<tr><td>2026-06-10</td><td>MFVOT</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Замовлення пошкоджене</td></tr>
+<tr><td>2026-06-15</td><td>X6TPF</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Замовлення пошкоджене</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Замовлення пошкоджене, My Bolt bag was damaged</td></tr>
+<tr><td>2026-06-22</td><td>KLPHS</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр запізнився на pickup</td><td>Не призначено кур&#x27;єра</td><td>Клієнт попросив скасувати активне замовлення, Кур&#x27;єр запізнився на pickup, Заклад відхилив замовлення</td></tr>
+<tr><td>2026-06-22</td><td>J268R</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Інший кур&#x27;єр забрав замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>I want to know if I received payment for the order, Замовлення відхилено закладом, Інший кур&#x27;єр забрав замовлення</td></tr>
+<tr><td>2026-06-29</td><td>H8IRA</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Неможливо зв&#x27;язатися з кур&#x27;єром</td></tr>
+<tr><td>2026-06-29</td><td>JGW5B</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Кур&#x27;єр був грубим, Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-06-30</td><td>LA220</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Помилка в додатку кур&#x27;єра</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Замовлення не доставлено, Кур&#x27;єр запізнився, Помилка в додатку кур&#x27;єра</td></tr>
+<tr><td>2026-07-01</td><td>HJ51Q</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-01</td><td>9NGJE</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-01</td><td>EJ467</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-01</td><td>2EGGY</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-02</td><td>A6NSX</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>BKNC7</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>X0O9N</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>YWXLZ</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра, Замовлення не доставлено</td></tr>
+<tr><td>2026-07-03</td><td>WX2RT</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-03</td><td>N69RU</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Кур&#x27;єр запізнився</td></tr>
+<tr><td>2026-07-03</td><td>X2VVV</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Клієнт відхилив / відмовився від замовлення, Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-04</td><td>NUVM4</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр забрав не те замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Кур&#x27;єр забрав не те замовлення</td></tr>
+<tr><td>2026-07-05</td><td>6BYO1</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-05</td><td>RDQBJ</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-06</td><td>8RJ6M</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-07</td><td>24UPU</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Замовлення пошкоджене</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Замовлення пошкоджене</td></tr>
+<tr><td>2026-07-07</td><td>811PD</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Клієнт попросив скасувати активне замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Замовлення відхилено закладом, Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-07-07</td><td>B19US</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-07</td><td>7IK8Q</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-08</td><td>LWENV</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр не рухається, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-09</td><td>XVI0T</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-13</td><td>MI9IZ</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Зміна адреси доставки, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-13</td><td>93VG7</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-13</td><td>BDRJK</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-13</td><td>8XKCD</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-07-14</td><td>TL71O</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-14</td><td>EJ1IE</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-14</td><td>L9GMW</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-15</td><td>4BZIZ</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-20</td><td>A9HZ7</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-21</td><td>CSZTH</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-21</td><td>K87V4</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Інший кур&#x27;єр забрав замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>I&#x27;m unable to contact the courier, Крадіжка кур&#x27;єром, Інший кур&#x27;єр забрав замовлення</td></tr>
+<tr><td>2026-07-21</td><td>TM7BJ</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-23</td><td>CAKSX</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-23</td><td>MUJQK</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>MBGY9</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>D689K</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Перепризначення замовлення (redispatch), Кур&#x27;єр потрапив у ДТП / аварію, Замовлення не доставлено</td></tr>
+<tr><td>2026-07-26</td><td>Y0UCF</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Не призначено кур&#x27;єра (звернення закладу), Проблема з транспортом кур&#x27;єра, Кур&#x27;єр потрапив у ДТП / аварію, Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-26</td><td>WYQL7</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Клієнт відхилив / відмовився від замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-26</td><td>A4X0Z</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-27</td><td>YXYIP</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-27</td><td>E6ZPF</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Перепризначення замовлення (redispatch), Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-27</td><td>EEWT6</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>I received wrong item(s), Кур&#x27;єр потрапив у ДТП / аварію, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-27</td><td>6M9CH</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-28</td><td>VBYA4</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Клієнт відхилив / відмовився від замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-28</td><td>VRYK6</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-28</td><td>W2O48</td><td>INTERMEZZO DP</td><td>Intermezzo</td><td>Клієнт відхилив / відмовився від замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-06-15</td><td>LLM74</td><td>LITTLE MARIUPOL</td><td>Little Mariupol Виконкомівська</td><td>Клієнт попросив скасувати активне замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт попросив скасувати активне замовлення, Замовлення зайняло більше часу</td></tr>
+<tr><td>2026-07-02</td><td>84643</td><td>LITTLE MARIUPOL</td><td>Little Mariupol Яворницького</td><td>Не призначено кур&#x27;єра (звернення клієнта)</td><td>Не призначено кур&#x27;єра</td><td>Не призначено кур&#x27;єра (звернення клієнта), Клієнт попросив скасувати активне замовлення, Не призначено кур&#x27;єра (звернення закладу)</td></tr>
+<tr><td>2026-07-14</td><td>BYHU1</td><td>LITTLE MARIUPOL</td><td>Little Mariupol Виконкомівська</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-16</td><td>6YF93</td><td>LITTLE MARIUPOL</td><td>Little Mariupol Виконкомівська</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Клієнт відхилив / відмовився від замовлення, Кур&#x27;єр запізнився на pickup, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-26</td><td>QR93A</td><td>MAO SUSHI</td><td>Mao Sushi</td><td>Заклад закритий (повідомив кур&#x27;єр)</td><td>Інше</td><td>I want to enable or disable cash orders, Заклад закритий (повідомив кур&#x27;єр)</td></tr>
+<tr><td>2026-06-01</td><td>0VK8P</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Інший кур&#x27;єр забрав замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Інший кур&#x27;єр забрав замовлення</td></tr>
+<tr><td>2026-06-05</td><td>KLJII</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Клієнт попросив скасувати активне замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-06-19</td><td>RYGYC</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Кур&#x27;єр запізнився, Замовлення не доставлено</td></tr>
+<tr><td>2026-07-03</td><td>7XAXH</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Не призначено кур&#x27;єра (звернення клієнта)</td><td>Не призначено кур&#x27;єра</td><td>Не призначено кур&#x27;єра (звернення клієнта), Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-07-08</td><td>67IGC</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Неправильно порахована сума замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Restaurant wants to cancel the order, Неправильно порахована сума замовлення, My earnings weren&#x27;t added to my balance, Клієнт попросив скасувати активне замовлення, Не призначено кур&#x27;єра (звернення клієнта)</td></tr>
+<tr><td>2026-07-13</td><td>UMARO</td><td>MON AMI BURUM</td><td>Mon Ami Burum</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр не рухається, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-05</td><td>VFNRW</td><td>NASLEDNIKI</td><td>Nasledniki Калинова</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-07</td><td>DAMBX</td><td>NASLEDNIKI</td><td>Nasledniki Калинова</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-08</td><td>L8868</td><td>NASLEDNIKI</td><td>Nasledniki Калинова</td><td>Помилка в додатку кур&#x27;єра</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Не призначено кур&#x27;єра (звернення клієнта), Клієнт попросив скасувати активне замовлення, Помилка в додатку кур&#x27;єра</td></tr>
+<tr><td>2026-07-08</td><td>GHSFX</td><td>NASLEDNIKI</td><td>Nasledniki Parkside</td><td>Кур&#x27;єр не рухається</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Замовлення зайняло більше часу, Кур&#x27;єр не рухається</td></tr>
+<tr><td>2026-07-09</td><td>ZNETX</td><td>NASLEDNIKI</td><td>Nasledniki Калинова</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-11</td><td>6UYTW</td><td>NASLEDNIKI</td><td>Nasledniki Parkside</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр був грубим, Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-11</td><td>6SLO7</td><td>NASLEDNIKI</td><td>Nasledniki Parkside</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-11</td><td>B0ZK9</td><td>NASLEDNIKI</td><td>Nasledniki Parkside</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-06-28</td><td>R9PEN</td><td>OBID TYT</td><td>Обід Тут вул. Хороброго</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Кур&#x27;єр не рухається, Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-22</td><td>JXQO2</td><td>ONE GOGI</td><td>One Gogi Набережна Перемоги</td><td>Кур&#x27;єр запізнився</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Кур&#x27;єр запізнився, Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-07-28</td><td>T41SM</td><td>PANASIAN TIGER</td><td>PanAsian Tiger</td><td>Заклад закритий (повідомив кур&#x27;єр)</td><td>Інше</td><td>Заклад закритий (повідомив кур&#x27;єр)</td></tr>
+<tr><td>2026-07-28</td><td>S3A4E</td><td>PANASIAN TIGER</td><td>PanAsian Tiger</td><td>Не призначено кур&#x27;єра (звернення клієнта)</td><td>Не призначено кур&#x27;єра</td><td>Заклад закритий (повідомив кур&#x27;єр), Не призначено кур&#x27;єра (звернення клієнта)</td></tr>
+<tr><td>2026-06-29</td><td>3Y3SS</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Інший кур&#x27;єр забрав замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Інший кур&#x27;єр забрав замовлення, Кур&#x27;єр не рухається</td></tr>
+<tr><td>2026-06-30</td><td>HYPMQ</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Є тікет без issue</td><td>Є тікет без issue</td><td>—</td></tr>
+<tr><td>2026-07-01</td><td>DFRSJ</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-02</td><td>57D5H</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch), Клієнт відхилив / відмовився від замовлення, Крадіжка кур&#x27;єром, Замовлення відхилено закладом, I want to know if I received payment for the order</td></tr>
+<tr><td>2026-07-06</td><td>3TCHG</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-06</td><td>PFAEG</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Є тікет без issue</td><td>Є тікет без issue</td><td>—</td></tr>
+<tr><td>2026-07-07</td><td>FS7P1</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-08</td><td>EWNAS</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Не призначено кур&#x27;єра (звернення клієнта)</td><td>Не призначено кур&#x27;єра</td><td>I want to know if I received payment for the order, Не призначено кур&#x27;єра (звернення закладу), Заклад відхилив замовлення, Замовлення зайняло більше часу, Замовлення приїхало холодним, Клієнт попросив скасувати активне замовлення, Не призначено кур&#x27;єра (звернення клієнта)</td></tr>
+<tr><td>2026-07-09</td><td>EYGM0</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Неправильно порахована сума замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Заклад відхилив замовлення, Кур&#x27;єр запізнився на pickup, Замовлення зайняло більше часу, Неправильно порахована сума замовлення, Клієнт відхилив / відмовився від замовлення</td></tr>
+<tr><td>2026-07-10</td><td>FCW19</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-14</td><td>KZ73K</td><td>PIZZA CELENTANO</td><td>Pizza Celentano Лесі Українки</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-06-27</td><td>GGS20</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch), Замовлення не доставлено</td></tr>
+<tr><td>2026-07-05</td><td>LC22E</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, I can&#x27;t contact Customer Support</td></tr>
+<tr><td>2026-07-06</td><td>QMRFL</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Заклад відхилив замовлення</td><td>Інше</td><td>Заклад відхилив замовлення</td></tr>
+<tr><td>2026-07-06</td><td>N8LG2</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-08</td><td>RGFT2</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-08</td><td>EVSB8</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-09</td><td>26HX3</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр був грубим, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-09</td><td>0RFAA</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-09</td><td>5R965</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Перепризначення замовлення (redispatch)</td></tr>
+<tr><td>2026-07-10</td><td>2R6X9</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Замовлення зайняло більше часу, Замовлення не доставлено, I can&#x27;t contact Customer Support</td></tr>
+<tr><td>2026-07-12</td><td>MJTPZ</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Є тікет без issue</td><td>Є тікет без issue</td><td>—</td></tr>
+<tr><td>2026-07-13</td><td>VSXQE</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Неможливо зв&#x27;язатися з кур&#x27;єром, Кур&#x27;єр потрапив у ДТП / аварію</td></tr>
+<tr><td>2026-07-15</td><td>IGOBN</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-15</td><td>3YN6I</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-16</td><td>EXLIC</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-16</td><td>4MUQT</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Перепризначення замовлення (redispatch)</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Заклад відхилив замовлення, Не призначено кур&#x27;єра (звернення закладу), Перепризначення замовлення (redispatch), Не призначено кур&#x27;єра (звернення клієнта), Клієнт попросив скасувати активне замовлення</td></tr>
+<tr><td>2026-07-21</td><td>8MAQ8</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>APD1H</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>607J2</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра</td></tr>
+<tr><td>2026-07-25</td><td>MXRGZ</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Не призначено кур&#x27;єра (звернення закладу)</td><td>Не призначено кур&#x27;єра</td><td>I didn&#x27;t receive a promised refund, Заклад відхилив замовлення, Не призначено кур&#x27;єра (звернення закладу)</td></tr>
+<tr><td>2026-07-25</td><td>7SKMI</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-07-26</td><td>Z7T88</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр не рухається</td><td>Клієнт: затримка / кур&#x27;єр не рухається / грубість</td><td>Заклад відхилив замовлення, Кур&#x27;єр запізнився на pickup, Кур&#x27;єр не рухається, Кур&#x27;єр запізнився</td></tr>
+<tr><td>2026-07-26</td><td>HPS5W</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Немає CS-тікета</td><td>Немає CS-тікета</td><td>—</td></tr>
+<tr><td>2026-07-26</td><td>SZZRX</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Особистий інцидент кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Особистий інцидент кур&#x27;єра</td></tr>
+<tr><td>2026-07-26</td><td>WDTAF</td><td>PURI CHVENI</td><td>Puri Chveni вул. Січових Стрільців</td><td>Кур&#x27;єр потрапив у ДТП / аварію</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Кур&#x27;єр потрапив у ДТП / аварію, Safety - Third party physically assaults or attempts to assault courier</td></tr>
+<tr><td>2026-07-03</td><td>XL3U0</td><td>SUSHI FAMILY</td><td>Sushi Family Міхновського</td><td>Проблема з транспортом кур&#x27;єра</td><td>Проблеми кур&#x27;єра (транспорт / ДТП / особистий інцидент)</td><td>Проблема з транспортом кур&#x27;єра, Інший кур&#x27;єр забрав замовлення</td></tr>
+<tr><td>2026-07-26</td><td>FII44</td><td>SUSHI FAMILY</td><td>Sushi Family Калнишевського</td><td>Інший кур&#x27;єр забрав замовлення</td><td>Перепризначення / збій доставки кур&#x27;єром</td><td>Неправильно порахована сума замовлення, Інший кур&#x27;єр забрав замовлення</td></tr>
+<tr><td>2026-06-03</td><td>N46UE</td><td>VIKTORIA</td><td>Viktoria food &amp; drink</td><td>Клієнт відхилив / відмовився від замовлення</td><td>Скасування на запит клієнта / відмова від замовлення</td><td>Клієнт відхилив / відмовився від замовлення, Заклад закритий (повідомив кур&#x27;єр)</td></tr>
+</tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Джерело: Databricks · support cases + issue keys · Згенеровано 29.07.2026 15:39
+    </footer>
+  </div>
+
+  <script>
+    const DATA = {"reasons": {"labels": ["Проблема з транспортом кур'єра", "Кур'єр потрапив у ДТП / аварію", "Особистий інцидент кур'єра", "Перепризначення замовлення (redispatch)", "Немає CS-тікета", "Інший кур'єр забрав замовлення", "Є тікет без issue", "Клієнт відхилив / відмовився від замовлення", "Помилка в додатку кур'єра", "Клієнт попросив скасувати активне замовлення", "Не призначено кур'єра (звернення клієнта)", "Заклад закритий (повідомив кур'єр)", "Інші дрібні причини"], "values": [68, 36, 12, 10, 6, 5, 5, 5, 4, 4, 4, 4, 14], "colors": ["#0b6e4f", "#144d6f", "#c45c26", "#5b4b8a", "#b91c1c", "#0e7490", "#a16207", "#4d7c0f", "#be185d", "#1d4ed8", "#7c2d12", "#065f46", "#6d28d9"]}, "buckets": {"labels": ["Проблеми кур'єра (транспорт / ДТП / особистий інцидент)", "Перепризначення / збій доставки кур'єром", "Скасування на запит клієнта / відмова від замовлення", "Клієнт: затримка / кур'єр не рухається / грубість", "Не призначено кур'єра", "Немає CS-тікета", "Є тікет без issue", "Інше"], "values": [116, 24, 9, 6, 6, 6, 5, 5], "colors": ["#0b6e4f", "#144d6f", "#c45c26", "#5b4b8a", "#b91c1c", "#0e7490", "#a16207", "#4d7c0f"]}};
+
+    function makePie(id, dataset, legendPos) {
+      const ctx = document.getElementById(id);
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: dataset.labels,
+          datasets: [{
+            data: dataset.values,
+            backgroundColor: dataset.colors,
+            borderColor: '#fff',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: legendPos || 'right',
+              labels: {
+                boxWidth: 12,
+                font: { size: 11 },
+                generateLabels(chart) {
+                  const data = chart.data;
+                  const total = data.datasets[0].data.reduce((a,b)=>a+b,0);
+                  return data.labels.map((label, i) => {
+                    const v = data.datasets[0].data[i];
+                    const pct = (100*v/total).toFixed(1);
+                    return {
+                      text: `${label} — ${v} (${pct}%)`,
+                      fillStyle: data.datasets[0].backgroundColor[i],
+                      strokeStyle: '#fff',
+                      lineWidth: 1,
+                      hidden: false,
+                      index: i,
+                    };
+                  });
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label(ctx) {
+                  const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+                  const pct = (100*ctx.raw/total).toFixed(1);
+                  return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    makePie('pieReasons', DATA.reasons, 'right');
+    makePie('pieBuckets', DATA.buckets, 'bottom');
+  </script>
+</body>
+</html>
