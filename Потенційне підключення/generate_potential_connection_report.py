@@ -5,6 +5,7 @@
 Джерела:
   - Smart Promotions (активні): delivery_smart_promotion_log.state = 'active'
   - Sponsored Listing (активні): sponsored_listing_duration_hours > 0 за останні 7 днів
+  - Sponsored Listing (коли-небудь): будь-який тиждень з sponsored_listing_duration_hours > 0
   - Метрики (4 повні тижні): fact_provider_weekly
 """
 
@@ -140,6 +141,12 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
         GROUP BY provider_id
         HAVING SUM(COALESCE(f.sponsored_listing_duration_hours, 0)) > 0
     ),
+    sl_ever AS (
+        SELECT provider_id
+        FROM ng_delivery_spark.fact_provider_weekly f
+        GROUP BY provider_id
+        HAVING SUM(COALESCE(f.sponsored_listing_duration_hours, 0)) > 0
+    ),
     metrics AS (
         SELECT
             f.provider_id,
@@ -185,6 +192,7 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
         p.is_top_brand,
         CASE WHEN s.provider_id IS NOT NULL THEN 1 ELSE 0 END AS has_smart_promotion,
         CASE WHEN sl.provider_id IS NOT NULL THEN 1 ELSE 0 END AS has_sponsored_listing,
+        CASE WHEN sl_e.provider_id IS NULL THEN 1 ELSE 0 END AS never_had_sponsored_listing,
         COALESCE(m.delivered_orders, 0) AS delivered_orders,
         COALESCE(m.gmv_eur, 0) AS gmv_eur,
         COALESCE(m.cp_eur, 0) AS cp_eur,
@@ -204,6 +212,7 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
     FROM portfolio p
     LEFT JOIN smart_active s ON p.provider_id = s.provider_id
     LEFT JOIN sl_active sl ON p.provider_id = sl.provider_id
+    LEFT JOIN sl_ever sl_e ON p.provider_id = sl_e.provider_id
     LEFT JOIN metrics m ON p.provider_id = m.provider_id
     LEFT JOIN sl_metrics sl_m ON p.provider_id = sl_m.provider_id
     ORDER BY p.city_name, p.brand_name, p.provider_name
@@ -212,6 +221,7 @@ def fetch_locations() -> tuple[pd.DataFrame, str, str]:
     df = _exec_sql(sql)
     numeric_cols = [
         "is_top_brand", "has_smart_promotion", "has_sponsored_listing",
+        "never_had_sponsored_listing",
         "delivered_orders", "gmv_eur", "cp_eur", "gross_uah", "net_uah",
         "cp_margin_pct", "impressions", "conv_imp_to_order_pct",
         "provider_active_rate_pct", "sl_attributed_gmv_eur", "sl_portal_spend_eur",
@@ -252,6 +262,10 @@ def aggregate_brands(df: pd.DataFrame) -> pd.DataFrame:
             "sl_locations": int((grp["has_sponsored_listing"] == 1).sum()),
             "has_smart_promotion": int(grp["has_smart_promotion"].max() or 0),
             "has_sponsored_listing": int(grp["has_sponsored_listing"].max() or 0),
+            # Бренд ніколи не підключав SL, якщо жодна локація ніколи не мала SL
+            "never_had_sponsored_listing": int(
+                (grp["never_had_sponsored_listing"].min() or 0) == 1
+            ),
             "delivered_orders": orders,
             "gmv_eur": gmv,
             "cp_eur": cp,
@@ -642,6 +656,40 @@ def build_no_sl_roas_rows(df: pd.DataFrame) -> str:
     return html
 
 
+def build_never_sl_rows(df: pd.DataFrame) -> str:
+    """Бренди, які ніколи не підключали Sponsored Listing."""
+    if df.empty:
+        return '<tr><td colspan="11" class="empty">Немає даних</td></tr>'
+    html = ""
+    for _, row in df.iterrows():
+        top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
+        cp = row.get("cp_margin_pct")
+        cp_class = "pos" if cp is not None and float(cp) > 0 else "neg" if cp is not None and float(cp) < 0 else ""
+        smart_tag = (
+            '<span class="tag tag-smart">Smart Promo</span>'
+            if int(row.get("has_smart_promotion") or 0)
+            else '<span class="muted">немає</span>'
+        )
+        product, _ = recommend_product(row)
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
+        html += f"""
+        <tr>
+          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td>{row.get('city_name') or '—'}</td>
+          <td class="num">{int(row.get('locations_count') or 1)}</td>
+          <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
+          <td class="num">{fmt_eur(row.get('gmv_eur'))}</td>
+          <td class="num {cp_class}">{fmt_pct(cp) if cp is not None else '—'}</td>
+          <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
+          <td class="num"><strong>{fmt_roas(row.get('predicted_roas'))}</strong></td>
+          <td class="num">{float(row.get('visibility_gap') or 1):.1f}×</td>
+          <td>{smart_tag}</td>
+          <td><span class="tag tag-rec">{product}</span></td>
+          <td class="action-cell">{send_rec_button(key)}</td>
+        </tr>"""
+    return html
+
+
 def build_sl_recommendation_rows(df: pd.DataFrame) -> str:
     if df.empty:
         return '<tr><td colspan="10" class="empty">Немає кандидатів</td></tr>'
@@ -789,6 +837,12 @@ def build_html(
         (df_brand["has_smart_promotion"] == 0) & (df_brand["has_sponsored_listing"] == 0)
     ].sort_values("predicted_roas", ascending=False, na_position="last")
 
+    df_never_sl = df_brand[df_brand["never_had_sponsored_listing"] == 1].sort_values(
+        "predicted_roas", ascending=False, na_position="last"
+    )
+    n_never_sl_brands = len(df_never_sl)
+    never_sl_rows = build_never_sl_rows(df_never_sl)
+
     neither_rows = ""
     for _, row in df_neither.iterrows():
         product, _ = recommend_product(row)
@@ -796,9 +850,14 @@ def build_html(
         cp_class = "pos" if cp is not None and float(cp) > 0 else "neg" if cp is not None and float(cp) < 0 else ""
         top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
         key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
+        never_badge = (
+            '<span class="tag tag-never">ніколи не було SL</span>'
+            if int(row.get("never_had_sponsored_listing") or 0)
+            else ""
+        )
         neither_rows += f"""
         <tr>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td><strong>{row.get('brand_name') or '—'}</strong> {top} {never_badge}</td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{int(row.get('locations_count') or 1)}</td>
           <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
@@ -970,6 +1029,8 @@ def build_html(
   .tag-smart {{ background: #EDE7F6; color: var(--purple); }}
   .tag-sl {{ background: #E3F2FD; color: var(--info); }}
   .tag-rec {{ background: #E8F9EE; color: #1A9A5A; }}
+  .tag-never {{ background: #FFF3E0; color: #E65100; }}
+  .stat.orange {{ border-top-color: var(--warning); }}
   .rec-grid {{
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1086,12 +1147,19 @@ def build_html(
         <div class="stat-value">{n_neither_brands}</div>
         <div class="stat-sub">брендів-кандидатів</div>
       </div>
+      <div class="stat orange">
+        <div class="stat-label">Ніколи не було SL</div>
+        <div class="stat-value">{n_never_sl_brands}</div>
+        <div class="stat-sub">брендів без історії SL</div>
+      </div>
     </div>
 
     <div class="note">
       <strong>Методологія:</strong>
       Smart Promotions — <code>delivery_smart_promotion_log</code> зі статусом <em>active</em>.
-      Sponsored Listing — локації з <code>sponsored_listing_duration_hours &gt; 0</code> за останні 7 днів.
+      Sponsored Listing (активні) — локації з <code>sponsored_listing_duration_hours &gt; 0</code> за останні 7 днів.
+      <strong>Ніколи не підключали SL</strong> — жодна локація бренду не мала
+      <code>sponsored_listing_duration_hours &gt; 0</code> за всю доступну історію в Databricks.
       <strong>Прогнозований ROAS</strong> для SL: окремого поля в Databricks немає — розраховується з фактичного ROAS
       (attr. GMV ÷ portal spend) по брендах портфоліо з активним SL (еталон {benchmark_roas:.1f}×), з урахуванням
       конверсії та <em>видимості</em> (покази на локацію vs медіана міста, active rate).
@@ -1102,6 +1170,7 @@ def build_html(
       <span class="section-toolbar-label">Секції звіту</span>
       <div class="section-pills">
         <button type="button" class="section-pill" onclick="jumpToSection('sec-priority')">🎯 Пріоритетні</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-never-sl')">🆕 Ніколи не було SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-roas')">📊 ROAS без SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-sl-rec')">🔵 Рекомендації SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-smart')">🟣 Smart Promo</button>
@@ -1121,9 +1190,28 @@ def build_html(
     )}
 
     {collapsible_section(
+        "sec-never-sl",
+        "🆕 Партнери, які ніколи не підключали Sponsored Listing",
+        f"{n_never_sl_brands} брендів · жодна локація не мала SL у всій історії Databricks · відсортовано за прогнозованим ROAS",
+        f'''<div class="table-wrap"><table>
+        <thead>
+          <tr>
+            <th>Бренд</th><th>Місто</th><th class="num">Лок.</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+            <th class="num">Прогноз ROAS</th><th class="num">Visibility gap</th>
+            <th>Smart Promo</th><th>Рекомендація</th><th>Дія</th>
+          </tr>
+        </thead>
+        <tbody>{never_sl_rows}</tbody>
+      </table></div>''',
+        open_default=True,
+    )}
+
+    {collapsible_section(
         "sec-roas",
-        "📊 Прогнозований ROAS — усі бренди без Sponsored Listing",
-        f"{n_no_sl_brands} брендів · відсортовано за прогнозованим ROAS (вищий = кращий потенціал SL)",
+        "📊 Прогнозований ROAS — усі бренди без активного Sponsored Listing",
+        f"{n_no_sl_brands} брендів · зараз без SL (можуть мати історію) · відсортовано за прогнозованим ROAS",
         f'''<div class="table-wrap"><table>
         <thead>
           <tr>
@@ -1466,6 +1554,7 @@ def main() -> None:
         f"   Smart Promo: {(df_loc['has_smart_promotion']==1).sum()} loc | "
         f"Sponsored Listing: {(df_loc['has_sponsored_listing']==1).sum()} loc | "
         f"Candidates: {mask_neither.sum()} brands | "
+        f"Never had SL: {(df_brand['never_had_sponsored_listing']==1).sum()} brands | "
         f"SL recommendations: {len(df_sl_rec)}"
     )
 
