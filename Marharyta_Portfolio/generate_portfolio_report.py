@@ -295,6 +295,7 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
     SELECT
         p.brand_name,
         p.city_name,
+        MIN(p.group_name) AS group_name,
         DATE_FORMAT(DATE_TRUNC('week', f.metric_timestamp_local), 'yyyy-MM-dd') AS week_start,
         SUM(f.delivered_orders_count)         AS delivered_orders,
         SUM(f.total_gmv_before_discounts_eur) AS gmv_eur,
@@ -1165,8 +1166,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </select>
     </div>
     <div>
-      <label>Бренд</label><br>
-      <input class="dyn-search" id="dynBrandSearch" type="text" placeholder="🔍 Пошук бренду..." oninput="updateBrandList()">
+      <label>Бренд / Group Name</label><br>
+      <input class="dyn-search" id="dynBrandSearch" type="text" placeholder="🔍 Бренд або Group Name..." oninput="updateBrandList()">
     </div>
     <div>
       <label>&nbsp;</label><br>
@@ -1328,20 +1329,34 @@ function updateBrandList() {{
   const prevVal    = select.value;
 
   const keys = Object.keys(TRENDS).filter(k => {{
-    const [brand, city] = k.split('|||');
-    const cityOk   = !cityFilter || city === cityFilter;
-    const searchOk = !searchQ   || brand.toLowerCase().includes(searchQ);
+    const d = TRENDS[k];
+    const brand = (d.brand || k.split('|||')[0] || '');
+    const city  = (d.city  || k.split('|||')[1] || '');
+    const group = (d.group_name || '');
+    const cityOk = !cityFilter || city === cityFilter;
+    const searchOk = !searchQ
+      || brand.toLowerCase().includes(searchQ)
+      || group.toLowerCase().includes(searchQ);
     return cityOk && searchOk;
   }});
 
-  keys.sort((a, b) => a.split('|||')[0].localeCompare(b.split('|||')[0], 'uk'));
+  keys.sort((a, b) => {{
+    const ba = (TRENDS[a].brand || a.split('|||')[0] || '');
+    const bb = (TRENDS[b].brand || b.split('|||')[0] || '');
+    return ba.localeCompare(bb, 'uk');
+  }});
 
   select.innerHTML = '<option value="">— Оберіть бренд —</option>';
   keys.forEach(k => {{
-    const [brand, city] = k.split('|||');
+    const d = TRENDS[k];
+    const brand = d.brand || k.split('|||')[0];
+    const city  = d.city  || k.split('|||')[1];
+    const group = d.group_name || '';
     const opt = document.createElement('option');
     opt.value = k;
-    opt.textContent = `${{brand}} (${{city}})`;
+    opt.textContent = group && group !== brand
+      ? `${{brand}} · ${{group}} (${{city}})`
+      : `${{brand}} (${{city}})`;
     select.appendChild(opt);
   }});
 
@@ -1435,7 +1450,8 @@ function renderCharts() {{
   const locs = d.locations || {{}};
   const locCount = Object.keys(locs).length;
 
-  infoDiv.innerHTML = `<strong>${{d.brand}}</strong> · ${{d.city}} · ${{d.weeks.length}} тижнів · ${{locCount}} локац.`;
+  const groupLabel = d.group_name ? ` · <span style="color:var(--muted)">Group: ${{d.group_name}}</span>` : '';
+  infoDiv.innerHTML = `<strong>${{d.brand}}</strong>${{groupLabel}} · ${{d.city}} · ${{d.weeks.length}} тижнів · ${{locCount}} локац.`;
 
   const GREEN  = '#1DC462';
   const BLUE   = '#1976D2';
@@ -1578,13 +1594,16 @@ document.addEventListener('DOMContentLoaded', () => {{
 """
 
 
-def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
+def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
+                      group_map: dict = None) -> str:
     """
     Convert weekly trends DataFrames into a JSON string for embedding in HTML.
     Includes brand-level aggregate data AND per-location conversion funnel data.
+    group_map: optional {(brand, city): group_name} fallback from summary.
     """
     import math
     data = {}
+    group_map = group_map or {}
 
     def clean(val):
         try:
@@ -1608,9 +1627,21 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
         def gcol(col_name):
             return [clean(v) for v in grp[col_name]] if col_name in grp.columns else []
 
+        group_name = ""
+        if "group_name" in grp.columns:
+            for raw in grp["group_name"].tolist():
+                if raw is not None and str(raw).strip() and str(raw).lower() != "nan":
+                    group_name = str(raw).strip()
+                    break
+        if not group_name:
+            fallback = group_map.get((brand, city)) or group_map.get((str(brand), str(city)))
+            if fallback and str(fallback).strip().lower() != "nan":
+                group_name = str(fallback).strip()
+
         data[key] = {
             "brand": brand,
             "city": city,
+            "group_name": group_name,
             "weeks": grp["week_start"].tolist(),
             "delivered_orders":        gcol("delivered_orders"),
             "gmv_eur":                 gcol("gmv_eur"),
@@ -1680,7 +1711,7 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame) -> str:
             # If brand not in trends (edge case), create minimal entry
             else:
                 data[brand_key] = {
-                    "brand": brand, "city": city,
+                    "brand": brand, "city": city, "group_name": "",
                     "weeks": [], "locations": {str(provider_id): loc_data}
                 }
 
@@ -2262,7 +2293,18 @@ def build_html(df: pd.DataFrame, df_trends: pd.DataFrame, df_loc: pd.DataFrame,
     )
 
     # Build trends JSON (brand-level + per-location conversion)
-    trends_json_str = build_trends_json(df_trends, df_loc if not df_loc.empty else pd.DataFrame())
+    group_map = {}
+    if "group_name" in df.columns:
+        for _, row in df.iterrows():
+            b, c = row.get("brand_name"), row.get("city_name")
+            g = row.get("group_name")
+            if b is not None and c is not None and g is not None and str(g).strip() and str(g).lower() != "nan":
+                group_map[(b, c)] = str(g).strip()
+    trends_json_str = build_trends_json(
+        df_trends,
+        df_loc if not df_loc.empty else pd.DataFrame(),
+        group_map=group_map,
+    )
 
     html = HTML_TEMPLATE.format(
         report_date=REPORT_DATE,
