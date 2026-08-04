@@ -314,6 +314,8 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
         ROUND(SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct,
+        ROUND(SUM(f.provider_active_rate_value * f.delivered_orders_count)
+            / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS availability_pct,
         -- Знижки та refunds
         ROUND(SUM(f.total_provider_campaign_spend_provider_eur), 2) AS partner_discount_eur,
         ROUND(SUM(f.total_provider_campaign_spend_bolt_eur), 2)     AS bolt_discount_eur,
@@ -1000,9 +1002,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     border-radius: 8px;
     font-size: 13px;
     outline: none;
-    width: 240px;
+    width: 220px;
   }}
   .dyn-search:focus {{ border-color: var(--bolt-green); }}
+  .dyn-select-wide {{ min-width: 280px; }}
   .dyn-brand-info {{
     margin-left: auto;
     font-size: 12px;
@@ -1160,18 +1163,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="dyn-controls">
     <div>
       <label>Місто</label><br>
-      <select class="dyn-select" id="dynCityFilter" onchange="updateBrandList()">
+      <select class="dyn-select" id="dynCityFilter" onchange="onDynFiltersChange()">
         <option value="">— Всі міста —</option>
         {dyn_city_options}
       </select>
     </div>
     <div>
-      <label>Бренд / Group Name</label><br>
-      <input class="dyn-search" id="dynBrandSearch" type="text" placeholder="🔍 Бренд або Group Name..." oninput="updateBrandList()">
+      <label>Бренд</label><br>
+      <input class="dyn-search" id="dynBrandSearch" type="text" list="dynBrandDatalist"
+             placeholder="🔍 Пошук бренду..." oninput="onDynFiltersChange()" autocomplete="off">
+      <datalist id="dynBrandDatalist"></datalist>
     </div>
     <div>
-      <label>&nbsp;</label><br>
-      <select class="dyn-select" id="dynBrandSelect" onchange="renderCharts()" size="1" style="min-width:260px;">
+      <label>Група</label><br>
+      <input class="dyn-search" id="dynGroupSearch" type="text" list="dynGroupDatalist"
+             placeholder="🔍 Пошук групи..." oninput="onDynFiltersChange()" autocomplete="off">
+      <datalist id="dynGroupDatalist"></datalist>
+    </div>
+    <div>
+      <label>Партнер</label><br>
+      <select class="dyn-select dyn-select-wide" id="dynBrandSelect" onchange="renderCharts()">
         <option value="">— Оберіть бренд —</option>
       </select>
     </div>
@@ -1197,6 +1208,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <div class="chart-card"><h4>😞 Bad Order Rate (%)</h4><canvas id="chartBad"></canvas></div>
       <div class="chart-card"><h4>✅ Acceptance Rate (%)</h4><canvas id="chartAcceptance"></canvas></div>
       <div class="chart-card"><h4>⏰ Late Delivery Rate (%)</h4><canvas id="chartLate"></canvas></div>
+      <div class="chart-card"><h4>🟢 Availability (%)</h4><canvas id="chartAvailability"></canvas></div>
     </div>
 
     <!-- Знижки та Refunds -->
@@ -1295,7 +1307,7 @@ function showDynamics() {{
   document.getElementById('tab-dynamics').classList.add('active');
   document.getElementById('mainContent').style.display = 'none';
   document.getElementById('dynamicsPanel').classList.add('active');
-  updateBrandList();
+  onDynFiltersChange();
 }}
 
 // ── Table search ──────────────────────────────────────────────────────────────
@@ -1321,24 +1333,71 @@ function sortTable(tableId, col, asc) {{
   rows.forEach(r => tbody.appendChild(r));
 }}
 
-// ── Dynamics: brand list ──────────────────────────────────────────────────────
+// ── Dynamics: filters + datalists ─────────────────────────────────────────────
+function getDynEntries() {{
+  return Object.keys(TRENDS).map(k => {{
+    const d = TRENDS[k];
+    return {{
+      key: k,
+      brand: d.brand || k.split('|||')[0] || '',
+      city:  d.city  || k.split('|||')[1] || '',
+      group: d.group_name || '',
+    }};
+  }});
+}}
+
+function fillDatalist(datalistId, values) {{
+  const el = document.getElementById(datalistId);
+  el.innerHTML = '';
+  values.forEach(v => {{
+    const opt = document.createElement('option');
+    opt.value = v;
+    el.appendChild(opt);
+  }});
+}}
+
+function refreshDynDatalists() {{
+  const cityFilter = document.getElementById('dynCityFilter').value;
+  const brandQ = document.getElementById('dynBrandSearch').value.trim().toLowerCase();
+  const groupQ = document.getElementById('dynGroupSearch').value.trim().toLowerCase();
+  const entries = getDynEntries().filter(e => !cityFilter || e.city === cityFilter);
+
+  const brands = [...new Set(
+    entries
+      .filter(e => !groupQ || e.group.toLowerCase().includes(groupQ))
+      .map(e => e.brand)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'uk'));
+
+  const groups = [...new Set(
+    entries
+      .filter(e => !brandQ || e.brand.toLowerCase().includes(brandQ))
+      .map(e => e.group)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'uk'));
+
+  fillDatalist('dynBrandDatalist', brands);
+  fillDatalist('dynGroupDatalist', groups);
+}}
+
+function onDynFiltersChange() {{
+  refreshDynDatalists();
+  updateBrandList();
+}}
+
 function updateBrandList() {{
   const cityFilter = document.getElementById('dynCityFilter').value;
-  const searchQ    = document.getElementById('dynBrandSearch').value.toLowerCase();
+  const brandQ     = document.getElementById('dynBrandSearch').value.trim().toLowerCase();
+  const groupQ     = document.getElementById('dynGroupSearch').value.trim().toLowerCase();
   const select     = document.getElementById('dynBrandSelect');
   const prevVal    = select.value;
 
-  const keys = Object.keys(TRENDS).filter(k => {{
-    const d = TRENDS[k];
-    const brand = (d.brand || k.split('|||')[0] || '');
-    const city  = (d.city  || k.split('|||')[1] || '');
-    const group = (d.group_name || '');
-    const cityOk = !cityFilter || city === cityFilter;
-    const searchOk = !searchQ
-      || brand.toLowerCase().includes(searchQ)
-      || group.toLowerCase().includes(searchQ);
-    return cityOk && searchOk;
-  }});
+  const keys = getDynEntries().filter(e => {{
+    const cityOk  = !cityFilter || e.city === cityFilter;
+    const brandOk = !brandQ || e.brand.toLowerCase().includes(brandQ);
+    const groupOk = !groupQ || e.group.toLowerCase().includes(groupQ);
+    return cityOk && brandOk && groupOk;
+  }}).map(e => e.key);
 
   keys.sort((a, b) => {{
     const ba = (TRENDS[a].brand || a.split('|||')[0] || '');
@@ -1362,6 +1421,8 @@ function updateBrandList() {{
 
   if (prevVal && keys.includes(prevVal)) {{
     select.value = prevVal;
+  }} else if (keys.length === 1) {{
+    select.value = keys[0];
   }}
   renderCharts();
 }}
@@ -1471,6 +1532,7 @@ function renderCharts() {{
   makeOrUpdate('chartBad',       labels, d.bad_order_rate_pct,      ORANGE, 'Bad Order Rate, %', false);
   makeOrUpdate('chartAcceptance',labels, d.acceptance_rate_pct,     INDIGO, 'Acceptance Rate, %', false);
   makeOrUpdate('chartLate',      labels, d.late_delivery_rate_pct,  AMBER,  'Late Delivery, %', false);
+  makeOrUpdate('chartAvailability', labels, d.availability_pct,     TEAL,   'Availability, %', false);
 
   // Знижки та refunds (brand-level)
   if (d.partner_discount_eur && d.partner_discount_eur.length) {{
@@ -1616,6 +1678,7 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
     for col in ["delivered_orders", "gmv_eur", "contribution_profit_eur",
                 "cp_l2_margin_pct", "failed_order_rate_pct",
                 "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct",
+                "availability_pct",
                 "partner_discount_eur", "bolt_discount_eur",
                 "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur"]:
         if col in df_trends.columns:
@@ -1651,6 +1714,7 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
             "bad_order_rate_pct":      gcol("bad_order_rate_pct"),
             "acceptance_rate_pct":     gcol("acceptance_rate_pct"),
             "late_delivery_rate_pct":  gcol("late_delivery_rate_pct"),
+            "availability_pct":        gcol("availability_pct"),
             "partner_discount_eur":    gcol("partner_discount_eur"),
             "bolt_discount_eur":       gcol("bolt_discount_eur"),
             "demand_refunds_eur":      gcol("demand_refunds_eur"),
