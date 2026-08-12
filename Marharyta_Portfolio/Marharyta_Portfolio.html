@@ -502,6 +502,11 @@
     color: var(--muted);
     margin-bottom: 5px;
   }
+  .dyn-analysis-card ul + .dyn-analysis-list-title {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed #e2e2e2;
+  }
   .dyn-analysis-card ul {
     margin: 0;
     padding-left: 18px;
@@ -4979,9 +4984,85 @@ function fmtEurVal(v) {
   return (v < 0 ? '−€' : '€') + abs;
 }
 
+function pluralUa(n, one, few, many) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} ${one}`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} ${few}`;
+  return `${n} ${many}`;
+}
+
 function shareOfGmv(v, gmv) {
   if (v == null || gmv == null || gmv <= 0) return null;
   return v / gmv * 100;
+}
+
+// ── Ринковий контекст: сума по інших брендах міста за той самий тиждень ──────
+// Дає змогу відрізнити зовнішній фактор (просів увесь ринок) від проблеми
+// конкретного партнера (ринок стабільний, а він падає).
+let MARKET_CACHE = null;
+function marketByCity() {
+  if (MARKET_CACHE) return MARKET_CACHE;
+  const byCity = { __all__: {} };
+  Object.values(TRENDS).forEach(b => {
+    const city = b.city || '—';
+    const cityRec = byCity[city] || (byCity[city] = {});
+    (b.weeks || []).forEach((w, i) => {
+      const o = (b.delivered_orders || [])[i];
+      const g = (b.gmv_eur || [])[i];
+      [cityRec, byCity.__all__].forEach(rec => {
+        const wk = rec[w] || (rec[w] = { orders: 0, gmv: 0, brands: 0 });
+        if (o != null) wk.orders += o;
+        if (g != null) wk.gmv += g;
+        wk.brands += 1;
+      });
+    });
+  });
+  MARKET_CACHE = byCity;
+  return MARKET_CACHE;
+}
+
+// ── Сезонний і календарний контекст для тижня ────────────────────────────────
+const UA_HOLIDAYS = [
+  [1, 1, 'Новий рік'], [3, 8, 'Міжнародний жіночий день'], [5, 1, 'День праці'],
+  [6, 28, 'День Конституції'], [8, 24, 'День Незалежності'],
+  [10, 1, 'День захисників і захисниць'], [12, 25, 'Різдво'],
+];
+
+function seasonalNotes(weekStart) {
+  if (!weekStart) return [];
+  const start = new Date(weekStart + 'T00:00:00');
+  const m = start.getMonth() + 1;
+  const day = start.getDate();
+  const notes = [];
+
+  if (m >= 6 && m <= 8) {
+    notes.push('<b>Сезон відпусток і спека:</b> частина постійних клієнтів виїхала або проводить час поза домом, а в сильну спеку попит на гарячу їжу традиційно нижчий. Це вплив на весь ринок, не лише на цього партнера.');
+    if (m === 8 && day >= 15)
+      notes.push('<b>Кінець серпня:</b> родини готуються до навчального року — витрати перерозподіляються з доставки на інші категорії.');
+  } else if (m === 9) {
+    notes.push('<b>Вересень:</b> повернення з відпусток і старт навчального року зазвичай відновлюють попит. Якщо цього не сталося — причина радше внутрішня, а не сезонна.');
+  } else if (m === 10 || m === 11) {
+    notes.push('<b>Осінь:</b> холод і дощі зазвичай піднімають доставку. Падіння в цей період важче списати на сезон — шукайте причину в метриках закладу.');
+  } else if (m === 12) {
+    notes.push('<b>Грудень:</b> передсвятковий період і корпоративи зазвичай піднімають попит, але в самі свята він зміщується на домашній стіл.');
+  } else if (m === 1) {
+    notes.push('<b>Січень:</b> після свят попит традиційно просідає — люди економлять після святкових витрат.');
+  } else if (m >= 3 && m <= 5) {
+    notes.push('<b>Весна:</b> тепла погода, травневі вихідні й виїзди на природу переводять частину попиту з доставки в офлайн-заклади.');
+  }
+
+  const end = new Date(start.getTime() + 6 * 86400000);
+  UA_HOLIDAYS.forEach(([hm, hd, name]) => {
+    for (let t = new Date(start); t <= end; t = new Date(t.getTime() + 86400000)) {
+      if (t.getMonth() + 1 === hm && t.getDate() === hd) {
+        notes.push(`<b>Святковий тиждень (${name}):</b> у свята попит зміщується — частина клієнтів святкує вдома або в закладах, режим роботи кухні теж міг відрізнятися.`);
+        break;
+      }
+    }
+  });
+
+  notes.push('<b>Погода:</b> сонячні теплі вихідні зменшують доставку, дощ і різке похолодання — збільшують. Звірте тиждень із фактичною погодою в місті.');
+  return notes;
 }
 
 function analyzeBrandDynamics(d) {
@@ -5005,6 +5086,7 @@ function analyzeBrandDynamics(d) {
   const cpWow     = pctChange(cpPrev, cpLast);
   const marginPp  = ppChange(mPrev, mLast);
   const ordDiff   = (oPrev != null && oLast != null) ? oLast - oPrev : null;
+  const gmvDiff   = (gPrev != null && gLast != null) ? gLast - gPrev : null;
   const cpDiff    = (cpPrev != null && cpLast != null) ? cpLast - cpPrev : null;
 
   const aovPrev = (gPrev != null && oPrev) ? gPrev / oPrev : null;
@@ -5033,17 +5115,38 @@ function analyzeBrandDynamics(d) {
   const impWow = (impPrev > 0 && impLast > 0) ? (impLast / impPrev - 1) * 100 : null;
   const convPp = convN ? (convLastSum / convN) - (convPrevSum / convN) : null;
 
-  // CP порівнюємо в грошах: при негативній базі відсоткова зміна вводить в оману
-  // (напр. −€16 → €2 формально дає «−113%», хоча це покращення).
-  const cpMaterial = Math.max(2, Math.abs(cpPrev != null ? cpPrev : 0) * 0.03);
-  const cpPctShown = (cpPrev != null && cpLast != null && cpPrev > 0) ? cpWow : null;
+  // ── Ринок міста за ті самі два тижні, без урахування самого партнера ──────
+  const weeks = d.weeks || [];
+  const wLast = weeks[weeks.length - 1], wPrev = weeks[weeks.length - 2];
+  let mktOrdersWow = null, mktGmvWow = null, mktLabel = '', mktBrands = 0, mktIsCity = false;
+  if (wLast && wPrev) {
+    const all = marketByCity();
+    const scopes = [['city', all[d.city]], ['portfolio', all.__all__]];
+    for (const [scope, rec] of scopes) {
+      if (!rec || !rec[wPrev] || !rec[wLast]) continue;
+      const oP = rec[wPrev].orders - (oPrev || 0), oL = rec[wLast].orders - (oLast || 0);
+      const gP = rec[wPrev].gmv - (gPrev || 0),    gL = rec[wLast].gmv - (gLast || 0);
+      const n = rec[wLast].brands - 1;
+      const enough = scope === 'city' ? (n >= 2 && oP >= 30) : (n >= 3 && oP >= 50);
+      if (!enough) continue;
+      mktOrdersWow = pctChange(oP, oL);
+      mktGmvWow    = pctChange(gP, gL);
+      mktBrands    = n;
+      mktIsCity    = scope === 'city';
+      mktLabel     = mktIsCity ? `по решті ринку в ${d.city}` : 'по решті портфеля (інші міста теж)';
+      break;
+    }
+  }
 
   const hasOrdersDrop = ordersWow != null && ordersWow < -2;
+  const hasGmvDrop    = gmvWow != null && gmvWow < -2;
+  const cpMaterial    = Math.max(2, Math.abs(cpPrev != null ? cpPrev : 0) * 0.03);
+  const cpPctShown    = (cpPrev != null && cpLast != null && cpPrev > 0) ? cpWow : null;
   const hasCpDrop     = cpDiff != null && cpDiff < -cpMaterial;
   const hasCpGrowth   = cpDiff != null && cpDiff > cpMaterial;
   const hasMarginDrop = marginPp != null && marginPp < -0.5;
 
-  // ══ 1. ЧОМУ ВПАЛИ ЗАМОВЛЕННЯ ═══════════════════════════════════════════════
+  // ══ 1. ЧОМУ ВПАЛИ ЗАМОВЛЕННЯ ТА GMV ════════════════════════════════════════
   const orderReasons = [];
   if (avPrev != null && avLast != null && (avLast - avPrev) <= -1)
     orderReasons.push(`<b>Availability</b> ${avPrev.toFixed(1)}% → ${avLast.toFixed(1)}% (${fmtDeltaPp(avLast - avPrev)}): заклад менше часу був онлайн, частина попиту фізично не могла оформити замовлення.`);
@@ -5062,32 +5165,78 @@ function analyzeBrandDynamics(d) {
   if (bdPrev != null && bdLast != null && (bdLast - bdPrev) >= 1.5)
     orderReasons.push(`<b>Bad Order Rate</b> ${fmtDeltaPp(bdLast - bdPrev)}: більше проблемних замовлень — падає повторний попит.`);
   if (hasOrdersDrop && aovWow != null && aovWow > 5)
-    orderReasons.push(`<b>Середній чек</b> зріс на ${fmtDeltaPct(aovWow)} (${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)}): можливе підняття цін у меню відлякує частину чутливих до ціни клієнтів.`);
+    orderReasons.push(`<b>Середній чек</b> зріс на ${aovWow.toFixed(1)}% (${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)}): можливе підняття цін у меню відлякує частину чутливих до ціни клієнтів.`);
   if (hasOrdersDrop && locDrops.length)
-    orderReasons.push(`<b>Де саме падіння:</b> ${locDrops.slice(0, 3).map(l => `${l.name} (${Math.round(l.diff)} зам., ${fmtDeltaPct(l.pct)})`).join('; ')}${locDrops.length > 3 ? ` та ще ${locDrops.length - 3} локац.` : ''}.`);
+    orderReasons.push(`<b>Де саме падіння:</b> ${locDrops.slice(0, 3).map(l => `${l.name} (${Math.round(l.diff)} зам., ${fmtDeltaPct(l.pct)})`).join('; ')}${locDrops.length > 3 ? ` та ще ${pluralUa(locDrops.length - 3, 'локація', 'локації', 'локацій')}` : ''}.`);
 
-  let ordersTitle = 'Чому впали замовлення';
-  let ordersList  = 'Причини падіння:';
+  // GMV = замовлення × середній чек, тож падіння розкладається на два ефекти
+  const ordEffect = (ordDiff != null && aovPrev != null) ? ordDiff * aovPrev : null;
+  const aovEffect = (oLast != null && aovPrev != null && aovLast != null) ? oLast * (aovLast - aovPrev) : null;
+  const gmvReasons = [];
+  if (hasGmvDrop && ordEffect != null && aovEffect != null) {
+    if (ordEffect < 0)
+      gmvReasons.push(`<b>Менше замовлень: ${fmtEurDelta(ordEffect)}</b> — ${Math.round(oPrev)} → ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}) при старому середньому чеку ${fmtEurVal(aovPrev)}.`);
+    if (aovEffect < 0)
+      gmvReasons.push(`<b>Нижчий середній чек: ${fmtEurDelta(aovEffect)}</b> — ${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)} (${fmtDeltaPct(aovWow)}). Клієнти беруть менше позицій у кошик (менше напоїв, десертів, додатків), або змінився mix страв чи ціни в меню.`);
+    if (ordEffect < 0 && aovEffect < 0) {
+      const share = Math.abs(ordEffect) / ((Math.abs(ordEffect) + Math.abs(aovEffect)) || 1) * 100;
+      gmvReasons.push(`Головний драйвер GMV — ${share >= 55 ? `<b>кількість замовлень</b> (~${Math.round(share)}%)` : share <= 45 ? `<b>середній чек</b> (~${Math.round(100 - share)}%)` : '<b>обидва фактори порівну</b>'}.`);
+    }
+    if (aovEffect < 0 && ordEffect >= 0)
+      gmvReasons.push('Замовлень не стало менше — GMV просів виключно через нижчий середній чек.');
+    if (ordEffect < 0 && aovEffect >= 0)
+      gmvReasons.push(`Середній чек не падав, навпаки — вищий чек компенсував ${fmtEurDelta(aovEffect)}, інакше GMV просів би сильніше. Тобто причина падіння GMV — виключно кількість замовлень.`);
+  }
+
+  // Зовнішній контекст: ринок міста + сезон, погода, тривоги
+  const externalReasons = [];
+  if (mktOrdersWow != null) {
+    if (hasOrdersDrop || hasGmvDrop) {
+      if (mktOrdersWow <= -3) {
+        const harder = ordersWow != null && ordersWow < mktOrdersWow - 3;
+        externalReasons.push(`<b>Ринок теж просів:</b> замовлення ${mktLabel} ${fmtDeltaPct(mktOrdersWow)}, GMV ${fmtDeltaPct(mktGmvWow)} (${pluralUa(mktBrands, 'бренд', 'бренди', 'брендів')}). Тобто діє зовнішній фактор, спільний для всіх — погода, тривоги, відпустки. ${harder ? `Але партнер впав сильніше за ринок (${fmtDeltaPct(ordersWow)}), тож частина падіння все одно його власна.` : 'Падіння партнера в межах загальної тенденції.'}`);
+      } else if (mktOrdersWow >= 2) {
+        externalReasons.push(`<b>Ринок зростав:</b> замовлення ${mktLabel} ${fmtDeltaPct(mktOrdersWow)} (${pluralUa(mktBrands, 'бренд', 'бренди', 'брендів')}), а партнер ${fmtDeltaPct(ordersWow)}. ${mktIsCity ? 'Спільні для міста фактори (погода, тривоги, відпустки) падіння не пояснюють — причина на боці закладу, дивіться метрики вище.' : 'Порівняння тут по інших містах, тож суто локальну причину (тривоги чи погода саме в цьому місті) виключати не можна, але перевірити спершу варто метрики закладу.'}`);
+      } else {
+        externalReasons.push(`<b>Ринок стабільний:</b> замовлення ${mktLabel} ${fmtDeltaPct(mktOrdersWow)} (${pluralUa(mktBrands, 'бренд', 'бренди', 'брендів')}). Падіння переважно специфічне для партнера${mktIsCity ? '' : ', хоча бенчмарк тут по інших містах'}.`);
+      }
+    } else {
+      externalReasons.push(`<b>Для контексту:</b> ${mktLabel} замовлення ${fmtDeltaPct(mktOrdersWow)}, GMV ${fmtDeltaPct(mktGmvWow)} за цей же тиждень.`);
+    }
+  }
+  if (hasOrdersDrop || hasGmvDrop) {
+    const alertHint = (avPrev != null && avLast != null && (avLast - avPrev) <= -1)
+      ? ' Availability цього тижня теж просіла — це вагома підказка саме на користь такої причини.'
+      : ' Якщо тривоги були тривалі, перевірте погодинну динаміку: провал у вечірній пік найпомітніший.';
+    externalReasons.push(`<b>Повітряні тривоги та відключення світла:</b> довгі тривоги і блекаути зупиняють кухню й доставку на години.${alertHint}`);
+    seasonalNotes(wLast).forEach(n => externalReasons.push(n));
+  }
+
+  let ordersTitle = 'Чому впали замовлення та GMV';
   let ordersText;
   if (oPrev == null || oLast == null) {
-    ordersTitle = 'Замовлення';
-    ordersList  = '';
+    ordersTitle = 'Замовлення та GMV';
     ordersText  = 'Недостатньо даних для порівняння двох тижнів.';
-  } else if (hasOrdersDrop) {
-    ordersText = `Замовлення впали з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}, ${Math.round(ordDiff)} шт за тиждень).`;
-    if (!orderReasons.length) {
-      ordersList = '';
-      orderReasons.push('Операційні метрики (availability, acceptance, failed, покази, конверсія) не погіршились — падіння радше зовнішнє: сезонність, погода, свята, активність конкурентів у зоні або завершення промо. Варто уточнити у партнера.');
-    }
+  } else if (hasOrdersDrop || hasGmvDrop) {
+    const parts = [];
+    if (hasOrdersDrop) parts.push(`замовлення впали з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}, ${Math.round(ordDiff)} шт)`);
+    else parts.push(`замовлення майже без змін (${fmtDeltaPct(ordersWow)})`);
+    if (gmvWow != null) parts.push(`GMV ${hasGmvDrop ? 'просів' : 'змінився'} з ${fmtEurVal(gPrev)} до ${fmtEurVal(gLast)} (${fmtDeltaPct(gmvWow)}, ${fmtEurDelta(gmvDiff)})`);
+    ordersText = `За тиждень ${parts.join('; ')}.`;
+    if (!orderReasons.length)
+      orderReasons.push('Операційні метрики (availability, acceptance, failed, покази, конверсія) не погіршились — падіння радше зовнішнє або пов’язане зі структурою кошика.');
   } else {
-    ordersTitle = ordersWow != null && ordersWow > 2 ? 'Замовлення: падіння немає' : 'Замовлення: без змін';
+    ordersTitle = ordersWow != null && ordersWow > 2 ? 'Замовлення та GMV: падіння немає' : 'Замовлення та GMV: без змін';
     ordersText  = ordersWow != null && ordersWow > 2
-      ? `Замовлення зросли з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}) — пояснювати падіння немає чого.`
-      : `Замовлення стабільні: ${Math.round(oPrev)} → ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}).`;
-    ordersList = orderReasons.length ? 'Але є метрики, що тиснуть на попит:' : '';
+      ? `Замовлення зросли з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}), GMV ${fmtDeltaPct(gmvWow)} — пояснювати падіння немає чого.`
+      : `Замовлення стабільні: ${Math.round(oPrev)} → ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}), GMV ${fmtDeltaPct(gmvWow)}.`;
     if (!orderReasons.length) orderReasons.push('Ризиків у попиті та операційній якості не видно.');
   }
   if (lowVolume) orderReasons.push('Обсяги малі (менше 20 замовлень на тиждень) — відсоткові зміни тут дуже чутливі до кількох замовлень.');
+
+  const ordersListTitle = (hasOrdersDrop || hasGmvDrop)
+    ? 'Метрики закладу:'
+    : (orderReasons.length && !/Ризиків у попиті/.test(orderReasons[0]) ? 'Метрики під наглядом:' : '');
 
   // ══ 2. ЧОМУ ПРОСІЛА МАРЖА (CONTRIBUTION PROFIT, €) ═════════════════════════
   // CP = GMV × маржа%, тож ΔCP ≈ ΔGMV × маржа_попередня + GMV_останній × Δмаржа
@@ -5102,7 +5251,7 @@ function analyzeBrandDynamics(d) {
       const src = hasOrdersDrop && aovDown
         ? `менше замовлень (${fmtDeltaPct(ordersWow)}) і нижчий середній чек (${fmtDeltaPct(aovWow)})`
         : hasOrdersDrop
-          ? `менше замовлень (${fmtDeltaPct(ordersWow)}) — причини в блоці «Замовлення»`
+          ? `менше замовлень (${fmtDeltaPct(ordersWow)}) — причини в блоці «Замовлення та GMV»`
           : aovDown
             ? `нижчий середній чек (${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)}, ${fmtDeltaPct(aovWow)}) при майже незмінній кількості замовлень`
             : 'менший оборот';
@@ -5218,37 +5367,41 @@ function analyzeBrandDynamics(d) {
     (ordersWow != null && ordersWow < -15) || (marginPp != null && marginPp < -3) ||
     (mLast != null && mLast < 0) || (cpPctShown != null && cpPctShown < -20)
       ? 'danger'
-      : (hasOrdersDrop || hasMarginDrop || hasCpDrop) ? 'warning' : '';
+      : (hasOrdersDrop || hasGmvDrop || hasMarginDrop || hasCpDrop) ? 'warning' : '';
 
   const cls = (v, badBelow, goodAbove) =>
     v == null ? 'flat' : v < badBelow ? 'down' : v > goodAbove ? 'up' : 'flat';
 
-  const card = (icon, title, deltaHtml, deltaCls, sub, text, listTitle, reasons) => `
+  const card = (icon, title, deltaHtml, deltaCls, sub, text, sections) => `
     <div class="dyn-analysis-card">
       <h5>${icon} ${title}</h5>
       <div class="delta ${deltaCls}">${deltaHtml}<span class="delta-sub">${sub}</span></div>
       <p class="dyn-analysis-text">${text}</p>
-      ${listTitle ? `<div class="dyn-analysis-list-title">${listTitle}</div>` : ''}
-      <ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+      ${sections.filter(s => s.items && s.items.length).map(s => `
+        ${s.title ? `<div class="dyn-analysis-list-title">${s.title}</div>` : ''}
+        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`).join('')}
     </div>`;
 
   let html = `<div class="dyn-analysis-title">🔍 Аналіз динаміки · останній тиждень vs попередній</div>`;
   html += `<div class="dyn-analysis-grid">`;
   html += card('📦', ordersTitle,
     fmtDeltaPct(ordersWow), cls(ordersWow, -2, 2),
-    (oPrev != null && oLast != null) ? `${Math.round(oPrev)} → ${Math.round(oLast)}` : '',
-    ordersText, ordersList, orderReasons);
+    (oPrev != null && oLast != null) ? `${Math.round(oPrev)} → ${Math.round(oLast)} · GMV ${fmtDeltaPct(gmvWow)}` : '',
+    ordersText,
+    [{ title: ordersListTitle, items: orderReasons },
+     { title: 'Розклад падіння GMV:', items: gmvReasons },
+     { title: '🌍 Зовнішні фактори:', items: externalReasons }]);
   html += card('💶', cpTitle,
     fmtEurDelta(cpDiff), cls(cpDiff, -cpMaterial, cpMaterial),
     (cpPrev != null && cpLast != null) ? `${fmtEurVal(cpPrev)} → ${fmtEurVal(cpLast)}` : '',
-    cpText, cpList, cpReasons);
+    cpText, [{ title: cpList, items: cpReasons }]);
   html += card('📉', mTitle,
     fmtDeltaPp(marginPp), cls(marginPp, -0.5, 0.5),
     (mPrev != null && mLast != null) ? `${mPrev.toFixed(1)}% → ${mLast.toFixed(1)}%` : '',
-    mText, mList, mReasons);
+    mText, [{ title: mList, items: mReasons }]);
   html += `</div>`;
 
-  html += `<div class="dyn-analysis-hint">Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек). Маржа в € розкладається на ефект обсягу та ефект рентабельності; CP L2 Маржа (%) — на частку витрат у GMV. Це гіпотези для перевірки з партнером, не остаточний вердикт.</div>`;
+  html += `<div class="dyn-analysis-hint">Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек) і порівняння з рештою ринку міста за той самий тиждень. Зовнішні фактори (погода, тривоги, сезон) — це підказки для перевірки, а не зафіксовані дані. Це гіпотези для розмови з партнером, не остаточний вердикт.</div>`;
   return { html, severity };
 }
 
