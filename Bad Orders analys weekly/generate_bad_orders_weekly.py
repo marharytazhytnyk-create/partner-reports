@@ -62,45 +62,233 @@ CITY_UA = {
 }
 
 ACTOR_UA = {
-    "bolt": "Bolt (платформа)",
+    "bolt": "Платформа Bolt",
+    "supply": "Платформа Bolt (дефіцит кур'єрів)",
     "courier": "Кур'єр",
     "provider": "Заклад",
     "eater": "Клієнт",
     "client": "Клієнт",
-    "unknown": "Невизначено",
-    None: "Невизначено",
-    "": "Невизначено",
+    "unknown": "Не атрибутовано",
+    None: "Не атрибутовано",
+    "": "Не атрибутовано",
 }
 
+# Зони відповідальності — верхній рівень класифікації, з яким працює акаунт-менеджер
+RESP_UA = {
+    "provider": "Заклад",
+    "courier": "Кур'єр",
+    "client": "Клієнт",
+    "platform": "Платформа Bolt",
+    "unassigned": "Не атрибутовано",
+}
+
+RESP_ORDER = ("provider", "courier", "platform", "client", "unassigned")
+
+# bad_order_actor_at_fault → зона відповідальності
+ACTOR_RESP = {
+    "provider": "provider",
+    "courier": "courier",
+    "eater": "client",
+    "client": "client",
+    "bolt": "platform",
+    "supply": "platform",
+}
+
+# Причини Bad Orders. Ключ — код без суфіксів _seconds / _eater.
 REASON_UA = {
-    "bolt_cooking_eta_underestimate_seconds": "Bolt занизив ETA приготування",
-    "bolt_assignment_delay_from_supply_starvation_seconds": "Bolt: затримка призначення кур'єра (дефіцит кур'єрів)",
-    "bolt_assignment_delay_from_rejections_seconds": "Bolt: затримка через відмови кур'єрів",
-    "bolt_batching_delay_seconds": "Bolt: затримка через батчинг замовлень",
-    "bolt_dispatch_start_delay_seconds": "Bolt: затримка старту диспетчеризації",
-    "bolt_prep_instruction_delay_seconds": "Bolt: затримка інструкцій для закладу",
-    "courier_to_provider_eta_error_seconds": "Кур'єр: помилка ETA до закладу",
-    "provider_to_eater_eta_error_seconds": "Кур'єр: помилка ETA до клієнта",
-    "courier_redispatch_duration_seconds": "Кур'єр: повторна диспетчеризація",
-    "pickup_delay_courier_fault_seconds": "Кур'єр: затримка на pickup",
-    "courier_dropoff_delay_adjusted_seconds": "Кур'єр: затримка на доставці",
-    "order_never_delivered_eater": "Замовлення не доставлено клієнту",
-    "provider_preparation_delay_seconds": "Заклад: затримка приготування",
-    "provider_preparation_overestimate_seconds": "Заклад: переоцінка часу приготування",
-    "pickup_delay_provider_fault_seconds": "Заклад: затримка на видачі",
-    "did_not_respond": "Заклад: не відповів на замовлення",
-    "missing_item_eater": "Заклад: відсутня позиція в замовленні",
-    "items_out_of_stock": "Заклад: позиції немає в наявності",
-    "too_many_orders": "Заклад: занадто багато замовлень",
-    "closed": "Заклад: закритий",
+    # Заклад
+    "did_not_respond": "Заклад: не прийняв замовлення (не відповів)",
+    "provider_preparation_delay": "Заклад: затримка приготування",
+    "provider_preparation_overestimate": "Заклад: переоцінка часу приготування",
+    "pickup_delay_provider_fault": "Заклад: затримка на видачі кур'єру",
+    "missing_item": "Заклад: відсутня позиція в замовленні",
+    "items_out_of_stock": "Заклад: позиції немає в наявності (стоп-лист не оновлено)",
+    "too_many_orders": "Заклад: відмова через завантаженість",
+    "closed": "Заклад: закритий у робочі години",
     "do_not_wish_to_serve_this_client": "Заклад: відмова обслуговувати клієнта",
-    "wrong_item_eater": "Заклад: неправильна позиція",
-    "item_had_a_spoiled_taste_or_smell_eater": "Поганий смак/запах страви",
-    "manually_failed_by_cs": "Скасовано службою підтримки",
-    "order_damaged_eater": "Пошкоджене замовлення",
-    "order_took_longer_eater": "Замовлення зайняло більше часу",
-    "unknown": "Невизначена причина",
+    "wrong_item": "Заклад: видано не ту позицію",
+    "received_an_entirely_wrong_order": "Заклад: видано зовсім інше замовлення",
+    "item_had_a_spoiled_taste_or_smell": "Заклад: зіпсований смак або запах страви",
+    "food_was_overcooked_or_burnt": "Заклад: страва переготована або підгоріла",
+    "food_was_undercooked_or_raw": "Заклад: страва недогорована або сира",
+    "object_detected_in_food": "Заклад: сторонній предмет у страві",
+    "foreign_object_in_food": "Заклад: сторонній предмет у страві",
+    "food_poisoning": "Заклад: скарга на отруєння",
+    "item_does_not_match_the_description": "Заклад: страва не відповідає опису",
+    "item_does_not_match_the_photo": "Заклад: страва не відповідає фото",
+    "item_does_not_match_the_expectations": "Заклад: страва не відповідає очікуванням клієнта",
+    "restaurant_ignored_my_order_notes": "Заклад: проігноровано комментар до замовлення",
+    "missing_cutlery": "Заклад: не поклали прибори",
+    "there_was_a_mistake_in_the_menu": "Заклад: помилка в меню",
+    "unable_to_contact_the_restaurant": "Заклад: не вдалося зв'язатися із закладом",
+    "question_about_menu_item": "Заклад: питання щодо позиції меню",
+    "device_issue": "Заклад: проблема з планшетом або терміналом",
+    # Кур'єр
+    "courier_to_provider_eta_error": "Кур'єр: приїхав до закладу пізніше за ETA",
+    "provider_to_eater_eta_error": "Кур'єр: привіз клієнту пізніше за ETA",
+    "pickup_delay_courier_fault": "Кур'єр: затримка на забиранні замовлення",
+    "courier_dropoff_delay_adjusted": "Кур'єр: затримка на видачі клієнту",
+    "my_courier_is_late": "Спізнення доставки",
+    "my_courier_is_not_moving": "Кур'єр: не рухається за маршрутом",
+    "my_courier_cannot_find_me": "Кур'єр: не може знайти клієнта",
+    "my_courier_was_rude": "Кур'єр: неввічлива поведінка",
+    "unable_to_contact_the_courier": "Кур'єр: не виходить на зв'язок",
+    "courier_added_the_wrong_cash_amount": "Кур'єр: помилка з готівкою",
+    "courier_no_change": "Кур'єр: не мав решти",
+    "order_never_delivered": "Замовлення так і не доставлено клієнту",
+    "my_order_arrived_cold": "Замовлення привезли холодним",
+    "order_damaged": "Замовлення пошкоджено під час доставки",
+    "courier_caused_delay_and_user_cancelled": "Кур'єр затримав, клієнт скасував",
+    # Платформа Bolt
+    "bolt_cooking_eta_underestimate": "Bolt: система занизила прогноз часу приготування",
+    "bolt_prep_instruction_delay": "Bolt: із запізненням передав закладу команду готувати",
+    "bolt_assignment_delay_from_supply_starvation": "Bolt: не було вільних кур'єрів у зоні",
+    "bolt_assignment_delay_from_rejections": "Bolt: довгий пошук через відмови кур'єрів",
+    "no_courier_is_assigned_to_the_order": "Кур'єра не було призначено на замовлення",
+    "bolt_batching_delay": "Bolt: затримка через об'єднання замовлень (батчинг)",
+    "bolt_dispatch_start_delay": "Bolt: пізно розпочато пошук кур'єра",
+    "courier_redispatch_duration": "Повторний пошук кур'єра (перепризначення)",
+    "manually_failed_by_cs": "Скасовано агентом підтримки",
+    "automatically_failed": "Скасовано автоматично системою",
+    "bolt_caused_delay_and_user_cancelled": "Bolt затримав, клієнт скасував",
+    "failed_payment": "Не пройшла оплата",
+    "charged_twice_for_my_order": "Подвійне списання за замовлення",
+    "question_about_price_calculation": "Питання щодо розрахунку ціни",
+    # Клієнт
+    "eater_contaminated_food": "Клієнт: зіпсував їжу",
+    # Без атрибуції
+    "unknown_delay_dropoff": "Затримка на етапі доставки, причину не визначено",
+    "unknown_delay_pickup": "Затримка на етапі видачі, причину не визначено",
+    "order_took_longer": "Замовлення тривало довше очікуваного, етап не визначено",
+    "other": "Інша причина",
+    "unknown": "Причину не визначено",
+    "none": "Без деталізації",
     None: "Без деталізації",
+}
+
+# Причина → зона відповідальності. Використовується, коли модель атрибуції не дала актора.
+REASON_RESP = {
+    "did_not_respond": "provider",
+    "provider_preparation_delay": "provider",
+    "provider_preparation_overestimate": "provider",
+    "pickup_delay_provider_fault": "provider",
+    "missing_item": "provider",
+    "items_out_of_stock": "provider",
+    "too_many_orders": "provider",
+    "closed": "provider",
+    "do_not_wish_to_serve_this_client": "provider",
+    "wrong_item": "provider",
+    "received_an_entirely_wrong_order": "provider",
+    "item_had_a_spoiled_taste_or_smell": "provider",
+    "food_was_overcooked_or_burnt": "provider",
+    "food_was_undercooked_or_raw": "provider",
+    "object_detected_in_food": "provider",
+    "foreign_object_in_food": "provider",
+    "food_poisoning": "provider",
+    "item_does_not_match_the_description": "provider",
+    "item_does_not_match_the_photo": "provider",
+    "item_does_not_match_the_expectations": "provider",
+    "restaurant_ignored_my_order_notes": "provider",
+    "missing_cutlery": "provider",
+    "there_was_a_mistake_in_the_menu": "provider",
+    "unable_to_contact_the_restaurant": "provider",
+    "device_issue": "provider",
+    "courier_to_provider_eta_error": "courier",
+    "provider_to_eater_eta_error": "courier",
+    "pickup_delay_courier_fault": "courier",
+    "courier_dropoff_delay_adjusted": "courier",
+    "my_courier_is_late": "courier",
+    "my_courier_is_not_moving": "courier",
+    "my_courier_cannot_find_me": "courier",
+    "my_courier_was_rude": "courier",
+    "unable_to_contact_the_courier": "courier",
+    "courier_added_the_wrong_cash_amount": "courier",
+    "courier_no_change": "courier",
+    "order_never_delivered": "courier",
+    "my_order_arrived_cold": "courier",
+    "order_damaged": "courier",
+    "courier_caused_delay_and_user_cancelled": "courier",
+    "bolt_cooking_eta_underestimate": "platform",
+    "bolt_prep_instruction_delay": "platform",
+    "bolt_assignment_delay_from_supply_starvation": "platform",
+    "bolt_assignment_delay_from_rejections": "platform",
+    "no_courier_is_assigned_to_the_order": "platform",
+    "bolt_batching_delay": "platform",
+    "bolt_dispatch_start_delay": "platform",
+    "courier_redispatch_duration": "platform",
+    "manually_failed_by_cs": "platform",
+    "automatically_failed": "platform",
+    "bolt_caused_delay_and_user_cancelled": "platform",
+    "failed_payment": "platform",
+    "charged_twice_for_my_order": "platform",
+    "eater_contaminated_food": "client",
+}
+
+# З чого складається «вина платформи» — підгрупи з технічним змістом
+PLATFORM_GROUP = {
+    "bolt_cooking_eta_underestimate": "eta",
+    "bolt_prep_instruction_delay": "eta",
+    "bolt_assignment_delay_from_supply_starvation": "supply",
+    "bolt_assignment_delay_from_rejections": "supply",
+    "no_courier_is_assigned_to_the_order": "supply",
+    "bolt_batching_delay": "dispatch",
+    "bolt_dispatch_start_delay": "dispatch",
+    "courier_redispatch_duration": "dispatch",
+    "manually_failed_by_cs": "support",
+    "automatically_failed": "support",
+    "bolt_caused_delay_and_user_cancelled": "support",
+    "failed_payment": "payment",
+    "charged_twice_for_my_order": "payment",
+    "question_about_price_calculation": "payment",
+    "order_damaged": "delivery",
+    "my_order_arrived_cold": "delivery",
+    "my_courier_is_late": "delivery",
+    "order_never_delivered": "delivery",
+    "order_took_longer": "delivery",
+}
+
+PLATFORM_GROUP_UA = {
+    "eta": "Прогноз часу приготування (алгоритм ETA)",
+    "supply": "Немає вільних кур'єрів у зоні",
+    "dispatch": "Пошук, батчинг і перепризначення кур'єра",
+    "support": "Скасування підтримкою або автоматикою",
+    "payment": "Оплата й тарифікація",
+    "delivery": "Якість доставки, віднесена до платформи",
+    "other": "Інше або без деталізації",
+}
+
+PLATFORM_GROUP_HINT = {
+    "eta": "Модель Bolt спрогнозувала час приготування коротшим за реальний, "
+    "тому клієнту показали занадто оптимістичний час доставки. Заклад свій час не порушував.",
+    "supply": "У момент замовлення в зоні не було вільних кур'єрів, "
+    "тому замовлення чекало призначення. Це питання щільності кур'єрів, а не закладу.",
+    "dispatch": "Алгоритм пізно почав пошук кур'єра, об'єднав два замовлення в один маршрут "
+    "або перепризначив кур'єра посеред доставки.",
+    "support": "Замовлення закрив агент підтримки або автоматика "
+    "(наприклад, після довгого очікування чи звернення клієнта).",
+    "payment": "Технічні проблеми з оплатою: не пройшов платіж, подвійне списання, питання щодо ціни.",
+    "delivery": "Пошкоджене, холодне або недоставлене замовлення, яке модель атрибуції "
+    "віднесла до платформи, а не до конкретного кур'єра.",
+    "other": "Причина позначена як платформа, але без конкретного технічного коду.",
+}
+
+# Етап, на якому замовлення зірвалось (from_state) → зона відповідальності
+STAGE_UA = {
+    "waiting_acceptance": "заклад не прийняв замовлення вчасно",
+    "waiting_starting_preparation": "заклад не почав приготування",
+    "waiting_preparation": "зрив під час приготування",
+    "ready_for_pickup": "замовлення готове, але кур'єр не забрав",
+    "waiting_delivery": "зрив на етапі доставки",
+    "waiting_payment": "зрив на етапі оплати",
+}
+
+STAGE_RESP = {
+    "waiting_acceptance": "provider",
+    "waiting_starting_preparation": "provider",
+    "waiting_preparation": "provider",
+    "ready_for_pickup": "platform",
+    "waiting_delivery": "platform",
+    "waiting_payment": "platform",
 }
 
 
@@ -143,10 +331,39 @@ def city_ua(name: str | None) -> str:
     return CITY_UA.get(name, name)
 
 
+def norm_code(code: str) -> str:
+    """Код причини без технічних суфіксів: provider_delay_seconds → provider_delay."""
+    c = str(code).strip()
+    for suffix in ("_seconds", "_eater"):
+        if c.endswith(suffix):
+            c = c[: -len(suffix)]
+    return c
+
+
+def split_codes(code) -> list[str]:
+    """Причина може містити кілька кодів через кому, часто дублів (…_eater)."""
+    if code is None or (isinstance(code, float) and pd.isna(code)):
+        return []
+    out: list[str] = []
+    for part in str(code).split(","):
+        c = norm_code(part)
+        if c and c not in ("none", "unknown") and c not in out:
+            out.append(c)
+    return out
+
+
 def reason_ua(code) -> str:
     if code is None or (isinstance(code, float) and pd.isna(code)):
         return REASON_UA[None]
-    return REASON_UA.get(str(code), str(code).replace("_", " "))
+    codes = split_codes(code)
+    if not codes:
+        return REASON_UA["none"] if str(code) in ("none", "nan") else REASON_UA["unknown"]
+    labels: list[str] = []
+    for c in codes:
+        label = REASON_UA.get(c, c.replace("_", " "))
+        if label not in labels:
+            labels.append(label)
+    return " + ".join(labels)
 
 
 def actor_ua(code) -> str:
@@ -155,40 +372,50 @@ def actor_ua(code) -> str:
     return ACTOR_UA.get(str(code).lower(), str(code))
 
 
+def classify_stage(state: str, from_state: str, courier_rejects: int, eater_cancelled: bool) -> str:
+    """Зона відповідальності за зірване замовлення на основі етапу зриву."""
+    if state == "rejected":
+        return "provider"
+    if courier_rejects > 0:
+        return "courier"
+    if eater_cancelled:
+        return "client"
+    return STAGE_RESP.get(from_state, "unassigned")
+
+
 def classify_failed(row: pd.Series) -> str:
     state = str(row.get("final_state") or "")
     if state == "rejected" or row.get("is_rejected_by_provider") is True:
         return "provider"
-    ncr = int(row.get("number_courier_rejects") or 0)
-    if state == "failed" and ncr > 0:
-        return "courier"
-    if row.get("has_eater_cancellation_ticket") is True:
-        return "client"
-    return "bolt"
+    return classify_stage(
+        state,
+        str(row.get("from_state") or ""),
+        int(row.get("number_courier_rejects") or 0),
+        row.get("has_eater_cancellation_ticket") is True,
+    )
+
+
+def stage_ua(from_state: str) -> str:
+    if not from_state or from_state == "—":
+        return "етап зриву не визначено"
+    return STAGE_UA.get(from_state, f"зрив з етапу «{from_state}»")
 
 
 def failed_detail_ua(row: pd.Series) -> str:
     state = str(row.get("final_state") or "")
     from_st = str(row.get("from_state") or "") or "—"
     ncr = int(row.get("number_courier_rejects") or 0)
-    fault = classify_failed(row)
     if state == "rejected":
-        return f"Замовлення відхилено закладом (етап: {from_st})"
+        return "Заклад відхилив замовлення"
     if state == "failed":
-        parts = []
-        stage = {
-            "waiting_delivery": "зрив на етапі доставки",
-            "waiting_preparation": "зрив під час приготування",
-            "waiting_acceptance": "зрив після прийняття",
-        }.get(from_st, f"зрив з етапу «{from_st}»")
-        parts.append(stage)
+        parts = [stage_ua(from_st)]
         if ncr:
             parts.append(f"відмови кур'єра: {ncr}")
         if row.get("has_eater_cancellation_ticket") is True:
             parts.append("є скасування з боку клієнта")
         if row.get("is_rejected_by_provider") is True:
             parts.append("позначено як відхилення закладом")
-        return "Failed: " + "; ".join(parts)
+        return "; ".join(parts)
     return state
 
 
@@ -206,10 +433,11 @@ def bad_comment_ua(row: pd.Series) -> str:
 
 
 FAULT_REASON_UA = {
-    "provider": "Відхилення або відмова закладу",
-    "courier": "Відмова кур'єра під час доставки",
+    "provider": "Заклад відхилив або не прийняв замовлення",
+    "courier": "Відмови кур'єрів під час пошуку",
     "client": "Скасування з боку клієнта",
-    "bolt": "Зрив на стороні платформи",
+    "platform": "Кур'єра не знайдено або зрив на етапі доставки",
+    "unassigned": "Зрив без визначеного етапу",
 }
 
 
@@ -715,6 +943,9 @@ def build_week_payload(
             "state": state,
             "created": str(r.get("order_created") or ""),
             "rating": None if pd.isna(r.get("order_food_rating_value")) else float(r["order_food_rating_value"]),
+            "from_state": str(r.get("from_state") or ""),
+            "courier_rejects": int(r.get("number_courier_rejects") or 0),
+            "eater_cancelled": r.get("has_eater_cancellation_ticket") is True,
         }
 
         if state in ("failed", "rejected"):
@@ -786,6 +1017,280 @@ def build_week_payload(
     }
 
 
+# Текстові описи етапу зриву, які могли зберегтися у звітах попередніх тижнів
+LEGACY_STAGE_TEXT = {
+    "зрив після прийняття": "waiting_acceptance",
+    "заклад не прийняв замовлення вчасно": "waiting_acceptance",
+    "заклад не почав приготування": "waiting_starting_preparation",
+    "зрив під час приготування": "waiting_preparation",
+    "кур'єр не забрав": "ready_for_pickup",
+    "зрив на етапі доставки": "waiting_delivery",
+    "зрив на етапі оплати": "waiting_payment",
+}
+
+
+def parse_failed_comment(comment) -> tuple[str, int, bool]:
+    """Відновлює (етап, відмови кур'єра, скасування клієнтом) з текстового коментаря."""
+    text = str(comment or "")
+    from_state = ""
+    for pattern in (r"етап:\s*([a-z_]+)", r"«([a-z_]+)»"):
+        m = re.search(pattern, text)
+        if m:
+            from_state = m.group(1)
+            break
+    if not from_state:
+        low = text.lower()
+        for phrase, state in LEGACY_STAGE_TEXT.items():
+            if phrase in low:
+                from_state = state
+                break
+    m = re.search(r"відмови кур'єра:\s*(\d+)", text)
+    rejects = int(m.group(1)) if m else 0
+    return from_state, rejects, "скасування з боку клієнта" in text
+
+
+def failed_signals(rec: dict, failed_lookup: dict[int, dict]) -> tuple[str, int, bool]:
+    """Сигнали зриву: із самого запису, інакше з коментаря парного failed-запису."""
+    if rec.get("from_state") is not None and rec.get("courier_rejects") is not None:
+        return (
+            str(rec.get("from_state") or ""),
+            int(rec.get("courier_rejects") or 0),
+            bool(rec.get("eater_cancelled")),
+        )
+    twin = failed_lookup.get(rec.get("order_id")) or {}
+    return parse_failed_comment(twin.get("comment") or rec.get("comment"))
+
+
+def late_reason_from_comment(comment) -> str | None:
+    """У коментарі попередніх версій причина затримки лишилась англійською: «unknown delay dropoff»."""
+    for part in str(comment or "").split(";"):
+        candidate = norm_code(part.strip().replace(" ", "_").lower())
+        if candidate in REASON_UA and candidate not in ("none", "unknown"):
+            return candidate
+    return None
+
+
+def extract_late_reason(rec: dict) -> str | None:
+    """Причина затримки доставки, збережена один раз, щоб перегенерація була ідемпотентною."""
+    if "late_reason" in rec:
+        return rec["late_reason"] or None
+    late = late_reason_from_comment(rec.get("comment"))
+    rec["late_reason"] = late or ""
+    return late
+
+
+# Коди, які самі по собі не кажуть, хто відповідальний
+VAGUE_CODES = ("order_took_longer", "unknown_delay_dropoff", "unknown_delay_pickup")
+
+
+def platform_group(codes: list[str]) -> str:
+    for code in codes:
+        if code in PLATFORM_GROUP:
+            return PLATFORM_GROUP[code]
+    return "other"
+
+
+def classify_order(rec: dict, failed_lookup: dict[int, dict]) -> dict:
+    """
+    Визначає зону відповідальності для одного поганого замовлення.
+
+    Пріоритет: атрибуція моделі Bolt → етап зриву → код причини →
+    причина затримки з коментаря → низька оцінка їжі.
+    """
+    codes = split_codes(rec.get("reason_code"))
+    state = str(rec.get("state") or "")
+    actor = str(rec.get("actor") or "unknown").lower()
+    late = extract_late_reason(rec)
+
+    # Якщо основний код нічого не пояснює, беремо конкретну причину затримки доставки
+    if late and (not codes or all(c in VAGUE_CODES for c in codes)):
+        codes = [late] + [c for c in codes if c != late]
+
+    if actor in ACTOR_RESP:
+        return {"resp": ACTOR_RESP[actor], "derived": "", "codes": codes}
+
+    if state in ("failed", "rejected"):
+        from_state, rejects, cancelled = failed_signals(rec, failed_lookup)
+        resp = classify_stage(state, from_state, rejects, cancelled)
+        if state == "rejected":
+            note = "визначено за статусом замовлення"
+        elif rejects:
+            note = f"визначено за відмовами кур'єрів ({rejects})"
+        elif cancelled:
+            note = "визначено за скасуванням клієнта"
+        else:
+            note = "визначено за етапом зриву"
+        return {"resp": resp, "derived": note, "codes": codes, "from_state": from_state}
+
+    for code in codes:
+        if code in REASON_RESP:
+            return {
+                "resp": REASON_RESP[code],
+                "derived": "визначено за кодом причини",
+                "codes": codes,
+            }
+
+    if late and late in REASON_RESP:
+        return {
+            "resp": REASON_RESP[late],
+            "derived": "визначено за причиною затримки доставки",
+            "codes": codes or [late],
+        }
+
+    rating = rec.get("rating")
+    if rating is not None and float(rating) <= 2:
+        return {
+            "resp": "provider",
+            "derived": f"визначено за оцінкою їжі {int(float(rating))}/5",
+            "codes": codes,
+        }
+
+    return {"resp": "unassigned", "derived": "", "codes": codes or ([late] if late else [])}
+
+
+def describe_reason(rec: dict, info: dict) -> str:
+    codes = info.get("codes") or []
+    if codes:
+        label = reason_ua(",".join(codes))
+        if info.get("resp") == "client":
+            # Модель віднесла звернення до клієнта: скарга не підтвердилась
+            # або ситуацію спричинив сам клієнт.
+            return "Скарга клієнта: " + re.sub(r"^(Заклад|Кур'єр|Bolt|Клієнт):\s*", "", label)
+        return label
+    state = str(rec.get("state") or "")
+    if state in ("failed", "rejected"):
+        from_state = info.get("from_state") or ""
+        if state == "rejected":
+            return "Заклад відхилив замовлення"
+        return f"Зрив замовлення: {stage_ua(from_state)}"
+    return REASON_UA["none"]
+
+
+def describe_comment(rec: dict, reason_label: str) -> str:
+    """Деталі доставленого поганого замовлення: оцінка їжі та причина затримки."""
+    parts: list[str] = []
+    rating = rec.get("rating")
+    if rating is not None and float(rating) <= 2:
+        parts.append(f"Оцінка їжі: {int(float(rating))}/5")
+    late = extract_late_reason(rec)
+    if late:
+        label = REASON_UA.get(late, late.replace("_", " "))
+        if label not in reason_label:
+            parts.append(f"Причина затримки: {label}")
+    return "; ".join(parts) if parts else "—"
+
+
+def enrich_week_payload(week: dict) -> dict:
+    """
+    Перекласифіковує вже зібраний тиждень: зона відповідальності, підгрупа платформи,
+    людські назви причин. Працює і на даних, вивантажених попередніми версіями звіту,
+    тому звіт можна перебудувати без повторного запиту в Databricks.
+    """
+    for partner in week.get("partners", {}).values():
+        failed_lookup = {o.get("order_id"): o for o in partner.get("failed_orders") or []}
+
+        for rec in partner.get("failed_orders") or []:
+            state = str(rec.get("state") or "")
+            from_state, rejects, cancelled = failed_signals(rec, failed_lookup)
+            resp = "provider" if state == "rejected" else classify_stage(
+                state, from_state, rejects, cancelled
+            )
+            rec["from_state"] = from_state
+            rec["courier_rejects"] = rejects
+            rec["eater_cancelled"] = cancelled
+            rec["resp"] = resp
+            rec["resp_ua"] = RESP_UA[resp]
+            rec["culprit_ua"] = RESP_UA[resp]
+            rec["stage_ua"] = (
+                "заклад відхилив замовлення" if state == "rejected" else stage_ua(from_state)
+            )
+            extra: list[str] = []
+            if rejects:
+                extra.append(f"відмови кур'єра: {rejects}")
+            if cancelled:
+                extra.append("є скасування з боку клієнта")
+            rec["extra_ua"] = "; ".join(extra) if extra else "—"
+            rec["comment"] = "; ".join([rec["stage_ua"], *extra])
+            codes = split_codes(rec.get("reason_code"))
+            rec["reason_ua"] = (
+                reason_ua(",".join(codes)) if codes else FAULT_REASON_UA.get(resp, RESP_UA[resp])
+            )
+
+        by_resp: dict[str, int] = defaultdict(int)
+        by_platform: dict[str, int] = defaultdict(int)
+        by_reason: dict[str, int] = defaultdict(int)
+        by_stage: dict[str, int] = defaultdict(int)
+
+        for rec in partner.get("bad_orders") or []:
+            info = classify_order(rec, failed_lookup)
+            resp = info["resp"]
+            rec["resp"] = resp
+            rec["resp_ua"] = RESP_UA[resp]
+            rec["culprit_ua"] = RESP_UA[resp]
+            rec["derived"] = info.get("derived") or ""
+            rec["actor_ua"] = actor_ua(rec.get("actor"))
+            rec["reason_ua"] = describe_reason(rec, info)
+            if str(rec.get("state")) not in ("failed", "rejected"):
+                rec["comment"] = describe_comment(rec, rec["reason_ua"])
+            else:
+                twin = failed_lookup.get(rec.get("order_id")) or {}
+                rec["comment"] = twin.get("extra_ua") or "—"
+            if resp == "platform":
+                group = platform_group(info.get("codes") or [])
+                rec["platform_group"] = group
+                rec["platform_group_ua"] = PLATFORM_GROUP_UA[group]
+                by_platform[group] += 1
+            else:
+                rec["platform_group"] = ""
+                rec["platform_group_ua"] = ""
+            if rec.get("derived") and str(rec.get("state")) in ("failed", "rejected"):
+                by_stage[info.get("from_state") or ""] += 1
+            by_resp[resp] += 1
+            by_reason[rec["reason_ua"]] += 1
+
+        partner["bad_by_resp"] = {k: by_resp[k] for k in RESP_ORDER if by_resp.get(k)}
+        partner["bad_by_platform"] = dict(
+            sorted(by_platform.items(), key=lambda kv: kv[1], reverse=True)
+        )
+        partner["bad_by_reason"] = dict(sorted(by_reason.items(), key=lambda kv: kv[1], reverse=True))
+        partner["bad_by_actor"] = {
+            actor_ua(k): v
+            for k, v in sorted(
+                _count_actors(partner.get("bad_orders") or []).items(),
+                key=lambda kv: kv[1],
+                reverse=True,
+            )
+        }
+        failed_resp: dict[str, int] = defaultdict(int)
+        for rec in partner.get("failed_orders") or []:
+            failed_resp[rec["resp"]] += 1
+        partner["failed_by_fault"] = {k: failed_resp[k] for k in RESP_ORDER if failed_resp.get(k)}
+
+    week["portfolio"] = {**week.get("portfolio", {}), **_portfolio_resp_totals(week)}
+    return week
+
+
+def _count_actors(records: list[dict]) -> dict[str, int]:
+    out: dict[str, int] = defaultdict(int)
+    for rec in records:
+        out[str(rec.get("actor") or "unknown").lower()] += 1
+    return dict(out)
+
+
+def _portfolio_resp_totals(week: dict) -> dict:
+    by_resp: dict[str, int] = defaultdict(int)
+    by_platform: dict[str, int] = defaultdict(int)
+    for partner in week.get("partners", {}).values():
+        for key, value in (partner.get("bad_by_resp") or {}).items():
+            by_resp[key] += value
+        for key, value in (partner.get("bad_by_platform") or {}).items():
+            by_platform[key] += value
+    return {
+        "bad_by_resp": {k: by_resp[k] for k in RESP_ORDER if by_resp.get(k)},
+        "bad_by_platform": dict(sorted(by_platform.items(), key=lambda kv: kv[1], reverse=True)),
+    }
+
+
 def load_existing_weeks(html_path: Path) -> dict[str, dict]:
     if not html_path.exists():
         return {}
@@ -841,6 +1346,10 @@ def build_html(
     impact_json = json.dumps(
         cooking_impact or empty_cooking_impact(), ensure_ascii=False, separators=(",", ":")
     )
+    resp_json = json.dumps(RESP_UA, ensure_ascii=False, separators=(",", ":"))
+    resp_order_json = json.dumps(list(RESP_ORDER), ensure_ascii=False, separators=(",", ":"))
+    platform_group_json = json.dumps(PLATFORM_GROUP_UA, ensure_ascii=False, separators=(",", ":"))
+    platform_hint_json = json.dumps(PLATFORM_GROUP_HINT, ensure_ascii=False, separators=(",", ":"))
     week_keys = sorted(weeks_data.keys(), reverse=True)
     default_week = week_keys[0] if week_keys else ""
 
@@ -918,6 +1427,10 @@ def build_html(
     .bar-fill.courier {{ background:var(--courier); }}
     .bar-fill.provider {{ background:var(--provider); }}
     .bar-fill.client {{ background:var(--client); }}
+    .bar-fill.unknown {{ background:#B0B0B0; }}
+    .derived-note {{
+      display:block; font-size:.7rem; color:#8A8A8A; margin-top:2px;
+    }}
     .bar-val {{ min-width:36px; text-align:right; font-weight:700; }}
     .reason-list {{ list-style:none; }}
     .reason-list li {{
@@ -1008,6 +1521,11 @@ def build_html(
     }}
     .tag-failed {{ background:#FFF3E0; color:#E65100; }}
     .tag-rejected {{ background:#FFEBEE; color:#C62828; }}
+    .tag-provider {{ background:#FFF1E6; color:#C2410C; }}
+    .tag-courier {{ background:#F3E8FF; color:#7E22CE; }}
+    .tag-bolt {{ background:#E0EAFF; color:#1D4ED8; }}
+    .tag-client {{ background:#EEF2F6; color:#475569; }}
+    .tag-unknown {{ background:#F0F0F0; color:#616161; }}
     .diff-pos {{
       background:#FFEBEE; color:#C62828; font-weight:700;
       padding:3px 8px; border-radius:6px; display:inline-block;
@@ -1109,12 +1627,25 @@ def build_html(
   const PREP_TIME = {prep_json};
   const COOKING_IMPACT = {impact_json};
 
+  const RESP_UA = {resp_json};
+  const RESP_ORDER = {resp_order_json};
+  const PLATFORM_GROUP_UA = {platform_group_json};
+  const PLATFORM_GROUP_HINT = {platform_hint_json};
+
+  const RESP_CLASS = {{
+    provider: 'provider',
+    courier: 'courier',
+    platform: 'bolt',
+    client: 'client',
+    unassigned: 'unknown'
+  }};
+
   const FAULT_CLASS = {{
-    'Bolt (платформа)': 'bolt',
+    'Платформа Bolt': 'bolt',
     'Кур\\'єр': 'courier',
     'Заклад': 'provider',
     'Клієнт': 'client',
-    'Невизначено': 'client'
+    'Не атрибутовано': 'unknown'
   }};
 
   let activeView = 'bad';
@@ -1388,6 +1919,55 @@ def build_html(
     }}).join('');
   }}
 
+  function respBars(obj, total) {{
+    if (!total) return '<p class="empty" style="padding:12px">Немає даних</p>';
+    const entries = RESP_ORDER
+      .filter(k => (obj || {{}})[k])
+      .map(k => [k, obj[k]]);
+    if (!entries.length) return '<p class="empty" style="padding:12px">Немає даних</p>';
+    return entries.map(([key, cnt]) => {{
+      const pct = (cnt/total*100).toFixed(1);
+      return `<div class="bar-row">
+        <span class="bar-label">${{RESP_UA[key] || key}}</span>
+        <div class="bar-track"><div class="bar-fill ${{RESP_CLASS[key] || 'client'}}" style="width:${{pct}}%"></div></div>
+        <span class="bar-val">${{cnt}}</span>
+        <span style="min-width:52px;text-align:right;color:var(--muted);font-size:.78rem">${{pct}}%</span>
+      </div>`;
+    }}).join('');
+  }}
+
+  function platformBlock(partner) {{
+    const groups = partner.bad_by_platform || {{}};
+    const total = Object.values(groups).reduce((a,b)=>a+b,0);
+    if (!total) return '';
+    const rows = Object.entries(groups).sort((a,b) => b[1]-a[1]).map(([key, cnt]) => `<tr>
+      <td><strong>${{PLATFORM_GROUP_UA[key] || key}}</strong></td>
+      <td class="num">${{cnt}}</td>
+      <td class="num">${{(cnt/total*100).toFixed(1)}}%</td>
+      <td style="color:var(--muted)">${{PLATFORM_GROUP_HINT[key] || ''}}</td>
+    </tr>`).join('');
+    return `
+      <h2 style="border-left-color:var(--bolt)">Платформа Bolt — з чого саме складається</h2>
+      <div class="portfolio-note" style="background:#EFF6FF;border-color:#BFDBFE">
+        Це <strong>не</strong> вина закладу і не вина кур'єра. Тут зібрані технічні та логістичні причини
+        на стороні Bolt: помилки алгоритму прогнозу часу, відсутність вільних кур'єрів у зоні,
+        робота диспетчеризації та рішення підтримки. Такі замовлення не варто ескалювати партнеру —
+        з ними йдемо до логістики та підтримки.
+      </div>
+      <div class="prep-table-wrap">
+        <table>
+          <thead><tr>
+            <th>Причина на стороні Bolt</th>
+            <th>Замовлень</th>
+            <th>Частка</th>
+            <th>Що це означає</th>
+          </tr></thead>
+          <tbody>${{rows}}</tbody>
+        </table>
+      </div>
+    `;
+  }}
+
   function reasonList(obj) {{
     const entries = Object.entries(obj).sort((a,b) => b[1]-a[1]);
     if (!entries.length) return '<p class="empty" style="padding:12px">Немає даних</p>';
@@ -1404,17 +1984,22 @@ def build_html(
         : o.state === 'failed'
         ? '<span class="tag tag-failed">failed</span>'
         : '<span class="tag tag-failed">bad</span>';
+      const respCls = RESP_CLASS[o.resp] || 'client';
+      const resp = `<span class="tag tag-${{respCls}}">${{o.resp_ua || o.culprit_ua || '—'}}</span>`
+        + (o.derived ? `<span class="derived-note">${{o.derived}}</span>` : '')
+        + (o.platform_group_ua ? `<span class="derived-note">${{o.platform_group_ua}}</span>` : '');
       return `<tr>
         <td class="mono">${{o.order_id}}</td>
         <td class="mono">${{o.order_ref || '—'}}</td>
         <td>${{o.location}}</td>
+        <td>${{resp}}</td>
         <td>${{o.reason_ua || '—'}}</td>
         <td>${{o.comment || '—'}}</td>
         <td>${{tag}}</td>
         <td class="mono">${{(o.created||'').slice(0,16)}}</td>
       </tr>`;
     }}).join('');
-    const head = '<th>№ замовлення</th><th>Order ref</th><th>Локація</th><th>Причина</th><th>Коментар</th><th>Статус</th><th>Час</th>';
+    const head = '<th>№ замовлення</th><th>Order ref</th><th>Локація</th><th>Зона відповідальності</th><th>Причина</th><th>Деталі</th><th>Статус</th><th>Час</th>';
     return `<table><thead><tr>${{head}}</tr></thead><tbody>${{rows}}</tbody></table>`;
   }}
 
@@ -1423,7 +2008,7 @@ def build_html(
   let currentPartnerCtx = null;
 
   function isProviderFault(o) {{
-    return o.culprit_ua === 'Заклад' || o.actor === 'provider' || o.fault === 'provider';
+    return o.resp === 'provider';
   }}
 
   function providerBadOrders(partner) {{
@@ -1511,7 +2096,7 @@ def build_html(
     const prev = sel.value;
     const orders = detailOrders[activeDetailTab] || [];
     const culprits = [...new Set(orders.map(o => o.culprit_ua).filter(Boolean))].sort((a,b) => a.localeCompare(b,'uk'));
-    sel.innerHTML = '<option value="">— Усі винуватці —</option>';
+    sel.innerHTML = '<option value="">— Усі зони —</option>';
     culprits.forEach(c => {{
       const o = document.createElement('option');
       o.value = c; o.textContent = c;
@@ -1536,14 +2121,16 @@ def build_html(
     detailOrders.failed = (partner.failed_orders || []).map(o => ({{
       ...o,
       order_ref: o.order_ref || '—',
-      culprit_ua: o.culprit_ua || o.fault_ua || o.actor_ua || '—',
+      resp_ua: o.resp_ua || o.culprit_ua || '—',
+      culprit_ua: o.resp_ua || o.culprit_ua || '—',
       reason_ua: o.reason_ua || '—',
       comment: o.comment || o.detail || '—',
     }}));
     detailOrders.bad = (partner.bad_orders || []).map(o => ({{
       ...o,
       order_ref: o.order_ref || '—',
-      culprit_ua: o.culprit_ua || o.actor_ua || '—',
+      resp_ua: o.resp_ua || o.culprit_ua || '—',
+      culprit_ua: o.resp_ua || o.culprit_ua || '—',
       reason_ua: o.reason_ua || '—',
       comment: o.comment || '—',
     }}));
@@ -1560,13 +2147,14 @@ def build_html(
       city_ua: 'Усі міста',
       delivered: 0, bad_count: 0, failed_count: 0,
       failed_by_fault: {{}}, bad_by_actor: {{}}, bad_by_reason: {{}},
+      bad_by_resp: {{}}, bad_by_platform: {{}},
       failed_orders: [], bad_orders: []
     }};
     list.forEach(p => {{
       out.delivered += p.delivered || 0;
       out.bad_count += p.bad_count || 0;
       out.failed_count += p.failed_count || 0;
-      ['failed_by_fault','bad_by_actor','bad_by_reason'].forEach(k => {{
+      ['failed_by_fault','bad_by_actor','bad_by_reason','bad_by_resp','bad_by_platform'].forEach(k => {{
         Object.entries(p[k] || {{}}).forEach(([a, c]) => {{
           out[k][a] = (out[k][a] || 0) + c;
         }});
@@ -1654,6 +2242,22 @@ def build_html(
         </div>
       </div>
 
+      <h2 class="bad-h">Зона відповідальності по всьому портфоліо</h2>
+      <div class="grid-2">
+        <div class="card">${{respBars(p.bad_by_resp || {{}}, Object.values(p.bad_by_resp || {{}}).reduce((a,b)=>a+b,0))}}</div>
+        <div class="card">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px"><strong>Як читати звіт:</strong></p>
+          <ul style="font-size:.82rem;color:var(--muted);padding-left:18px">
+            <li>Кожне погане замовлення віднесене до однієї зони: <strong>Заклад</strong>, <strong>Кур'єр</strong>, <strong>Платформа Bolt</strong> або <strong>Клієнт</strong>.</li>
+            <li>Спочатку беремо атрибуцію моделі Bolt. Якщо її немає — визначаємо за етапом, на якому зірвалось замовлення, за кодом причини або за оцінкою їжі.</li>
+            <li>Такі випадки підписані сірим текстом у деталях, щоб було видно, що це наш розрахунок, а не готова атрибуція.</li>
+            <li><strong>Не атрибутовано</strong> лишається тільки там, де жоден сигнал не дає відповіді — наприклад система бачить затримку на доставці, але не визначила причину.</li>
+            <li>Партнеру надсилаємо тільки замовлення з зони <strong>Заклад</strong>.</li>
+          </ul>
+        </div>
+      </div>
+      ${{platformBlock({{ bad_by_platform: p.bad_by_platform || {{}} }})}}
+
       <h2 class="bad-h">ТОП-30 брендів за Bad Orders %</h2>
       <p style="font-size:.82rem;color:var(--muted);margin:-4px 0 12px">
         ${{city ? `Фільтр міста: <strong>${{city}}</strong>. ` : 'По всьому портфоліо. '}}
@@ -1721,7 +2325,7 @@ def build_html(
     }}
 
     const failedTotal = Object.values(partner.failed_by_fault).reduce((a,b)=>a+b,0);
-    const badTotal = Object.values(partner.bad_by_actor).reduce((a,b)=>a+b,0);
+    const badTotal = Object.values(partner.bad_by_resp || {{}}).reduce((a,b)=>a+b,0);
     const titleCity = city || partner.city_ua;
     const providerBadCount = providerBadOrders(partner).length;
     currentPartnerCtx = {{
@@ -1743,32 +2347,41 @@ def build_html(
         <div class="kpi"><div class="n">${{partner.delivered}}</div><div class="l">Доставлено</div></div>
       </div>
 
-      <h2 class="fail-h">Failed Orders — хто винен</h2>
+      <h2 class="fail-h">Failed Orders — зона відповідальності</h2>
       <div class="grid-2">
         <div class="card">
           <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px">
-            Розподіл невдалих (failed/rejected) замовлень за винуватцем
+            Зірвані (failed) та відхилені (rejected) замовлення за етапом, на якому зупинилось замовлення
           </p>
-          ${{barRows({{
-            'Bolt (платформа)': partner.failed_by_fault.bolt || 0,
-            'Кур\\'єр': partner.failed_by_fault.courier || 0,
-            'Заклад': partner.failed_by_fault.provider || 0,
-            'Клієнт': partner.failed_by_fault.client || 0
-          }}, failedTotal)}}
+          ${{respBars(partner.failed_by_fault, failedTotal)}}
         </div>
         <div class="card">
-          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px"><strong>Пояснення категорій:</strong></p>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px"><strong>Як визначається:</strong></p>
           <ul style="font-size:.82rem;color:var(--muted);padding-left:18px">
-            <li><strong>Bolt</strong> — зрив без відмови закладу чи кур'єра</li>
-            <li><strong>Кур'єр</strong> — відмови кур'єра під час пошуку</li>
-            <li><strong>Заклад</strong> — відхилення (rejected) або is_rejected_by_provider</li>
-            <li><strong>Клієнт</strong> — скасування з боку клієнта</li>
+            <li><strong>Заклад</strong> — відхилив замовлення або не прийняв та не почав готувати вчасно</li>
+            <li><strong>Кур'єр</strong> — були відмови кур'єрів від замовлення</li>
+            <li><strong>Клієнт</strong> — є звернення клієнта про скасування</li>
+            <li><strong>Платформа Bolt</strong> — кур'єра так і не знайшли або зрив уже на етапі доставки</li>
           </ul>
         </div>
       </div>
 
-      <h2 class="bad-h">Bad Orders — хто винен</h2>
-      <div class="card">${{barRows(partner.bad_by_actor, badTotal)}}</div>
+      <h2 class="bad-h">Bad Orders — зона відповідальності</h2>
+      <div class="grid-2">
+        <div class="card">${{respBars(partner.bad_by_resp, badTotal)}}</div>
+        <div class="card">
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px"><strong>Що входить у кожну зону:</strong></p>
+          <ul style="font-size:.82rem;color:var(--muted);padding-left:18px">
+            <li><strong>Заклад</strong> — не прийняв замовлення, затримка приготування, відсутні позиції, комплектація та якість страв</li>
+            <li><strong>Кур'єр</strong> — спізнення до закладу чи клієнта, затримка на видачі, поведінка, недоставлене замовлення</li>
+            <li><strong>Платформа Bolt</strong> — алгоритми, дефіцит кур'єрів, скасування підтримкою (розбивка нижче)</li>
+            <li><strong>Клієнт</strong> — скасування клієнтом, а також скарги, які модель Bolt не підтвердила або віднесла до дій самого клієнта</li>
+            <li><strong>Не атрибутовано</strong> — сигналів недостатньо навіть після перевірки етапу зриву та коду причини</li>
+          </ul>
+        </div>
+      </div>
+
+      ${{platformBlock(partner)}}
 
       <h2 class="bad-h">Bad Orders — причини</h2>
       <div class="card">${{reasonList(partner.bad_by_reason)}}</div>
@@ -1784,8 +2397,8 @@ def build_html(
         </div>
         <div class="detail-toolbar">
           <div>
-            <label for="selCulprit">\u0412\u0438\u043d\u0443\u0432\u0430\u0442\u0435\u0446\u044c</label>
-            <select id="selCulprit"><option value="">\u2014 \u0423\u0441\u0456 \u0432\u0438\u043d\u0443\u0432\u0430\u0442\u0446\u0456 \u2014</option></select>
+            <label for="selCulprit">Зона відповідальності</label>
+            <select id="selCulprit"><option value="">— Усі зони —</option></select>
           </div>
           <span class="detail-count" id="detailCount"></span>
         </div>
@@ -1832,6 +2445,12 @@ def build_html(
 """
 
 
+def enrich_all_weeks(weeks: dict[str, dict]) -> dict[str, dict]:
+    for key in weeks:
+        weeks[key] = enrich_week_payload(weeks[key])
+    return weeks
+
+
 def weeks_to_fetch(existing: dict[str, dict]) -> list[date]:
     """Усі пропущені повні тижні (пн) від останнього в звіті до останнього завершеного."""
     if os.environ.get("BAD_ORDERS_WEEK_START"):
@@ -1874,7 +2493,7 @@ def main() -> None:
                 )
         generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
         OUTPUT_HTML.write_text(
-            build_html(existing, prep_data, generated_at, cooking_impact),
+            build_html(enrich_all_weeks(existing), prep_data, generated_at, cooking_impact),
             encoding="utf-8",
         )
         print(f"Rebuilt HTML only: {OUTPUT_HTML}")
@@ -1913,6 +2532,7 @@ def main() -> None:
         conn.close()
 
     generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    existing = enrich_all_weeks(existing)
     OUTPUT_HTML.write_text(
         build_html(existing, prep_data, generated_at, cooking_impact),
         encoding="utf-8",
