@@ -438,6 +438,84 @@
   }
   .dyn-brand-info strong { color: var(--bolt-mid-green); }
 
+  .dyn-analysis {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--bolt-green);
+  }
+  .dyn-analysis.warning { border-left-color: #FB8C00; }
+  .dyn-analysis.danger { border-left-color: #E53935; }
+  .dyn-analysis-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bolt-dark);
+    margin-bottom: 10px;
+  }
+  .dyn-analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 1250px) { .dyn-analysis-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 900px) { .dyn-analysis-grid { grid-template-columns: 1fr; } }
+  .dyn-analysis-card {
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .dyn-analysis-card h5 {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #333;
+  }
+  .dyn-analysis-card .delta {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .dyn-analysis-card .delta.down { color: #E53935; }
+  .dyn-analysis-card .delta.up { color: #2E7D32; }
+  .dyn-analysis-card .delta.flat { color: #666; }
+  .dyn-analysis-card .delta-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .dyn-analysis-text {
+    font-size: 12.5px;
+    color: #333;
+    line-height: 1.55;
+    margin: 0 0 8px;
+  }
+  .dyn-analysis-list-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .dyn-analysis-card ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: #444;
+    line-height: 1.55;
+  }
+  .dyn-analysis-card li { margin-bottom: 4px; }
+  .dyn-analysis-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -4557,6 +4635,9 @@
   </div>
 
   <div id="dynCharts" style="display:none">
+    <!-- Auto analysis -->
+    <div id="dynAnalysis" class="dyn-analysis" style="display:none"></div>
+
     <!-- Brand-level charts -->
     <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:12px">📊 Загальна динаміка бренду</div>
     <div class="charts-grid">
@@ -4849,17 +4930,341 @@ function fmtWeek(w) {
   return `${parseInt(d)} ${months[parseInt(m)]}`;
 }
 
+
+function seriesLastTwo(arr) {
+  if (!arr || arr.length < 2) return [null, null];
+  let last = null, prev = null;
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (arr[i] == null || Number.isNaN(arr[i])) continue;
+    if (last == null) last = arr[i];
+    else { prev = arr[i]; break; }
+  }
+  return [prev, last];
+}
+
+function pctChange(prev, last) {
+  if (prev == null || last == null || prev === 0) return null;
+  return (last / prev - 1) * 100;
+}
+
+function ppChange(prev, last) {
+  if (prev == null || last == null) return null;
+  return last - prev;
+}
+
+function fmtDeltaPct(v) {
+  if (v == null) return '—';
+  const r = Math.abs(v) < 0.05 ? 0 : v;
+  const sign = r > 0 ? '+' : '';
+  return sign + r.toFixed(1) + '%';
+}
+
+function fmtDeltaPp(v) {
+  if (v == null) return '—';
+  const r = Math.abs(v) < 0.05 ? 0 : v;
+  const sign = r > 0 ? '+' : '';
+  return sign + r.toFixed(1) + ' п.п.';
+}
+
+function fmtEurDelta(v) {
+  if (v == null) return '—';
+  const r = Math.abs(v) < 0.5 ? 0 : v;
+  const sign = r > 0 ? '+' : r < 0 ? '−' : '';
+  return sign + '€' + Math.abs(r).toLocaleString('uk-UA', { maximumFractionDigits: 0 });
+}
+
+function fmtEurVal(v) {
+  if (v == null) return '—';
+  const abs = Math.abs(v).toLocaleString('uk-UA', { maximumFractionDigits: 0 });
+  return (v < 0 ? '−€' : '€') + abs;
+}
+
+function shareOfGmv(v, gmv) {
+  if (v == null || gmv == null || gmv <= 0) return null;
+  return v / gmv * 100;
+}
+
+function analyzeBrandDynamics(d) {
+  const [oPrev, oLast]   = seriesLastTwo(d.delivered_orders);
+  const [gPrev, gLast]   = seriesLastTwo(d.gmv_eur);
+  const [cpPrev, cpLast] = seriesLastTwo(d.contribution_profit_eur);
+  const [mPrev, mLast]   = seriesLastTwo(d.cp_l2_margin_pct);
+  const [avPrev, avLast] = seriesLastTwo(d.availability_pct);
+  const [acPrev, acLast] = seriesLastTwo(d.acceptance_rate_pct);
+  const [flPrev, flLast] = seriesLastTwo(d.failed_order_rate_pct);
+  const [bdPrev, bdLast] = seriesLastTwo(d.bad_order_rate_pct);
+  const [ltPrev, ltLast] = seriesLastTwo(d.late_delivery_rate_pct);
+  const [pdPrev, pdLast] = seriesLastTwo(d.partner_discount_eur);
+  const [btPrev, btLast] = seriesLastTwo(d.bolt_discount_eur);
+  const [drPrev, drLast] = seriesLastTwo(d.demand_refunds_eur);
+  const [srPrev, srLast] = seriesLastTwo(d.supply_refunds_eur);
+  const [rfPrev, rfLast] = seriesLastTwo(d.total_refunds_eur);
+
+  const ordersWow = pctChange(oPrev, oLast);
+  const gmvWow    = pctChange(gPrev, gLast);
+  const cpWow     = pctChange(cpPrev, cpLast);
+  const marginPp  = ppChange(mPrev, mLast);
+  const ordDiff   = (oPrev != null && oLast != null) ? oLast - oPrev : null;
+  const cpDiff    = (cpPrev != null && cpLast != null) ? cpLast - cpPrev : null;
+
+  const aovPrev = (gPrev != null && oPrev) ? gPrev / oPrev : null;
+  const aovLast = (gLast != null && oLast) ? gLast / oLast : null;
+  const aovWow  = pctChange(aovPrev, aovLast);
+
+  // Малі обсяги дають шумні відсотки — про це варто попереджати окремо
+  const lowVolume = oLast != null && oPrev != null && Math.max(oPrev, oLast) < 20;
+
+  // ── Сигнали по локаціях: покази, конверсія, найбільше падіння замовлень ──
+  let impPrev = 0, impLast = 0, convPrevSum = 0, convLastSum = 0, convN = 0;
+  const locDrops = [];
+  const locs = d.locations || {};
+  Object.values(locs).forEach(loc => {
+    const [ip, il]   = seriesLastTwo(loc.impressions);
+    const [cvp, cvl] = seriesLastTwo(loc.conv_imp_to_order);
+    const [lop, lol] = seriesLastTwo(loc.delivered_orders);
+    if (ip != null) impPrev += ip;
+    if (il != null) impLast += il;
+    if (cvp != null && cvl != null) { convPrevSum += cvp; convLastSum += cvl; convN += 1; }
+    if (lop != null && lol != null && lol < lop) {
+      locDrops.push({ name: loc.name, diff: lol - lop, pct: pctChange(lop, lol) });
+    }
+  });
+  locDrops.sort((a, b) => a.diff - b.diff);
+  const impWow = (impPrev > 0 && impLast > 0) ? (impLast / impPrev - 1) * 100 : null;
+  const convPp = convN ? (convLastSum / convN) - (convPrevSum / convN) : null;
+
+  // CP порівнюємо в грошах: при негативній базі відсоткова зміна вводить в оману
+  // (напр. −€16 → €2 формально дає «−113%», хоча це покращення).
+  const cpMaterial = Math.max(2, Math.abs(cpPrev != null ? cpPrev : 0) * 0.03);
+  const cpPctShown = (cpPrev != null && cpLast != null && cpPrev > 0) ? cpWow : null;
+
+  const hasOrdersDrop = ordersWow != null && ordersWow < -2;
+  const hasCpDrop     = cpDiff != null && cpDiff < -cpMaterial;
+  const hasCpGrowth   = cpDiff != null && cpDiff > cpMaterial;
+  const hasMarginDrop = marginPp != null && marginPp < -0.5;
+
+  // ══ 1. ЧОМУ ВПАЛИ ЗАМОВЛЕННЯ ═══════════════════════════════════════════════
+  const orderReasons = [];
+  if (avPrev != null && avLast != null && (avLast - avPrev) <= -1)
+    orderReasons.push(`<b>Availability</b> ${avPrev.toFixed(1)}% → ${avLast.toFixed(1)}% (${fmtDeltaPp(avLast - avPrev)}): заклад менше часу був онлайн, частина попиту фізично не могла оформити замовлення.`);
+  if (acPrev != null && acLast != null && (acLast - acPrev) <= -2)
+    orderReasons.push(`<b>Acceptance Rate</b> ${acPrev.toFixed(1)}% → ${acLast.toFixed(1)}% (${fmtDeltaPp(acLast - acPrev)}): частіші відмови від замовлень — оформлені замовлення не доходять до доставлених.`);
+  if (flPrev != null && flLast != null && (flLast - flPrev) >= 0.5)
+    orderReasons.push(`<b>Failed Rate</b> ${flPrev.toFixed(1)}% → ${flLast.toFixed(1)}% (${fmtDeltaPp(flLast - flPrev)}): більше зірваних замовлень, які не потрапляють у доставлені.`);
+  if (impWow != null && impWow < -5)
+    orderReasons.push(`<b>Покази</b> ${fmtDeltaPct(impWow)} (${Math.round(impPrev).toLocaleString('uk-UA')} → ${Math.round(impLast).toLocaleString('uk-UA')}): менше видимості в застосунку — менший вхідний трафік. Причини: ранжування, конкуренція в зоні, згорнуті кампанії.`);
+  if (convPp != null && convPp <= -0.2)
+    orderReasons.push(`<b>Конверсія показ→замовлення</b> ${fmtDeltaPp(convPp)}: трафік є, але гірше конвертується — ціни, довгий ETA, вартість доставки для клієнта, вигляд меню чи фото.`);
+  if (hasOrdersDrop && impWow != null && impWow > 2 && convPp != null && convPp <= -0.2)
+    orderReasons.push(`Показів навіть більше, ніж тижнем раніше — тобто проблема не в трафіку, а саме в конверсії.`);
+  if (ltPrev != null && ltLast != null && (ltLast - ltPrev) >= 2)
+    orderReasons.push(`<b>Late Delivery</b> ${fmtDeltaPp(ltLast - ltPrev)}: затримки псують досвід і знижують повторні замовлення та позицію в списку.`);
+  if (bdPrev != null && bdLast != null && (bdLast - bdPrev) >= 1.5)
+    orderReasons.push(`<b>Bad Order Rate</b> ${fmtDeltaPp(bdLast - bdPrev)}: більше проблемних замовлень — падає повторний попит.`);
+  if (hasOrdersDrop && aovWow != null && aovWow > 5)
+    orderReasons.push(`<b>Середній чек</b> зріс на ${fmtDeltaPct(aovWow)} (${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)}): можливе підняття цін у меню відлякує частину чутливих до ціни клієнтів.`);
+  if (hasOrdersDrop && locDrops.length)
+    orderReasons.push(`<b>Де саме падіння:</b> ${locDrops.slice(0, 3).map(l => `${l.name} (${Math.round(l.diff)} зам., ${fmtDeltaPct(l.pct)})`).join('; ')}${locDrops.length > 3 ? ` та ще ${locDrops.length - 3} локац.` : ''}.`);
+
+  let ordersTitle = 'Чому впали замовлення';
+  let ordersList  = 'Причини падіння:';
+  let ordersText;
+  if (oPrev == null || oLast == null) {
+    ordersTitle = 'Замовлення';
+    ordersList  = '';
+    ordersText  = 'Недостатньо даних для порівняння двох тижнів.';
+  } else if (hasOrdersDrop) {
+    ordersText = `Замовлення впали з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}, ${Math.round(ordDiff)} шт за тиждень).`;
+    if (!orderReasons.length) {
+      ordersList = '';
+      orderReasons.push('Операційні метрики (availability, acceptance, failed, покази, конверсія) не погіршились — падіння радше зовнішнє: сезонність, погода, свята, активність конкурентів у зоні або завершення промо. Варто уточнити у партнера.');
+    }
+  } else {
+    ordersTitle = ordersWow != null && ordersWow > 2 ? 'Замовлення: падіння немає' : 'Замовлення: без змін';
+    ordersText  = ordersWow != null && ordersWow > 2
+      ? `Замовлення зросли з ${Math.round(oPrev)} до ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}) — пояснювати падіння немає чого.`
+      : `Замовлення стабільні: ${Math.round(oPrev)} → ${Math.round(oLast)} (${fmtDeltaPct(ordersWow)}).`;
+    ordersList = orderReasons.length ? 'Але є метрики, що тиснуть на попит:' : '';
+    if (!orderReasons.length) orderReasons.push('Ризиків у попиті та операційній якості не видно.');
+  }
+  if (lowVolume) orderReasons.push('Обсяги малі (менше 20 замовлень на тиждень) — відсоткові зміни тут дуже чутливі до кількох замовлень.');
+
+  // ══ 2. ЧОМУ ПРОСІЛА МАРЖА (CONTRIBUTION PROFIT, €) ═════════════════════════
+  // CP = GMV × маржа%, тож ΔCP ≈ ΔGMV × маржа_попередня + GMV_останній × Δмаржа
+  const volEffect  = (gPrev != null && gLast != null && mPrev != null) ? (gLast - gPrev) * (mPrev / 100) : null;
+  const rateEffect = (gLast != null && mPrev != null && mLast != null) ? gLast * ((mLast - mPrev) / 100) : null;
+
+  const cpReasons = [];
+  if (hasCpDrop && volEffect != null && rateEffect != null) {
+    const volShare = Math.abs(volEffect) / ((Math.abs(volEffect) + Math.abs(rateEffect)) || 1) * 100;
+    if (volEffect < 0) {
+      const aovDown = aovWow != null && aovWow < -3;
+      const src = hasOrdersDrop && aovDown
+        ? `менше замовлень (${fmtDeltaPct(ordersWow)}) і нижчий середній чек (${fmtDeltaPct(aovWow)})`
+        : hasOrdersDrop
+          ? `менше замовлень (${fmtDeltaPct(ordersWow)}) — причини в блоці «Замовлення»`
+          : aovDown
+            ? `нижчий середній чек (${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)}, ${fmtDeltaPct(aovWow)}) при майже незмінній кількості замовлень`
+            : 'менший оборот';
+      cpReasons.push(`<b>Ефект обсягу: ${fmtEurDelta(volEffect)}</b> — GMV ${fmtDeltaPct(gmvWow)} (${fmtEurVal(gPrev)} → ${fmtEurVal(gLast)}) через ${src}. Навіть при незмінній рентабельності це забирає таку суму CP.`);
+    }
+    if (rateEffect < 0)
+      cpReasons.push(`<b>Ефект рентабельності: ${fmtEurDelta(rateEffect)}</b> — CP L2 маржа ${fmtDeltaPp(marginPp)}, тобто з кожного євро обороту лишається менше прибутку. Причини — у блоці «CP L2 Маржа».`);
+    if (volEffect < 0 && rateEffect < 0)
+      cpReasons.push(`Головний драйвер — ${volShare >= 55 ? `<b>обсяг</b> (~${Math.round(volShare)}% падіння CP)` : volShare <= 45 ? `<b>рентабельність</b> (~${Math.round(100 - volShare)}% падіння CP)` : '<b>обидва фактори приблизно порівну</b>'}.`);
+    if (volEffect < 0 && rateEffect >= 0)
+      cpReasons.push(`Рентабельність не погіршилась (${fmtDeltaPp(marginPp)}) — CP просів виключно через менший оборот.`);
+    if (rateEffect < 0 && volEffect >= 0)
+      cpReasons.push(`Оборот не падав (GMV ${fmtDeltaPct(gmvWow)}) — CP просів виключно через нижчу рентабельність.`);
+
+    const pdD = (pdPrev != null && pdLast != null) ? pdLast - pdPrev : null;
+    const btD = (btPrev != null && btLast != null) ? btLast - btPrev : null;
+    const rfD = (rfPrev != null && rfLast != null) ? rfLast - rfPrev : null;
+    const costBits = [];
+    if (pdD != null && pdD >= 5) costBits.push(`знижки партнера ${fmtEurDelta(pdD)}`);
+    if (btD != null && btD >= 5) costBits.push(`знижки Bolt ${fmtEurDelta(btD)}`);
+    if (rfD != null && rfD >= 3) costBits.push(`refunds ${fmtEurDelta(rfD)}`);
+    if (costBits.length)
+      cpReasons.push(`<b>Витрати, що зросли в грошах:</b> ${costBits.join(', ')} — це прямий мінус до CP.`);
+  }
+
+  let cpTitle = 'Чому просіла маржа (CP, €)';
+  let cpList  = 'Розклад падіння:';
+  let cpText;
+  if (cpPrev == null || cpLast == null) {
+    cpTitle = 'Маржа (CP, €)';
+    cpList  = '';
+    cpText  = 'Недостатньо даних для порівняння двох тижнів.';
+  } else if (hasCpDrop) {
+    cpText = `Contribution Profit просів з ${fmtEurVal(cpPrev)} до ${fmtEurVal(cpLast)} (${fmtEurDelta(cpDiff)}${cpPctShown != null ? `, ${fmtDeltaPct(cpPctShown)}` : ''}). Падіння розкладається на два ефекти — обсяг і рентабельність.`;
+    if (!cpReasons.length) {
+      cpList = '';
+      cpReasons.push('Ані GMV, ані маржа% суттєво не змінились — імовірні разові списання чи коригування в цьому тижні.');
+    }
+  } else {
+    cpTitle = hasCpGrowth ? 'Маржа (CP, €): падіння немає' : 'Маржа (CP, €): без змін';
+    cpText  = hasCpGrowth
+      ? `CP зріс з ${fmtEurVal(cpPrev)} до ${fmtEurVal(cpLast)} (${fmtEurDelta(cpDiff)}${cpPctShown != null ? `, ${fmtDeltaPct(cpPctShown)}` : ''}) — пояснювати падіння немає чого.`
+      : `CP стабільний: ${fmtEurVal(cpPrev)} → ${fmtEurVal(cpLast)} (${fmtEurDelta(cpDiff)}).`;
+    cpList = '';
+    cpReasons.length = 0;
+    cpReasons.push(`Обсяг (GMV ${gmvWow != null ? fmtDeltaPct(gmvWow) : '—'}) і рентабельність (${marginPp != null ? fmtDeltaPp(marginPp) : '—'}) або працюють на плюс, або компенсують один одного.`);
+  }
+  if (cpLast != null && cpLast < 0)
+    cpReasons.push(`<b>CP негативний (${fmtEurVal(cpLast)})</b> — бренд приносить збиток, потрібен перегляд комерційних умов.`);
+  if (lowVolume) cpReasons.push('Обсяги малі — суми в євро невеликі, тож одне-два замовлення сильно змінюють картину.');
+
+  // ══ 3. ЧОМУ ПРОСІЛА CP L2 МАРЖА (%) ════════════════════════════════════════
+  // Маржа% = CP / GMV, тож залежить від структури витрат на євро обороту,
+  // а не від самого обсягу замовлень.
+  const pdShPrev = shareOfGmv(pdPrev, gPrev), pdShLast = shareOfGmv(pdLast, gLast);
+  const btShPrev = shareOfGmv(btPrev, gPrev), btShLast = shareOfGmv(btLast, gLast);
+  const drShPrev = shareOfGmv(drPrev, gPrev), drShLast = shareOfGmv(drLast, gLast);
+  const srShPrev = shareOfGmv(srPrev, gPrev), srShLast = shareOfGmv(srLast, gLast);
+
+  const mReasons = [];
+  let explainedPp = 0;
+  const addShare = (label, shPrev, shLast, hint) => {
+    if (shPrev == null || shLast == null) return;
+    const dpp = shLast - shPrev;
+    if (dpp < 0.2) return;
+    explainedPp += dpp;
+    mReasons.push(`<b>${label}</b> ${shPrev.toFixed(1)}% → ${shLast.toFixed(1)}% від GMV (${fmtDeltaPp(dpp)}): забирає приблизно стільки ж п.п. маржі. ${hint}`);
+  };
+  addShare('Знижки партнера', pdShPrev, pdShLast, 'Кампанія стала дорожчою або охопила більшу частку чеків.');
+  addShare('Знижки Bolt', btShPrev, btShLast, 'Вища частка промо-замовлень у міксі.');
+  addShare('Refunds покупцям', drShPrev, drShLast, 'Компенсації за помилки в замовленнях і скарги.');
+  addShare('Refunds курʼєрам', srShPrev, srShLast, 'Компенсації за очікування, скасування та довгі маршрути.');
+
+  if (aovWow != null && aovWow < -3)
+    mReasons.push(`<b>Середній чек</b> ${fmtEurVal(aovPrev)} → ${fmtEurVal(aovLast)} (${fmtDeltaPct(aovWow)}): фіксовані витрати на замовлення (доставка, платіжна комісія) майже не залежать від суми чека, тож на меншому чеку зʼїдають більший % маржі.`);
+  if (bdPrev != null && bdLast != null && (bdLast - bdPrev) >= 1)
+    mReasons.push(`<b>Bad Order Rate</b> ${bdPrev.toFixed(1)}% → ${bdLast.toFixed(1)}% (${fmtDeltaPp(bdLast - bdPrev)}): кожне проблемне замовлення — це компенсація без виручки.`);
+  if (flPrev != null && flLast != null && (flLast - flPrev) >= 0.5)
+    mReasons.push(`<b>Failed Rate</b> ${flPrev.toFixed(1)}% → ${flLast.toFixed(1)}% (${fmtDeltaPp(flLast - flPrev)}): витрати на курʼєра понесені, виручки немає.`);
+  if (ltPrev != null && ltLast != null && (ltLast - ltPrev) >= 2)
+    mReasons.push(`<b>Late Delivery</b> ${fmtDeltaPp(ltLast - ltPrev)}: довші доставки — дорожча логістика і більше компенсацій за затримки.`);
+
+  let mTitle = 'Чому просіла CP L2 Маржа (%)';
+  let mList  = 'Що зʼїло маржу:';
+  let mText;
+  if (mPrev == null || mLast == null) {
+    mTitle = 'CP L2 Маржа (%)';
+    mList  = '';
+    mText  = 'Недостатньо даних для порівняння двох тижнів.';
+  } else if (hasMarginDrop) {
+    mText = `CP L2 маржа просіла з ${mPrev.toFixed(1)}% до ${mLast.toFixed(1)}% (${fmtDeltaPp(marginPp)}). Це рентабельність на євро обороту: обсяг замовлень на неї прямо не впливає, тільки структура витрат.`;
+    const residual = Math.abs(marginPp) - explainedPp;
+    if (!mReasons.length) {
+      mList = '';
+      mReasons.push('Знижки, refunds і якісні метрики не погіршились — перевірте комісійну ставку, mix локацій усередині бренду та вартість доставки на замовлення.');
+    } else if (residual > 1) {
+      mReasons.push(`<b>Непояснений залишок ≈ ${residual.toFixed(1)} п.п.</b> — знижки й refunds покривають не все падіння. Найімовірніше: змінилась комісійна ставка, mix локацій чи страв, або подорожчала доставка на замовлення.`);
+    }
+  } else {
+    mTitle = marginPp != null && marginPp > 0.5 ? 'CP L2 Маржа (%): падіння немає' : 'CP L2 Маржа (%): без змін';
+    mText  = marginPp != null && marginPp > 0.5
+      ? `Маржа зросла з ${mPrev.toFixed(1)}% до ${mLast.toFixed(1)}% (${fmtDeltaPp(marginPp)}) — структура витрат на євро обороту покращилась.`
+      : `Маржа стабільна: ${mPrev.toFixed(1)}% → ${mLast.toFixed(1)}% (${fmtDeltaPp(marginPp)}).`;
+    mList = mReasons.length ? 'Але ці фактори тиснуть на маржу:' : '';
+    if (!mReasons.length) mReasons.push('Частка знижок і refunds у GMV без суттєвих змін.');
+  }
+  if (mLast != null && mLast < 0)
+    mReasons.push(`<b>Маржа негативна (${mLast.toFixed(1)}%)</b> — кожне замовлення приносить збиток, економіка потребує перегляду.`);
+  if (lowVolume) mReasons.push('Обсяги малі — на кількох замовленнях маржа% дуже волатильна.');
+
+  // ── Збірка HTML ───────────────────────────────────────────────────────────
+  const severity =
+    (ordersWow != null && ordersWow < -15) || (marginPp != null && marginPp < -3) ||
+    (mLast != null && mLast < 0) || (cpPctShown != null && cpPctShown < -20)
+      ? 'danger'
+      : (hasOrdersDrop || hasMarginDrop || hasCpDrop) ? 'warning' : '';
+
+  const cls = (v, badBelow, goodAbove) =>
+    v == null ? 'flat' : v < badBelow ? 'down' : v > goodAbove ? 'up' : 'flat';
+
+  const card = (icon, title, deltaHtml, deltaCls, sub, text, listTitle, reasons) => `
+    <div class="dyn-analysis-card">
+      <h5>${icon} ${title}</h5>
+      <div class="delta ${deltaCls}">${deltaHtml}<span class="delta-sub">${sub}</span></div>
+      <p class="dyn-analysis-text">${text}</p>
+      ${listTitle ? `<div class="dyn-analysis-list-title">${listTitle}</div>` : ''}
+      <ul>${reasons.map(r => `<li>${r}</li>`).join('')}</ul>
+    </div>`;
+
+  let html = `<div class="dyn-analysis-title">🔍 Аналіз динаміки · останній тиждень vs попередній</div>`;
+  html += `<div class="dyn-analysis-grid">`;
+  html += card('📦', ordersTitle,
+    fmtDeltaPct(ordersWow), cls(ordersWow, -2, 2),
+    (oPrev != null && oLast != null) ? `${Math.round(oPrev)} → ${Math.round(oLast)}` : '',
+    ordersText, ordersList, orderReasons);
+  html += card('💶', cpTitle,
+    fmtEurDelta(cpDiff), cls(cpDiff, -cpMaterial, cpMaterial),
+    (cpPrev != null && cpLast != null) ? `${fmtEurVal(cpPrev)} → ${fmtEurVal(cpLast)}` : '',
+    cpText, cpList, cpReasons);
+  html += card('📉', mTitle,
+    fmtDeltaPp(marginPp), cls(marginPp, -0.5, 0.5),
+    (mPrev != null && mLast != null) ? `${mPrev.toFixed(1)}% → ${mLast.toFixed(1)}%` : '',
+    mText, mList, mReasons);
+  html += `</div>`;
+
+  html += `<div class="dyn-analysis-hint">Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек). Маржа в € розкладається на ефект обсягу та ефект рентабельності; CP L2 Маржа (%) — на частку витрат у GMV. Це гіпотези для перевірки з партнером, не остаточний вердикт.</div>`;
+  return { html, severity };
+}
+
 function renderCharts() {
   const key = document.getElementById('dynBrandSelect').value;
   const placeholder = document.getElementById('dynPlaceholder');
   const chartsDiv   = document.getElementById('dynCharts');
   const infoDiv     = document.getElementById('dynBrandInfo');
   const locSection  = document.getElementById('locSection');
+  const analysisEl  = document.getElementById('dynAnalysis');
 
   if (!key || !TRENDS[key]) {
     placeholder.style.display = '';
     chartsDiv.style.display   = 'none';
     infoDiv.innerHTML = 'Оберіть бренд для перегляду динаміки';
+    if (analysisEl) analysisEl.style.display = 'none';
     return;
   }
 
@@ -4873,6 +5278,13 @@ function renderCharts() {
 
   const groupLabel = d.group_name ? ` · <span style="color:var(--muted)">Group: ${d.group_name}</span>` : '';
   infoDiv.innerHTML = `<strong>${d.brand}</strong>${groupLabel} · ${d.city} · ${d.weeks.length} тижнів · ${locCount} локац.`;
+
+  if (analysisEl) {
+    const { html, severity } = analyzeBrandDynamics(d);
+    analysisEl.className = 'dyn-analysis' + (severity ? ' ' + severity : '');
+    analysisEl.innerHTML = html;
+    analysisEl.style.display = '';
+  }
 
   const GREEN  = '#1DC462';
   const BLUE   = '#1976D2';
