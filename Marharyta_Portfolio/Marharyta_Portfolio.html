@@ -507,6 +507,37 @@
     padding-top: 8px;
     border-top: 1px dashed #e2e2e2;
   }
+  .dyn-plain {
+    background: #F2FBF5;
+    border-left: 3px solid var(--bolt-green);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #1A1A1A;
+    margin-bottom: 10px;
+  }
+  .dyn-plain-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--bolt-mid-green);
+    margin-bottom: 4px;
+  }
+  .dyn-details summary {
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--muted);
+    padding: 3px 0;
+    user-select: none;
+  }
+  .dyn-details summary:hover { color: var(--bolt-mid-green); }
+  .dyn-details[open] summary { margin-bottom: 8px; }
   .dyn-analysis-card ul {
     margin: 0;
     padding-left: 18px;
@@ -4984,6 +5015,12 @@ function fmtEurVal(v) {
   return (v < 0 ? '−€' : '€') + abs;
 }
 
+// Відсоток від суми замовлень зрозуміліше читається як «скільки євро зі 100»
+function per100(pct) {
+  if (pct == null) return '—';
+  return (pct < 0 ? '−€' : '€') + Math.abs(pct).toFixed(1);
+}
+
 function pluralUa(n, one, few, many) {
   const mod10 = n % 10, mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return `${n} ${one}`;
@@ -5212,6 +5249,77 @@ function analyzeBrandDynamics(d) {
     seasonalNotes(wLast).forEach(n => externalReasons.push(n));
   }
 
+  // ── Ті самі причини, але людською мовою і без термінів ────────────────────
+  const plainDrivers = [];
+  const addPlain = (score, text) => plainDrivers.push({ score, text });
+  if (avPrev != null && avLast != null && (avLast - avPrev) <= -1)
+    addPlain(Math.abs(avLast - avPrev) * 3, `заклад частіше був вимкнений у застосунку — раніше він приймав замовлення ${avPrev.toFixed(0)}% часу, а тепер ${avLast.toFixed(0)}%. Поки заклад офлайн, замовити в нього просто неможливо`);
+  if (acPrev != null && acLast != null && (acLast - acPrev) <= -2)
+    addPlain(Math.abs(acLast - acPrev) * 2, `заклад частіше не брав замовлення в роботу — раніше з кожних 100 замовлень приймав ${acPrev.toFixed(0)}, а тепер ${acLast.toFixed(0)}`);
+  if (flPrev != null && flLast != null && (flLast - flPrev) >= 0.5)
+    addPlain((flLast - flPrev) * 2, flPrev < 0.05
+      ? `почали зриватися замовлення вже після того, як людина їх оформила — раніше такого практично не було, тепер зривається ${flLast.toFixed(1)} зі 100`
+      : `більше замовлень зривалося вже після того, як людина їх оформила — раніше зривалося ${flPrev.toFixed(1)} зі 100, тепер ${flLast.toFixed(1)}`);
+  if (hasGmvDrop && aovWow != null && aovWow < -3)
+    addPlain(Math.abs(aovWow), 'люди стали класти в кошик менше — беруть дешевші позиції або не додають напої та десерти до основної страви');
+  if (impWow != null && impWow < -5)
+    addPlain(Math.abs(impWow), `застосунок рідше показував заклад людям — його побачили на ${Math.abs(impWow).toFixed(0)}% менше разів, тобто менше людей узагалі про нього дізналися`);
+  if (convPp != null && convPp <= -0.2)
+    addPlain(Math.abs(convPp) * 10, `заклад бачили так само часто, але замовляти в ньому стали рідше — зазвичай так буває через ціни, довге очікування або дорогу доставку для клієнта`);
+  if (ltPrev != null && ltLast != null && (ltLast - ltPrev) >= 2)
+    addPlain(ltLast - ltPrev, `замовлення стали приїжджати довше, а після довгого очікування люди рідше замовляють удруге`);
+  if (bdPrev != null && bdLast != null && (bdLast - bdPrev) >= 1.5)
+    addPlain(bdLast - bdPrev, `більше замовлень приїхали зіпсованими або неповними, тож частина клієнтів більше не повернулася`);
+  if (hasOrdersDrop && aovWow != null && aovWow > 5)
+    addPlain(aovWow / 2, 'замовляти стало дорожче, а частину клієнтів вища ціна відлякує — варто спитати партнера, чи не піднімав він ціни в меню');
+  plainDrivers.sort((a, b) => b.score - a.score);
+
+  let plainMarket = '';
+  if (mktOrdersWow != null && (hasOrdersDrop || hasGmvDrop)) {
+    const where = mktIsCity ? `інші заклади в місті ${d.city}` : 'інші заклади портфеля';
+    if (mktOrdersWow <= -3)
+      plainMarket = `Важливо: ${where} цього тижня теж отримали менше замовлень. Тобто справа не лише в цьому партнері — вплинуло щось спільне для всіх: погода, тривоги або те, що люди у відпустках.`;
+    else if (mktOrdersWow >= 2)
+      plainMarket = mktIsCity
+        ? `І ще: ${where} цього тижня, навпаки, отримали більше замовлень. Тож погода, спека чи тривоги тут ні до чого — причина саме в цьому закладі.`
+        : `І ще: ${where} цього тижня зростали, але вони в інших містах, тож щось локальне саме тут виключати не можна.`;
+    else
+      plainMarket = `${where.charAt(0).toUpperCase() + where.slice(1)} трималися рівно, тож причина найпевніше саме в цьому закладі.`;
+  }
+
+  let plainOrders;
+  if (oPrev == null || oLast == null) {
+    plainOrders = 'Поки що замало даних, щоб порівняти два тижні.';
+  } else if (hasOrdersDrop || hasGmvDrop) {
+    const s = [];
+    s.push(hasOrdersDrop
+      ? `Цього тижня в закладі замовили ${pluralUa(Math.round(oLast), 'раз', 'рази', 'разів')} замість ${Math.round(oPrev)} — це на ${pluralUa(Math.abs(Math.round(ordDiff)), 'замовлення', 'замовлення', 'замовлень')} менше.`
+      : `Замовлень майже стільки ж, скільки тижнем раніше (${Math.round(oPrev)} → ${Math.round(oLast)}).`);
+    if (gPrev != null && gLast != null)
+      s.push(`Загалом люди залишили в закладі ${fmtEurVal(gLast)} замість ${fmtEurVal(gPrev)}.`);
+    if (aovWow != null && Math.abs(aovWow) >= 3 && aovPrev != null && aovLast != null)
+      s.push(aovWow < 0
+        ? `За одне замовлення в середньому витрачали менше — ${fmtEurVal(aovLast)} замість ${fmtEurVal(aovPrev)}.`
+        : `Зате за одне замовлення витрачали більше — ${fmtEurVal(aovLast)} замість ${fmtEurVal(aovPrev)}, і це частково зменшило втрати в грошах.`);
+    if (plainDrivers.length) {
+      s.push(`Найімовірніша причина: ${plainDrivers[0].text}.`);
+      if (plainDrivers[1]) s.push(`Могло вплинути й те, що ${plainDrivers[1].text}.`);
+    } else {
+      s.push('У роботі самого закладу нічого не зламалося: він був онлайн, брав замовлення і возив вчасно. Тож причину варто шукати ззовні.');
+    }
+    if (plainMarket) s.push(plainMarket);
+    plainOrders = s.join(' ');
+  } else {
+    const s = [ordersWow != null && ordersWow > 2
+      ? `Хвилюватися нема про що: замовлень стало більше — ${Math.round(oLast)} замість ${Math.round(oPrev)}.`
+      : `Усе рівно: замовлень майже стільки ж, скільки тижнем раніше (${Math.round(oPrev)} → ${Math.round(oLast)}).`];
+    if (gPrev != null && gLast != null)
+      s.push(`Люди залишили в закладі ${fmtEurVal(gLast)} проти ${fmtEurVal(gPrev)} тижнем раніше.`);
+    if (plainDrivers.length && plainDrivers[0].score >= 6)
+      s.push(`Але варто тримати в голові: ${plainDrivers[0].text}.`);
+    plainOrders = s.join(' ');
+  }
+
   let ordersTitle = 'Чому впали замовлення та GMV';
   let ordersText;
   if (oPrev == null || oLast == null) {
@@ -5303,6 +5411,37 @@ function analyzeBrandDynamics(d) {
     cpReasons.push(`<b>CP негативний (${fmtEurVal(cpLast)})</b> — бренд приносить збиток, потрібен перегляд комерційних умов.`);
   if (lowVolume) cpReasons.push('Обсяги малі — суми в євро невеликі, тож одне-два замовлення сильно змінюють картину.');
 
+  let plainCp;
+  if (cpPrev == null || cpLast == null) {
+    plainCp = 'Поки що замало даних, щоб порівняти два тижні.';
+  } else if (hasCpDrop) {
+    const s = [`Заробіток Bolt із цього партнера впав: ${fmtEurVal(cpLast)} замість ${fmtEurVal(cpPrev)}, тобто на ${fmtEurVal(Math.abs(cpDiff))} менше.`];
+    // Другу причину згадуємо лише якщо вона справді помітна, а не 0.1 €
+    const material = Math.abs(cpDiff) * 0.15;
+    const volBad  = volEffect != null && volEffect < -material;
+    const rateBad = rateEffect != null && rateEffect < -material;
+    if (volBad && rateBad) {
+      const volShare = Math.abs(volEffect) / ((Math.abs(volEffect) + Math.abs(rateEffect)) || 1) * 100;
+      s.push(`Причини дві. Перша: через заклад пройшло менше грошей — ${fmtEurVal(gLast)} замість ${fmtEurVal(gPrev)}. Друга: з кожних 100 € замовлень Bolt тепер лишається ${per100(mLast)} замість ${per100(mPrev)}.`);
+      s.push(`Сильніше вплинула ${volShare >= 55 ? 'перша — просто менше продажів' : volShare <= 45 ? 'друга — з тих самих продажів лишається менше' : 'кожна приблизно однаково'}.`);
+    } else if (volBad) {
+      s.push(`Причина одна: через заклад пройшло менше грошей — ${fmtEurVal(gLast)} замість ${fmtEurVal(gPrev)}. З кожних 100 € замовлень Bolt заробляє стільки ж, скільки й раніше, просто самих замовлень менше. Чому — дивіться в першій картці.`);
+    } else if (rateBad) {
+      s.push(`Продажі не падали, але з кожних 100 € замовлень Bolt тепер лишається ${per100(mLast)} замість ${per100(mPrev)}. Чому саме — у третій картці.`);
+    } else {
+      s.push('Ані продажі, ані заробіток зі 100 € замовлень помітно не змінились — схоже, у цьому тижні було якесь разове списання чи коригування.');
+    }
+    if (cpLast < 0) s.push('Зараз цей партнер приносить збиток, а не прибуток.');
+    if (lowVolume) s.push('Але замовлень тут дуже мало, тож суми маленькі й стрибають від тижня до тижня.');
+    plainCp = s.join(' ');
+  } else {
+    const s = [hasCpGrowth
+      ? `Тут добре: Bolt заробив із цього партнера ${fmtEurVal(cpLast)} замість ${fmtEurVal(cpPrev)} — на ${fmtEurVal(Math.abs(cpDiff))} більше.`
+      : `Заробіток Bolt із цього партнера майже не змінився: ${fmtEurVal(cpLast)} проти ${fmtEurVal(cpPrev)}.`];
+    if (cpLast < 0) s.push('Але це все ще збиток — партнер поки що не приносить прибутку.');
+    plainCp = s.join(' ');
+  }
+
   // ══ 3. ЧОМУ ПРОСІЛА CP L2 МАРЖА (%) ════════════════════════════════════════
   // Маржа% = CP / GMV, тож залежить від структури витрат на євро обороту,
   // а не від самого обсягу замовлень.
@@ -5362,6 +5501,38 @@ function analyzeBrandDynamics(d) {
     mReasons.push(`<b>Маржа негативна (${mLast.toFixed(1)}%)</b> — кожне замовлення приносить збиток, економіка потребує перегляду.`);
   if (lowVolume) mReasons.push('Обсяги малі — на кількох замовленнях маржа% дуже волатильна.');
 
+  let plainMargin;
+  if (mPrev == null || mLast == null) {
+    plainMargin = 'Поки що замало даних, щоб порівняти два тижні.';
+  } else if (hasMarginDrop) {
+    const s = [`Раніше з кожних 100 € замовлень у цьому закладі Bolt лишалося ${per100(mPrev)}, а тепер лишається ${per100(mLast)}. Тобто заклад може продавати так само, але грошей платформі з цих продажів лишається менше.`];
+    const eaters = [];
+    const addEater = (what, shPrev, shLast) => {
+      if (shPrev == null || shLast == null || shLast - shPrev < 0.2) return;
+      eaters.push(shPrev < 0.05
+        ? `раніше на ${what} майже нічого не йшло, а тепер іде ${per100(shLast)} зі 100`
+        : `на ${what} тепер іде ${per100(shLast)} зі 100 замість ${per100(shPrev)}`);
+    };
+    addEater('знижки від партнера', pdShPrev, pdShLast);
+    addEater('знижки Bolt', btShPrev, btShLast);
+    addEater('повернення грошей покупцям', drShPrev, drShLast);
+    addEater('компенсації курʼєрам', srShPrev, srShLast);
+    if (eaters.length) s.push(`Куди пішли ці гроші: ${eaters.join('; ')}.`);
+    if (aovWow != null && aovWow < -3 && aovPrev != null && aovLast != null)
+      s.push(`Ще одна причина — люди стали замовляти на менші суми (${fmtEurVal(aovLast)} замість ${fmtEurVal(aovPrev)}). Довезти замовлення коштує майже однаково, велике воно чи маленьке, тож із дрібних чеків прибутку лишається менше.`);
+    if (!eaters.length && !(aovWow != null && aovWow < -3))
+      s.push('Знижки й повернення грошей не зростали, тож варто перевірити умови комісії з партнером і скільки коштує довезти його замовлення.');
+    if (mLast < 0) s.push('Зараз кожне замовлення приносить збиток замість прибутку.');
+    if (lowVolume) s.push('Хоча замовлень тут дуже мало, тож цей показник стрибає навіть через одне-два замовлення.');
+    plainMargin = s.join(' ');
+  } else {
+    const s = [marginPp != null && marginPp > 0.5
+      ? `Тут покращення: раніше зі 100 € замовлень Bolt лишалося ${per100(mPrev)}, тепер ${per100(mLast)}.`
+      : `Без змін: зі 100 € замовлень Bolt лишається ${per100(mLast)}, приблизно як і тижнем раніше (${per100(mPrev)}).`];
+    if (mLast < 0) s.push('Але це мінус — кожне замовлення поки приносить збиток.');
+    plainMargin = s.join(' ');
+  }
+
   // ── Збірка HTML ───────────────────────────────────────────────────────────
   const severity =
     (ordersWow != null && ordersWow < -15) || (marginPp != null && marginPp < -3) ||
@@ -5372,14 +5543,18 @@ function analyzeBrandDynamics(d) {
   const cls = (v, badBelow, goodAbove) =>
     v == null ? 'flat' : v < badBelow ? 'down' : v > goodAbove ? 'up' : 'flat';
 
-  const card = (icon, title, deltaHtml, deltaCls, sub, text, sections) => `
+  const card = (icon, title, deltaHtml, deltaCls, sub, plain, text, sections) => `
     <div class="dyn-analysis-card">
       <h5>${icon} ${title}</h5>
       <div class="delta ${deltaCls}">${deltaHtml}<span class="delta-sub">${sub}</span></div>
-      <p class="dyn-analysis-text">${text}</p>
-      ${sections.filter(s => s.items && s.items.length).map(s => `
-        ${s.title ? `<div class="dyn-analysis-list-title">${s.title}</div>` : ''}
-        <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`).join('')}
+      <div class="dyn-plain"><span class="dyn-plain-label">Простими словами</span>${plain}</div>
+      <details class="dyn-details">
+        <summary>Детальні цифри та метрики</summary>
+        <p class="dyn-analysis-text">${text}</p>
+        ${sections.filter(s => s.items && s.items.length).map(s => `
+          ${s.title ? `<div class="dyn-analysis-list-title">${s.title}</div>` : ''}
+          <ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`).join('')}
+      </details>
     </div>`;
 
   let html = `<div class="dyn-analysis-title">🔍 Аналіз динаміки · останній тиждень vs попередній</div>`;
@@ -5387,21 +5562,21 @@ function analyzeBrandDynamics(d) {
   html += card('📦', ordersTitle,
     fmtDeltaPct(ordersWow), cls(ordersWow, -2, 2),
     (oPrev != null && oLast != null) ? `${Math.round(oPrev)} → ${Math.round(oLast)} · GMV ${fmtDeltaPct(gmvWow)}` : '',
-    ordersText,
+    plainOrders, ordersText,
     [{ title: ordersListTitle, items: orderReasons },
      { title: 'Розклад падіння GMV:', items: gmvReasons },
      { title: '🌍 Зовнішні фактори:', items: externalReasons }]);
   html += card('💶', cpTitle,
     fmtEurDelta(cpDiff), cls(cpDiff, -cpMaterial, cpMaterial),
     (cpPrev != null && cpLast != null) ? `${fmtEurVal(cpPrev)} → ${fmtEurVal(cpLast)}` : '',
-    cpText, [{ title: cpList, items: cpReasons }]);
+    plainCp, cpText, [{ title: cpList, items: cpReasons }]);
   html += card('📉', mTitle,
     fmtDeltaPp(marginPp), cls(marginPp, -0.5, 0.5),
     (mPrev != null && mLast != null) ? `${mPrev.toFixed(1)}% → ${mLast.toFixed(1)}%` : '',
-    mText, [{ title: mList, items: mReasons }]);
+    plainMargin, mText, [{ title: mList, items: mReasons }]);
   html += `</div>`;
 
-  html += `<div class="dyn-analysis-hint">Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек) і порівняння з рештою ринку міста за той самий тиждень. Зовнішні фактори (погода, тривоги, сезон) — це підказки для перевірки, а не зафіксовані дані. Це гіпотези для розмови з партнером, не остаточний вердикт.</div>`;
+  html += `<div class="dyn-analysis-hint">Головне в кожній картці написано простою мовою, а точні цифри сховані під «Детальні цифри та метрики». Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек) і порівняння з рештою ринку міста за той самий тиждень. Зовнішні фактори (погода, тривоги, сезон) — це підказки для перевірки, а не зафіксовані дані. Це гіпотези для розмови з партнером, не остаточний вердикт.</div>`;
   return { html, severity };
 }
 
