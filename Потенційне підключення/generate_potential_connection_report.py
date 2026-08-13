@@ -16,6 +16,7 @@ import os
 import sys
 import time
 from datetime import date, timedelta
+from html import escape
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -486,6 +487,10 @@ def brand_key(brand: str, city: str) -> str:
     return f"{brand}|{city}"
 
 
+def esc(val) -> str:
+    return escape(str(val if val is not None else ""), quote=True)
+
+
 def clean_zone(zone: str) -> str:
     return str(zone or "").replace("\xa0", " ").strip()
 
@@ -562,6 +567,18 @@ def send_rec_button(key: str) -> str:
     )
 
 
+def comm_checkbox(key: str, track: bool = True) -> str:
+    """Чек-бокс «прокомуніковано» для бренду. Стан зберігається у localStorage браузера."""
+    track_attr = ' data-comm-track="1"' if track else ""
+    return (
+        f'<label class="comm-check" title="Позначити, що з партнером уже прокомуніковано">'
+        f'<input type="checkbox" data-comm-key="{esc(key)}"{track_attr}'
+        f' onchange="toggleCommunicated(this)">'
+        f'<span class="comm-text">Прокомуніковано</span>'
+        f'<span class="comm-date"></span></label>'
+    )
+
+
 def build_brand_table_rows(
     df: pd.DataFrame,
     show_actual_roas: bool = False,
@@ -603,9 +620,11 @@ def build_brand_table_rows(
                     if row.get("predicted_roas") is not None and pd.notna(row.get("predicted_roas"))
                     else '<td class="num">—</td>'
                 )
+        key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
         html += f"""
         <tr>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top}<br>{loc_note}</td>
+          <td class="brand-cell"><strong>{row.get('brand_name') or '—'}</strong> {top}<br>{loc_note}
+            <div class="comm-inline">{comm_checkbox(key, track=False)}</div></td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{int(row.get('locations_count') or 1)}</td>
           <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
@@ -640,7 +659,8 @@ def build_no_sl_roas_rows(df: pd.DataFrame) -> str:
         )
         html += f"""
         <tr>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td class="brand-cell"><strong>{row.get('brand_name') or '—'}</strong> {top}
+            <div class="comm-inline">{comm_checkbox(key)}</div></td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{int(row.get('locations_count') or 1)}</td>
           <td class="num"><strong>{fmt_roas(row.get('predicted_roas'))}</strong></td>
@@ -659,7 +679,7 @@ def build_no_sl_roas_rows(df: pd.DataFrame) -> str:
 def build_never_sl_rows(df: pd.DataFrame) -> str:
     """Бренди, які ніколи не підключали Sponsored Listing."""
     if df.empty:
-        return '<tr><td colspan="11" class="empty">Немає даних</td></tr>'
+        return '<tr><td colspan="12" class="empty">Немає даних</td></tr>'
     html = ""
     for _, row in df.iterrows():
         top = '<span class="badge-top">TOP</span>' if int(row.get("is_top_brand") or 0) else ""
@@ -674,7 +694,8 @@ def build_never_sl_rows(df: pd.DataFrame) -> str:
         key = brand_key(str(row.get("brand_name") or ""), str(row.get("city_name") or ""))
         html += f"""
         <tr>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td class="brand-cell"><strong>{row.get('brand_name') or '—'}</strong> {top}
+            <div class="comm-inline">{comm_checkbox(key)}</div></td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{int(row.get('locations_count') or 1)}</td>
           <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
@@ -690,9 +711,93 @@ def build_never_sl_rows(df: pd.DataFrame) -> str:
     return html
 
 
+NO_SL_LOC_COLUMNS = 11
+
+
+def build_no_sl_location_rows(df_loc: pd.DataFrame, payload_keys: set[str]) -> str:
+    """Заклади без активного Sponsored Listing, згруповані за брендом і містом."""
+    df = df_loc[df_loc["has_sponsored_listing"] == 0].copy()
+    if df.empty:
+        return f'<tr><td colspan="{NO_SL_LOC_COLUMNS}" class="empty">Усі заклади мають Sponsored Listing</td></tr>'
+    df = df.sort_values(
+        ["city_name", "brand_name", "gmv_eur"], ascending=[True, True, False], na_position="last"
+    )
+
+    html = ""
+    for (city, brand), grp in df.groupby(["city_name", "brand_name"], sort=False, dropna=False):
+        brand_name = str(brand or "—")
+        city_name = str(city or "—")
+        key = brand_key(str(brand or ""), str(city or ""))
+        never = int(grp["never_had_sponsored_listing"].min() or 0) == 1
+        smart_locs = int((grp["has_smart_promotion"] == 1).sum())
+        top = '<span class="badge-top">TOP</span>' if int(grp["is_top_brand"].max() or 0) else ""
+        never_badge = (
+            '<span class="tag tag-never">ніколи не було SL</span>' if never else ""
+        )
+        smart_badge = (
+            f'<span class="tag tag-smart">Smart Promo: {smart_locs} лок.</span>'
+            if smart_locs else ""
+        )
+        action = (
+            send_rec_button(key)
+            if key in payload_keys
+            else '<span class="muted sub">рекомендацію див. у секціях вище</span>'
+        )
+        html += f"""
+        <tr class="group-row" data-group-label="{esc(f'{brand_name} — {city_name}')}">
+          <td colspan="{NO_SL_LOC_COLUMNS}">
+            <div class="group-head">
+              <span><strong>{esc(brand_name)}</strong> {top}
+                <span class="sub">· {esc(city_name)} · {len(grp)} закл. без SL</span>
+                {never_badge} {smart_badge}</span>
+              <span class="group-action">{action}</span>
+              {comm_checkbox(key)}
+            </div>
+          </td>
+        </tr>"""
+
+        for _, loc in grp.iterrows():
+            provider = str(loc.get("provider_name") or "—")
+            zone = clean_zone(loc.get("zone_name")) or "—"
+            cp = loc.get("cp_margin_pct")
+            cp_class = (
+                "pos" if cp is not None and pd.notna(cp) and float(cp) > 0
+                else "neg" if cp is not None and pd.notna(cp) and float(cp) < 0
+                else ""
+            )
+            loc_never = int(loc.get("never_had_sponsored_listing") or 0) == 1
+            sl_history = (
+                '<span class="tag tag-never">ніколи</span>' if loc_never
+                else '<span class="sub">був раніше</span>'
+            )
+            smart_tag = (
+                '<span class="tag tag-smart">є</span>'
+                if int(loc.get("has_smart_promotion") or 0)
+                else '<span class="muted">—</span>'
+            )
+            search = " ".join([provider, brand_name, city_name, zone]).lower()
+            label = f"{provider} ({zone}, {city_name})"
+            html += f"""
+        <tr class="loc-row" data-comm-key="{esc(key)}" data-never="{'1' if loc_never else '0'}"
+            data-search="{esc(search)}" data-loc-label="{esc(label)}">
+          <td><strong>{esc(provider)}</strong></td>
+          <td class="sub">{esc(brand_name)}</td>
+          <td class="sub">{esc(city_name)}</td>
+          <td class="sub">{esc(zone)}</td>
+          <td class="num">{fmt_num(loc.get('delivered_orders'))}</td>
+          <td class="num">{fmt_eur(loc.get('gmv_eur'))}</td>
+          <td class="num {cp_class}">{fmt_pct(cp) if cp is not None and pd.notna(cp) else '—'}</td>
+          <td class="num">{fmt_pct(loc.get('conv_imp_to_order_pct')) if pd.notna(loc.get('conv_imp_to_order_pct')) else '—'}</td>
+          <td class="num">{fmt_num(loc.get('impressions'))}</td>
+          <td>{sl_history}</td>
+          <td>{smart_tag}</td>
+        </tr>"""
+    return html
+
+
 def build_sl_recommendation_rows(df: pd.DataFrame) -> str:
     if df.empty:
-        return '<tr><td colspan="10" class="empty">Немає кандидатів</td></tr>'
+        return '<tr><td colspan="9" class="empty">Немає кандидатів</td></tr>'
     html = ""
     for i, (_, row) in enumerate(df.iterrows(), 1):
         _, reason = recommend_product(row)
@@ -701,7 +806,8 @@ def build_sl_recommendation_rows(df: pd.DataFrame) -> str:
         html += f"""
         <tr>
           <td class="num"><strong>#{i}</strong></td>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top}</td>
+          <td class="brand-cell"><strong>{row.get('brand_name') or '—'}</strong> {top}
+            <div class="comm-inline">{comm_checkbox(key)}</div></td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{fmt_num(row.get('predicted_roas'), 1)}</td>
           <td class="num">{fmt_pct(row.get('conv_imp_to_order_pct'))}</td>
@@ -767,7 +873,7 @@ def build_recommendation_cards(df: pd.DataFrame) -> str:
           </div>
           <div class="rec-product">{product}</div>
           <div class="rec-reason">{reason}</div>
-          <div class="rec-actions">{send_rec_button(key)}</div>
+          <div class="rec-actions">{send_rec_button(key)}{comm_checkbox(key)}</div>
         </div>"""
     html += "</div>"
     return html
@@ -843,6 +949,12 @@ def build_html(
     n_never_sl_brands = len(df_never_sl)
     never_sl_rows = build_never_sl_rows(df_never_sl)
 
+    df_no_sl_loc = df_loc[df_loc["has_sponsored_listing"] == 0]
+    n_no_sl_loc = len(df_no_sl_loc)
+    n_no_sl_loc_brands = df_no_sl_loc.groupby(["brand_name", "city_name"], dropna=False).ngroups
+    n_no_sl_loc_never = int((df_no_sl_loc["never_had_sponsored_listing"] == 1).sum())
+    no_sl_loc_rows = build_no_sl_location_rows(df_loc, set(brand_payload.keys()))
+
     neither_rows = ""
     for _, row in df_neither.iterrows():
         product, _ = recommend_product(row)
@@ -857,7 +969,8 @@ def build_html(
         )
         neither_rows += f"""
         <tr>
-          <td><strong>{row.get('brand_name') or '—'}</strong> {top} {never_badge}</td>
+          <td class="brand-cell"><strong>{row.get('brand_name') or '—'}</strong> {top} {never_badge}
+            <div class="comm-inline">{comm_checkbox(key)}</div></td>
           <td>{row.get('city_name') or '—'}</td>
           <td class="num">{int(row.get('locations_count') or 1)}</td>
           <td class="num">{fmt_num(row.get('delivered_orders'))}</td>
@@ -1064,6 +1177,45 @@ def build_html(
   }}
   .btn-send-rec:hover {{ background: #13A350; }}
   .action-cell {{ min-width: 200px; }}
+  .brand-cell {{ min-width: 190px; }}
+  .comm-inline {{ margin-top: 6px; }}
+  .comm-check {{
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 8px; padding: 5px 9px;
+    background: #fff; white-space: nowrap; user-select: none;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }}
+  .comm-check:hover {{ border-color: var(--bolt-green); color: #1A9A5A; }}
+  .comm-check input {{ width: 15px; height: 15px; accent-color: var(--bolt-green); cursor: pointer; margin: 0; }}
+  .comm-check.done {{ background: #E8F9EE; border-color: var(--bolt-green); color: #1A7F4B; }}
+  .comm-date {{ font-size: 10px; font-weight: 500; color: #1A7F4B; }}
+  tr.comm-done td {{ background: #F4FCF7; }}
+  tr.comm-done:hover td {{ background: #ECFAF1; }}
+  .rec-card.comm-done {{ background: #F4FCF7; border-color: var(--bolt-green); }}
+  .rec-actions {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }}
+  .group-row td {{ background: #F5F8FA; border-bottom: 1px solid var(--border); }}
+  .group-row:hover td {{ background: #F0F6F3; }}
+  .group-head {{
+    display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  }}
+  .group-head > span:first-child {{ flex: 1; min-width: 200px; }}
+  .loc-row td:first-child {{ padding-left: 26px; }}
+  .loc-filters {{
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 12px 14px; background: #FAFBFC; border: 1px solid var(--border);
+    border-radius: 10px; margin-bottom: 14px;
+  }}
+  .loc-filters input[type="search"] {{
+    flex: 1; min-width: 220px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; font-family: inherit;
+  }}
+  .loc-filters input[type="search"]:focus {{ outline: none; border-color: var(--bolt-green); }}
+  .loc-filters label {{
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text); cursor: pointer; white-space: nowrap;
+  }}
+  .loc-filters input[type="checkbox"] {{ accent-color: var(--bolt-green); cursor: pointer; }}
   .modal-overlay {{
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
     z-index: 200; align-items: center; justify-content: center; padding: 20px;
@@ -1152,6 +1304,16 @@ def build_html(
         <div class="stat-value">{n_never_sl_brands}</div>
         <div class="stat-sub">брендів без історії SL</div>
       </div>
+      <div class="stat info">
+        <div class="stat-label">Заклади без SL</div>
+        <div class="stat-value">{n_no_sl_loc}</div>
+        <div class="stat-sub">{n_no_sl_loc_brands} брендів · {n_no_sl_loc_never} ніколи не мали SL</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Прокомуніковано</div>
+        <div class="stat-value"><span id="commDone">0</span> / <span id="commTotal">0</span></div>
+        <div class="stat-sub">брендів позначено в чек-лісті</div>
+      </div>
     </div>
 
     <div class="note">
@@ -1164,12 +1326,16 @@ def build_html(
       (attr. GMV ÷ portal spend) по брендах портфоліо з активним SL (еталон {benchmark_roas:.1f}×), з урахуванням
       конверсії та <em>видимості</em> (покази на локацію vs медіана міста, active rate).
       Рекомендація SL: висока конверсія + низька видимість + прогноз ROAS ≥ {SL_ROAS_THRESHOLD:.0f}.
+      <br><strong>Чек-ліст «Прокомуніковано»</strong> — позначка ставиться на бренд і синхронізується
+      між усіма секціями звіту. Зберігається локально у вашому браузері, тому не зникає після
+      оновлення сторінки, але видима лише вам на цьому пристрої.
     </div>
 
     <div class="section-toolbar">
       <span class="section-toolbar-label">Секції звіту</span>
       <div class="section-pills">
         <button type="button" class="section-pill" onclick="jumpToSection('sec-priority')">🎯 Пріоритетні</button>
+        <button type="button" class="section-pill" onclick="jumpToSection('sec-no-sl-loc')">🏪 Заклади без SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-never-sl')">🆕 Ніколи не було SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-roas')">📊 ROAS без SL</button>
         <button type="button" class="section-pill" onclick="jumpToSection('sec-sl-rec')">🔵 Рекомендації SL</button>
@@ -1179,6 +1345,7 @@ def build_html(
       </div>
       <button type="button" class="btn-section-all" onclick="expandAllSections()">Розгорнути всі</button>
       <button type="button" class="btn-section-all" onclick="collapseAllSections()">Згорнути всі</button>
+      <button type="button" class="btn-section-all" onclick="resetCommunicated()">↺ Скинути чек-ліст</button>
     </div>
 
     {collapsible_section(
@@ -1186,6 +1353,37 @@ def build_html(
         "🎯 Пріоритетні рекомендації — кому пропонувати в першу чергу",
         f"Топ-{len(df_rec)} брендів без Smart Promotions і Sponsored Listing · скоринг: GMV 35% + CP L2 25% + конверсія 25% + замовлення 15%",
         build_recommendation_cards(df_rec),
+        open_default=True,
+    )}
+
+    {collapsible_section(
+        "sec-no-sl-loc",
+        "🏪 Заклади без Sponsored Listing",
+        f"{n_no_sl_loc} закладів у {n_no_sl_loc_brands} брендах · немає активного SL за останні 7 днів · "
+        f"{n_no_sl_loc_never} закладів ніколи не мали SL · згруповано за брендом",
+        f'''<div class="loc-filters">
+        <input type="search" id="locSearch" placeholder="Пошук: заклад, бренд, місто, зона…"
+               oninput="filterNoSlLocations()">
+        <label><input type="checkbox" id="locOnlyNever" onchange="filterNoSlLocations()">
+          лише ті, що ніколи не мали SL</label>
+        <label><input type="checkbox" id="locHideComm" onchange="filterNoSlLocations()">
+          сховати прокомуніковані</label>
+        <span class="sub">Показано: <strong id="locVisibleCount">{n_no_sl_loc}</strong> з {n_no_sl_loc}</span>
+        <button type="button" class="btn-section-all" onclick="copyNoSlList()"
+                id="btnCopyLocList">📋 Скопіювати список</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-no-sl-loc">
+        <thead>
+          <tr>
+            <th>Заклад</th><th>Бренд</th><th>Місто</th><th>Зона</th>
+            <th class="num">Замовлення</th><th class="num">GMV</th>
+            <th class="num">CP L2 %</th><th class="num">Конверсія</th>
+            <th class="num">Покази</th><th>Історія SL</th>
+            <th>Smart Promo</th>
+          </tr>
+        </thead>
+        <tbody>{no_sl_loc_rows}</tbody>
+      </table></div>''',
         open_default=True,
     )}
 
@@ -1484,6 +1682,142 @@ document.addEventListener('keydown', e => {{
   if (e.key === 'Escape') closeRecommendation();
 }});
 
+/* ─── Чек-ліст «прокомуніковано» (стан у localStorage браузера) ─────────────── */
+const COMM_STORE = 'pc_communicated_v1';
+
+function loadComm() {{
+  try {{ return JSON.parse(localStorage.getItem(COMM_STORE) || '{{}}') || {{}}; }}
+  catch (e) {{ return {{}}; }}
+}}
+
+function saveComm(state) {{
+  try {{ localStorage.setItem(COMM_STORE, JSON.stringify(state)); }} catch (e) {{}}
+}}
+
+function allCommInputs() {{
+  return document.querySelectorAll('input[data-comm-key]');
+}}
+
+function paintComm(input, on, stamp) {{
+  const label = input.closest('.comm-check');
+  if (label) {{
+    label.classList.toggle('done', on);
+    const note = label.querySelector('.comm-date');
+    if (note) note.textContent = on && stamp ? '· ' + stamp : '';
+  }}
+  const host = input.closest('tr') || input.closest('.rec-card');
+  if (host) host.classList.toggle('comm-done', on);
+}}
+
+function paintLocRows(state) {{
+  document.querySelectorAll('#tbl-no-sl-loc tr.loc-row').forEach(row => {{
+    row.classList.toggle('comm-done', !!state[row.dataset.commKey]);
+  }});
+}}
+
+function updateCommCount(state) {{
+  const keys = new Set();
+  document.querySelectorAll('input[data-comm-track]').forEach(i => keys.add(i.dataset.commKey));
+  let done = 0;
+  keys.forEach(k => {{ if (state[k]) done += 1; }});
+  const doneEl = document.getElementById('commDone');
+  const totalEl = document.getElementById('commTotal');
+  if (doneEl) doneEl.textContent = done;
+  if (totalEl) totalEl.textContent = keys.size;
+}}
+
+function applyCommState() {{
+  const state = loadComm();
+  allCommInputs().forEach(input => {{
+    const on = !!state[input.dataset.commKey];
+    input.checked = on;
+    paintComm(input, on, state[input.dataset.commKey]);
+  }});
+  paintLocRows(state);
+  updateCommCount(state);
+  filterNoSlLocations();
+}}
+
+function toggleCommunicated(input) {{
+  const key = input.dataset.commKey;
+  const state = loadComm();
+  if (input.checked) state[key] = new Date().toISOString().slice(0, 10);
+  else delete state[key];
+  saveComm(state);
+  allCommInputs().forEach(other => {{
+    if (other.dataset.commKey !== key) return;
+    other.checked = input.checked;
+    paintComm(other, input.checked, state[key]);
+  }});
+  paintLocRows(state);
+  updateCommCount(state);
+  const hide = document.getElementById('locHideComm');
+  if (hide && hide.checked) filterNoSlLocations();
+}}
+
+function resetCommunicated() {{
+  if (!confirm('Скинути всі позначки «прокомуніковано»?')) return;
+  saveComm({{}});
+  applyCommState();
+}}
+
+/* ─── Фільтр списку закладів без Sponsored Listing ──────────────────────────── */
+function filterNoSlLocations() {{
+  const table = document.getElementById('tbl-no-sl-loc');
+  if (!table) return;
+  const query = (document.getElementById('locSearch').value || '').trim().toLowerCase();
+  const onlyNever = document.getElementById('locOnlyNever').checked;
+  const hideComm = document.getElementById('locHideComm').checked;
+  const state = loadComm();
+
+  let visible = 0;
+  let group = null;
+  let groupVisible = 0;
+
+  table.querySelectorAll('tbody tr').forEach(row => {{
+    if (row.classList.contains('group-row')) {{
+      if (group) group.style.display = groupVisible ? '' : 'none';
+      group = row;
+      groupVisible = 0;
+      return;
+    }}
+    let show = true;
+    if (onlyNever && row.dataset.never !== '1') show = false;
+    if (show && hideComm && state[row.dataset.commKey]) show = false;
+    if (show && query && !(row.dataset.search || '').includes(query)) show = false;
+    row.style.display = show ? '' : 'none';
+    if (show) {{ groupVisible += 1; visible += 1; }}
+  }});
+  if (group) group.style.display = groupVisible ? '' : 'none';
+
+  const counter = document.getElementById('locVisibleCount');
+  if (counter) counter.textContent = visible;
+}}
+
+function copyNoSlList() {{
+  const table = document.getElementById('tbl-no-sl-loc');
+  if (!table) return;
+  const lines = [];
+  table.querySelectorAll('tbody tr').forEach(row => {{
+    if (row.style.display === 'none') return;
+    if (row.classList.contains('group-row')) {{
+      lines.push('', row.dataset.groupLabel || '');
+    }} else {{
+      lines.push('  • ' + (row.dataset.locLabel || ''));
+    }}
+  }});
+  const text = lines.join('\\n').trim();
+  const btn = document.getElementById('btnCopyLocList');
+  navigator.clipboard.writeText(text).then(() => {{
+    if (btn) {{
+      btn.textContent = '✓ Скопійовано';
+      setTimeout(() => {{ btn.textContent = '📋 Скопіювати список'; }}, 2000);
+    }}
+  }}).catch(() => {{
+    if (btn) btn.textContent = '✕ Не вдалося скопіювати';
+  }});
+}}
+
 function toggleSection(btn) {{
   const section = btn.closest('.collapsible');
   if (!section) return;
@@ -1515,6 +1849,8 @@ function jumpToSection(id) {{
   if (btn) btn.setAttribute('aria-expanded', 'true');
   section.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
 }}
+
+applyCommState();
 </script>
 </body>
 </html>"""
