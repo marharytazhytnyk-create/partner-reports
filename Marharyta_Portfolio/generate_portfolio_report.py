@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Marharyta Portfolio Report Generator
 Generates an HTML report for Account Manager Marharyta Zhytnyk's portfolio
@@ -262,6 +263,18 @@ def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS acceptance_rate_pct,
         ROUND(SUM(f.late_delivery_order_rate_value * f.delivered_orders_count)
             / NULLIF(SUM(f.delivered_orders_count), 0) * 100, 2) AS late_delivery_rate_pct,
+        -- Знижки та промо
+        ROUND(SUM(COALESCE(f.total_provider_campaign_spend_provider_eur, 0)), 2) AS partner_discount_eur,
+        ROUND(SUM(COALESCE(f.total_campaign_spend_bolt_eur, 0)), 2)             AS bolt_promo_spend_eur,
+        SUM(COALESCE(f.campaign_orders_count, 0))                              AS campaign_orders,
+        ROUND(SUM(f.total_contribution_profit_without_demand_incentives_eur), 2)
+            AS cp_after_incentives_eur,
+        -- Sponsored Listing
+        ROUND(SUM(COALESCE(f.sponsored_listing_duration_hours, 0)), 1) AS sl_hours,
+        SUM(COALESCE(f.sponsored_listing_attributed_orders_count, 0))  AS sl_attr_orders,
+        ROUND(SUM(COALESCE(f.sponsored_listing_attributed_gmv_share_value, 0)
+                * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
+            AS sl_attr_gmv_eur,
         COUNT(DISTINCT p.provider_id)                          AS active_locations
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
@@ -280,7 +293,9 @@ def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
     df = _to_df(result)
     for col in ["delivered_orders", "failed_orders", "gmv_eur", "contribution_profit_eur",
                 "failed_order_rate_pct", "bad_order_rate_pct",
-                "acceptance_rate_pct", "late_delivery_rate_pct", "active_locations"]:
+                "acceptance_rate_pct", "late_delivery_rate_pct", "active_locations",
+                "partner_discount_eur", "bolt_promo_spend_eur", "campaign_orders",
+                "cp_after_incentives_eur", "sl_hours", "sl_attr_orders", "sl_attr_gmv_eur"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     print(f"Fetched {len(df):,} portfolio-week rows")
@@ -322,7 +337,23 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
         ROUND(SUM(f.total_invoiced_demand_refunds_eur), 2)          AS demand_refunds_eur,
         ROUND(SUM(f.total_invoiced_supply_refunds_eur), 2)          AS supply_refunds_eur,
         ROUND(SUM(COALESCE(f.total_invoiced_demand_refunds_eur,0)
-                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur
+                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur,
+        -- Промо-витрати Bolt по всіх типах кампаній (ULC, marketing, menu, DF, Bolt+),
+        -- а не лише по кампаніях партнера
+        ROUND(SUM(COALESCE(f.total_campaign_spend_bolt_eur, 0)), 2)     AS bolt_promo_spend_eur,
+        ROUND(SUM(COALESCE(f.total_campaign_spend_provider_eur, 0)), 2) AS partner_promo_spend_eur,
+        ROUND(SUM(COALESCE(f.total_campaign_discount_eur, 0)), 2)       AS campaign_discount_eur,
+        SUM(COALESCE(f.campaign_orders_count, 0))                      AS campaign_orders,
+        -- CP після вирахування demand incentives (це і є CPL2 у визначенні dbt)
+        ROUND(SUM(f.total_contribution_profit_without_demand_incentives_eur), 2)
+            AS cp_after_incentives_eur,
+        -- Sponsored Listing
+        ROUND(SUM(COALESCE(f.sponsored_listing_duration_hours, 0)), 1) AS sl_hours,
+        SUM(COALESCE(f.sponsored_listing_attributed_orders_count, 0))  AS sl_attr_orders,
+        ROUND(SUM(COALESCE(f.sponsored_listing_attributed_gmv_share_value, 0)
+                * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
+            AS sl_attr_gmv_eur,
+        ROUND(SUM(COALESCE(f.total_portal_campaign_spend_provider_eur, 0)), 2) AS sl_spend_eur
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
         ON p.provider_id = f.provider_id
@@ -351,9 +382,8 @@ def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
     Includes conversion funnel: impressions → menu views → orders placed.
     """
     start_date, end_date = get_last_n_full_weeks(n_weeks)
-    ctx = _create_context()
 
-    sql = f"""
+    sql_tpl = f"""
     SELECT
         p.provider_id,
         p.provider_name,
@@ -397,7 +427,17 @@ def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
         ROUND(SUM(f.total_invoiced_demand_refunds_eur), 2)          AS demand_refunds_eur,
         ROUND(SUM(f.total_invoiced_supply_refunds_eur), 2)          AS supply_refunds_eur,
         ROUND(SUM(COALESCE(f.total_invoiced_demand_refunds_eur,0)
-                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur
+                + COALESCE(f.total_invoiced_supply_refunds_eur,0)), 2) AS total_refunds_eur,
+        -- Промо-витрати Bolt по всіх типах кампаній та промо-замовлення
+        ROUND(SUM(COALESCE(f.total_campaign_spend_bolt_eur, 0)), 2) AS bolt_promo_spend_eur,
+        SUM(COALESCE(f.campaign_orders_count, 0))                  AS campaign_orders,
+        -- Sponsored Listing (потрібен саме на рівні локації: ранить кожен заклад окремо)
+        ROUND(SUM(COALESCE(f.sponsored_listing_duration_hours, 0)), 1) AS sl_hours,
+        SUM(COALESCE(f.sponsored_listing_attributed_orders_count, 0))  AS sl_attr_orders,
+        ROUND(SUM(COALESCE(f.sponsored_listing_attributed_gmv_share_value, 0)
+                * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
+            AS sl_attr_gmv_eur,
+        ROUND(SUM(COALESCE(f.total_portal_campaign_spend_provider_eur, 0)), 2) AS sl_spend_eur
     FROM ng_delivery_spark.dim_provider_v2 p
     INNER JOIN ng_delivery_spark.fact_provider_weekly f
         ON p.provider_id = f.provider_id
@@ -410,11 +450,13 @@ def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
         p.provider_id, p.provider_name, p.brand_name, p.city_name, p.zone_name,
         DATE_TRUNC('week', f.metric_timestamp_local)
     ORDER BY p.brand_name, p.city_name, p.provider_id, week_start
+    LIMIT {{limit}} OFFSET {{offset}}
     """
 
-    print(f"Running per-location trends query ({n_weeks} weeks)...")
-    result = _exec_sql(ctx, sql, timeout=360)
-    df = _to_df(result)
+    # Без пагінації API віддає максимум 1000 рядків, і більшість локацій просто
+    # не потрапляла у звіт (12 тижнів × ~350 локацій набагато більше за 1000)
+    print(f"Running per-location trends query ({n_weeks} weeks, paginated)...")
+    df = _exec_sql_paginated(sql_tpl, timeout=360)
     print(f"Fetched {len(df):,} location-week rows")
     return df
 
@@ -1349,6 +1391,39 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </div>
     </div>
 
+    <!-- Реклама та промо -->
+    <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin:20px 0 4px">📣 Реклама та промо</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Sponsored Listing — платна реклама партнера в застосунку. Промо-витрати Bolt — усі
+      кампанії платформи, у яких брав участь бренд (у показнику CP вони не враховані).
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card" style="border-top:3px solid #3949AB">
+        <h4 style="color:#1A237E">📣 Замовлення з Sponsored Listing (/тиж)</h4>
+        <canvas id="chartSlOrders"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #00897B">
+        <h4 style="color:#004D40">💰 GMV з Sponsored Listing (€/тиж)</h4>
+        <canvas id="chartSlGmv"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #F9A825">
+        <h4 style="color:#F57F17">🧾 Рекламний бюджет партнера (€/тиж)</h4>
+        <canvas id="chartSlSpend"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #1DC462">
+        <h4 style="color:#1A5E35">⚡ Промо-витрати Bolt, усі кампанії (€/тиж)</h4>
+        <canvas id="chartBoltPromo"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #7B1FA2">
+        <h4 style="color:#4A148C">📊 CP після промо-витрат Bolt (€/тиж)</h4>
+        <canvas id="chartCpAfterIncentives"></canvas>
+      </div>
+      <div class="chart-card" style="border-top:3px solid #FB8C00">
+        <h4 style="color:#E65100">🎟️ Замовлення зі знижкою (/тиж)</h4>
+        <canvas id="chartCampaignOrders"></canvas>
+      </div>
+    </div>
+
     <!-- Per-location conversion section -->
     <div id="locSection" style="display:none;margin-top:8px">
       <div style="font-size:13px;font-weight:700;color:var(--bolt-dark);margin-bottom:4px">
@@ -1672,6 +1747,32 @@ function shareOfGmv(v, gmv) {{
   return v / gmv * 100;
 }}
 
+// Скільки замовлень принесла реклама — у форматі «було → стало»
+function slOrdDiffText(prev, last) {{
+  if (!(prev > 0) && !(last > 0)) return '';
+  return ` (замовлень з реклами ${{Math.round(prev || 0)}} → ${{Math.round(last || 0)}})`;
+}}
+
+// ── Надійність даних Sponsored Listing по тижнях ─────────────────────────────
+// У фактовій таблиці бувають тижні, де sponsored_listing_* нульове по всьому
+// портфелю через прогалину в пайплайні, а не тому, що реклама справді стояла.
+// Без цієї перевірки звіт написав би «партнер припинив ранити» одразу всім.
+// Тиждень вважаємо надійним, якщо хоч один заклад портфеля має SL-активність.
+let SL_WEEKS_CACHE = null;
+function slWeekReliable(week) {{
+  if (!SL_WEEKS_CACHE) {{
+    SL_WEEKS_CACHE = {{}};
+    Object.values(TRENDS).forEach(b => {{
+      (b.weeks || []).forEach((w, i) => {{
+        const h = (b.sl_hours || [])[i], o = (b.sl_attr_orders || [])[i];
+        if (!(w in SL_WEEKS_CACHE)) SL_WEEKS_CACHE[w] = false;
+        if ((h != null && h > 0) || (o != null && o > 0)) SL_WEEKS_CACHE[w] = true;
+      }});
+    }});
+  }}
+  return week == null ? false : SL_WEEKS_CACHE[week] === true;
+}}
+
 // ── Ринковий контекст: сума по інших брендах міста за той самий тиждень ──────
 // Дає змогу відрізнити зовнішній фактор (просів увесь ринок) від проблеми
 // конкретного партнера (ринок стабільний, а він падає).
@@ -1756,6 +1857,14 @@ function analyzeBrandDynamics(d) {{
   const [drPrev, drLast] = seriesLastTwo(d.demand_refunds_eur);
   const [srPrev, srLast] = seriesLastTwo(d.supply_refunds_eur);
   const [rfPrev, rfLast] = seriesLastTwo(d.total_refunds_eur);
+  // Sponsored Listing і промо-витрати
+  const [slhPrev, slhLast] = seriesLastTwo(d.sl_hours);
+  const [sloPrev, sloLast] = seriesLastTwo(d.sl_attr_orders);
+  const [slgPrev, slgLast] = seriesLastTwo(d.sl_attr_gmv_eur);
+  const [slsPrev, slsLast] = seriesLastTwo(d.sl_spend_eur);
+  const [bpPrev, bpLast]   = seriesLastTwo(d.bolt_promo_spend_eur);
+  const [coPrev, coLast]   = seriesLastTwo(d.campaign_orders);
+  const [ciPrev, ciLast]   = seriesLastTwo(d.cp_after_incentives_eur);
 
   const ordersWow = pctChange(oPrev, oLast);
   const gmvWow    = pctChange(gPrev, gLast);
@@ -1814,6 +1923,49 @@ function analyzeBrandDynamics(d) {{
     }}
   }}
 
+  // ── Sponsored Listing: чи ранила реклама і чи не зупинив її партнер ────────
+  // Дані по SL місцями мають прогалини, тому спираємось на кілька сигналів
+  // одразу (години, атрибутовані замовлення, витрати) і тільки на тижнях,
+  // де по портфелю взагалі є SL-активність.
+  const slWeeksOk = slWeekReliable(wLast) && slWeekReliable(wPrev);
+  const slOn = (h, o, s) => (h > 0) || (o > 0) || (s > 0);
+  const slPrevOn = slOn(slhPrev || 0, sloPrev || 0, slsPrev || 0);
+  const slLastOn = slOn(slhLast || 0, sloLast || 0, slsLast || 0);
+  const slHoursWow = (slhPrev > 0 && slhLast != null) ? (slhLast / slhPrev - 1) * 100 : null;
+
+  const slStopped = slWeeksOk && slPrevOn && !slLastOn;
+  const slStarted = slWeeksOk && !slPrevOn && slLastOn;
+  const slCut     = slWeeksOk && slPrevOn && slLastOn && slHoursWow != null && slHoursWow <= -30;
+  const slUp      = slWeeksOk && slPrevOn && slLastOn && slHoursWow != null && slHoursWow >= 30;
+  // Частка замовлень, яку реклама приводила минулого тижня
+  const slSharePrev = (sloPrev > 0 && oPrev) ? sloPrev / oPrev * 100 : null;
+
+  // Які саме локації зупинили рекламу — це те, що AM піде перевіряти першим
+  const slLocStopped = [];
+  if (slWeeksOk) {{
+    Object.values(locs).forEach(loc => {{
+      const [hp, hl] = seriesLastTwo(loc.sl_hours);
+      const [op, ol] = seriesLastTwo(loc.sl_attr_orders);
+      if (((hp || 0) > 0 || (op || 0) > 0) && (hl || 0) === 0 && (ol || 0) === 0)
+        slLocStopped.push(loc.name);
+    }});
+  }}
+
+  // ── Знижки: витрати партнера і витрати Bolt на промо ──────────────────────
+  const pdDiff = (pdPrev != null && pdLast != null) ? pdLast - pdPrev : null;
+  const bpDiff = (bpPrev != null && bpLast != null) ? bpLast - bpPrev : null;
+  const ciDiff = (ciPrev != null && ciLast != null) ? ciLast - ciPrev : null;
+  // Матеріальність рахуємо від обороту, щоб не писати про зміну на пару євро
+  const promoMaterial = Math.max(20, (gPrev || 0) * 0.005);
+  const partnerCutPromo = pdDiff != null && pdDiff < -promoMaterial && pdPrev > 0;
+  const partnerUpPromo  = pdDiff != null && pdDiff >  promoMaterial;
+  const boltCutPromo    = bpDiff != null && bpDiff < -promoMaterial && bpPrev > 0;
+  const boltUpPromo     = bpDiff != null && bpDiff >  promoMaterial;
+  // Частка замовлень зі знижкою — показує, наскільки попит тримається на промо
+  const penPrev = (coPrev != null && oPrev) ? coPrev / oPrev * 100 : null;
+  const penLast = (coLast != null && oLast) ? coLast / oLast * 100 : null;
+  const penPp   = ppChange(penPrev, penLast);
+
   const hasOrdersDrop = ordersWow != null && ordersWow < -2;
   const hasGmvDrop    = gmvWow != null && gmvWow < -2;
   const cpMaterial    = Math.max(2, Math.abs(cpPrev != null ? cpPrev : 0) * 0.03);
@@ -1864,6 +2016,51 @@ function analyzeBrandDynamics(d) {{
       gmvReasons.push(`Середній чек не падав, навпаки — вищий чек компенсував ${{fmtEurDelta(aovEffect)}}, інакше GMV просів би сильніше. Тобто причина падіння GMV — виключно кількість замовлень.`);
   }}
 
+  // ── Реклама та знижки як окрема причина зміни попиту ──────────────────────
+  // Промо і Sponsored Listing напряму керують трафіком: згорнули акцію чи
+  // рекламу — замовлення падають, і це не «проблема закладу», а рішення.
+  const promoReasons = [];
+  if (slStopped) {{
+    const lost = sloPrev > 0
+      ? ` Тижнем раніше реклама привела ${{pluralUa(Math.round(sloPrev), 'замовлення', 'замовлення', 'замовлень')}}${{slgPrev > 0 ? ` на ${{fmtEurVal(slgPrev)}}` : ''}}${{slSharePrev != null ? ` — це ${{slSharePrev.toFixed(0)}}% усіх замовлень бренду` : ''}}, цього тижня — жодного.`
+      : '';
+    promoReasons.push(`<b>Sponsored Listing припинив ранити.</b>${{lost}} Без рекламних показів заклад втрачає видимість у пошуку й на головній, тобто вхідний трафік падає одразу.${{slLocStopped.length ? ` Зупинили: ${{slLocStopped.slice(0, 3).join(', ')}}${{slLocStopped.length > 3 ? ` та ще ${{pluralUa(slLocStopped.length - 3, 'локація', 'локації', 'локацій')}}` : ''}}.` : ''}}`);
+  }} else if (slCut) {{
+    promoReasons.push(`<b>Sponsored Listing скоротили</b> на ${{Math.abs(slHoursWow).toFixed(0)}}% за тривалістю показів${{slOrdDiffText(sloPrev, sloLast)}}. Менше рекламних показів — менше вхідного трафіку.`);
+  }} else if (slStarted) {{
+    promoReasons.push(`<b>Sponsored Listing запустили цього тижня</b>${{sloLast > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}. Якщо замовлення все одно впали — падіння сталося попри рекламу, тобто причина деінде.`);
+  }} else if (slUp) {{
+    promoReasons.push(`<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}%${{slOrdDiffText(sloPrev, sloLast)}} — реклама працювала на плюс.`);
+  }} else if (slWeeksOk && !slPrevOn && !slLastOn && (hasOrdersDrop || hasGmvDrop)) {{
+    promoReasons.push(`<b>Sponsored Listing не використовується</b> — жодного рекламного показу ні цього тижня, ні попереднього. Це не причина падіння, але це найдоступніший інструмент, щоб повернути трафік.`);
+  }} else if (slWeekReliable(wLast)) {{
+    // Порівняти тижні не можемо, але поточний стан реклами все одно корисний
+    const cmp = ' Порівняти з попереднім тижнем не вийшло — там дані по Sponsored Listing відсутні по всьому портфелю.';
+    if (slLastOn)
+      promoReasons.push(`<b>Sponsored Listing зараз ранить</b>${{sloLast > 0 ? `: за тиждень реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}.${{cmp}}`);
+    else if (hasOrdersDrop || hasGmvDrop)
+      promoReasons.push(`<b>Sponsored Listing зараз не ранить</b> — цього тижня жодного рекламного показу.${{cmp}} Варто перевірити в порталі, чи партнер не зупинив рекламу.`);
+  }} else if (hasOrdersDrop || hasGmvDrop) {{
+    promoReasons.push(`<b>Дані Sponsored Listing за цей тиждень недоступні</b> (прогалина в даних по всьому портфелю) — перевірте статус реклами вручну в порталі.`);
+  }}
+
+  if (partnerCutPromo)
+    promoReasons.push(`<b>Партнер згорнув свої знижки:</b> ${{fmtEurVal(pdPrev)}} → ${{fmtEurVal(pdLast)}} (${{fmtEurDelta(pdDiff)}}). Промо-замовлення зникають разом з акцією, тож частина падіння — це не втрата інтересу до закладу, а просто закінчена кампанія.`);
+  else if (partnerUpPromo && (hasOrdersDrop || hasGmvDrop))
+    promoReasons.push(`<b>Партнер навпаки збільшив знижки</b> (${{fmtEurVal(pdPrev)}} → ${{fmtEurVal(pdLast)}}, ${{fmtEurDelta(pdDiff)}}), а замовлення все одно впали — акція не відпрацювала, варто переглянути її умови й механіку.`);
+  else if (partnerUpPromo)
+    promoReasons.push(`<b>Партнер збільшив знижки:</b> ${{fmtEurVal(pdPrev)}} → ${{fmtEurVal(pdLast)}} (${{fmtEurDelta(pdDiff)}}) — частина зростання замовлень куплена акцією, а не органічна.`);
+
+  if (boltCutPromo)
+    promoReasons.push(`<b>Bolt Food зменшив свої промо-витрати:</b> ${{fmtEurVal(bpPrev)}} → ${{fmtEurVal(bpLast)}} (${{fmtEurDelta(bpDiff)}}) на кампаніях, у яких брав участь цей партнер. Це фактор поза контролем партнера: попит, який раніше підігрівали знижки Bolt, цього тижня не прийшов.`);
+  else if (boltUpPromo && !hasOrdersDrop && !hasGmvDrop)
+    promoReasons.push(`<b>Bolt Food збільшив промо-витрати:</b> ${{fmtEurVal(bpPrev)}} → ${{fmtEurVal(bpLast)}} (${{fmtEurDelta(bpDiff)}}). Тобто зростання частково куплене за кошт Bolt — оцінюйте результат тижня з поправкою на це.`);
+  else if (boltUpPromo)
+    promoReasons.push(`<b>Bolt Food збільшив промо-витрати</b> (${{fmtEurVal(bpPrev)}} → ${{fmtEurVal(bpLast)}}, ${{fmtEurDelta(bpDiff)}}), але замовлення все одно впали — знижки Bolt не змогли компенсувати падіння попиту.`);
+
+  if (penPp != null && Math.abs(penPp) >= 3 && penPrev != null && penLast != null)
+    promoReasons.push(`<b>Частка замовлень зі знижкою</b> ${{penPrev.toFixed(0)}}% → ${{penLast.toFixed(0)}}% (${{fmtDeltaPp(penPp)}})${{penPp < 0 ? ' — попит менше тримається на промо, але й самих промо-замовлень стало менше.' : ' — попит усе сильніше тримається на знижках, органічна частка зменшується.'}}`);
+
   // Зовнішній контекст: ринок міста + сезон, погода, тривоги
   const externalReasons = [];
   if (mktOrdersWow != null) {{
@@ -1911,6 +2108,20 @@ function analyzeBrandDynamics(d) {{
     addPlain(bdLast - bdPrev, `більше замовлень приїхали зіпсованими або неповними, тож частина клієнтів більше не повернулася`);
   if (hasOrdersDrop && aovWow != null && aovWow > 5)
     addPlain(aovWow / 2, 'замовляти стало дорожче, а частину клієнтів вища ціна відлякує — варто спитати партнера, чи не піднімав він ціни в меню');
+  // Реклама і знижки — часто найсильніша причина, тож даємо їм високу вагу
+  if (slStopped)
+    addPlain(slSharePrev != null ? Math.max(12, slSharePrev * 2) : 12,
+      sloPrev > 0
+        ? `партнер вимкнув платну рекламу в застосунку (Sponsored Listing). Минулого тижня саме реклама привела ${{pluralUa(Math.round(sloPrev), 'замовлення', 'замовлення', 'замовлень')}}, а цього — жодного, бо заклад просто перестали показувати на видних місцях`
+        : 'партнер вимкнув платну рекламу в застосунку (Sponsored Listing), тож заклад перестали показувати на видних місцях і його стало важче знайти');
+  else if (slCut)
+    addPlain(10, 'партнер урізав платну рекламу в застосунку, тож заклад стали показувати рідше');
+  if (partnerCutPromo)
+    addPlain(Math.min(20, Math.abs(pdDiff) / Math.max(1, (gPrev || 1)) * 1000 + 8),
+      `партнер прибрав свої знижки — минулого тижня він доплачував ${{fmtEurVal(pdPrev)}}, щоб зробити страви дешевшими, а цього ${{pdLast > 0 ? `лише ${{fmtEurVal(pdLast)}}` : 'не доплачував нічого'}}. Без акції частина клієнтів просто не замовляє`);
+  if (boltCutPromo)
+    addPlain(Math.min(18, Math.abs(bpDiff) / Math.max(1, (gPrev || 1)) * 1000 + 6),
+      `сам Bolt цього тижня витратив на знижки для клієнтів менше — ${{fmtEurVal(bpLast)}} замість ${{fmtEurVal(bpPrev)}}. Це рішення платформи, а не партнера, але замовлень від нього меншає так само`);
   plainDrivers.sort((a, b) => b.score - a.score);
 
   let plainMarket = '';
@@ -2013,15 +2224,38 @@ function analyzeBrandDynamics(d) {{
     if (rateEffect < 0 && volEffect >= 0)
       cpReasons.push(`Оборот не падав (GMV ${{fmtDeltaPct(gmvWow)}}) — CP просів виключно через нижчу рентабельність.`);
 
-    const pdD = (pdPrev != null && pdLast != null) ? pdLast - pdPrev : null;
     const btD = (btPrev != null && btLast != null) ? btLast - btPrev : null;
     const rfD = (rfPrev != null && rfLast != null) ? rfLast - rfPrev : null;
     const costBits = [];
-    if (pdD != null && pdD >= 5) costBits.push(`знижки партнера ${{fmtEurDelta(pdD)}}`);
-    if (btD != null && btD >= 5) costBits.push(`знижки Bolt ${{fmtEurDelta(btD)}}`);
+    if (pdDiff != null && pdDiff >= 5) costBits.push(`знижки партнера ${{fmtEurDelta(pdDiff)}}`);
+    if (btD != null && btD >= 5) costBits.push(`знижки Bolt на кампанії партнера ${{fmtEurDelta(btD)}}`);
     if (rfD != null && rfD >= 3) costBits.push(`refunds ${{fmtEurDelta(rfD)}}`);
     if (costBits.length)
       cpReasons.push(`<b>Витрати, що зросли в грошах:</b> ${{costBits.join(', ')}} — це прямий мінус до CP.`);
+  }}
+
+  // ── Промо-витрати Bolt і реклама партнера в розрізі CP ────────────────────
+  // Важливо: total_contribution_profit_eur за визначенням у dbt НЕ вираховує
+  // demand incentives, тобто промо-витрати Bolt у CP вище не враховані.
+  // Показуємо їх окремо разом із CP після інцентивів, щоб не приписувати
+  // падіння CP тим витратам, яких у ньому насправді немає.
+  const cpAfterBits = [];
+  if (boltUpPromo)
+    cpAfterBits.push(`<b>Промо-витрати Bolt зросли на ${{fmtEurVal(Math.abs(bpDiff))}}</b> (${{fmtEurVal(bpPrev)}} → ${{fmtEurVal(bpLast)}}). У показнику CP вище вони не враховані — за визначенням метрики знижки Bolt вираховуються окремо.`);
+  else if (boltCutPromo)
+    cpAfterBits.push(`<b>Промо-витрати Bolt зменшились на ${{fmtEurVal(Math.abs(bpDiff))}}</b> (${{fmtEurVal(bpPrev)}} → ${{fmtEurVal(bpLast)}}) — для економіки це плюс, але разом з ними пішла й частина замовлень.`);
+  // Якщо Bolt на цей бренд промо не витрачав, CP після інцентивів дорівнює CP —
+  // тоді цей рядок нічого не додає
+  if (ciPrev != null && ciLast != null && (bpLast > 5 || bpPrev > 5))
+    cpAfterBits.push(`<b>CP з урахуванням знижок Bolt:</b> ${{fmtEurVal(ciPrev)}} → ${{fmtEurVal(ciLast)}} (${{fmtEurDelta(ciDiff)}}). Це метрика contribution profit without demand incentives — найближчий доступний аналог CPL2.`);
+  if (cpLast != null && cpLast > 0 && ciLast != null && ciLast < 0)
+    cpAfterBits.push(`<b>Увага:</b> CP виглядає плюсовим (${{fmtEurVal(cpLast)}}), але з урахуванням знижок, які оплачує Bolt, стає ${{fmtEurVal(ciLast)}}. Тобто прибуток тут тримається на промо за кошт платформи.`);
+  if (slsLast > 0 || slsPrev > 0) {{
+    const slsDiff = (slsPrev != null && slsLast != null) ? slsLast - slsPrev : null;
+    if (slsDiff != null && Math.abs(slsDiff) >= 5)
+      cpAfterBits.push(`<b>Рекламний бюджет партнера (Sponsored Listing):</b> ${{fmtEurVal(slsPrev)}} → ${{fmtEurVal(slsLast)}} (${{fmtEurDelta(slsDiff)}}) — це гроші партнера, які він платить Bolt за видимість.`);
+  }} else if (slStopped) {{
+    cpAfterBits.push(`<b>Рекламний бюджет партнера обнулився</b> — Bolt більше не отримує з нього рекламної виручки.`);
   }}
 
   let cpTitle = 'Чому просіла маржа (CP, €)';
@@ -2049,6 +2283,20 @@ function analyzeBrandDynamics(d) {{
   if (cpLast != null && cpLast < 0)
     cpReasons.push(`<b>CP негативний (${{fmtEurVal(cpLast)}})</b> — бренд приносить збиток, потрібен перегляд комерційних умов.`);
   if (lowVolume) cpReasons.push('Обсяги малі — суми в євро невеликі, тож одне-два замовлення сильно змінюють картину.');
+  // Додаємо після основного розкладу: ці рядки актуальні і коли CP не падав
+  cpAfterBits.forEach(b => cpReasons.push(b));
+
+  // Цифра CP не враховує знижки, які оплачує сам Bolt. Без цієї ремарки
+  // картинка виглядає кращою, ніж вона є, тож кажемо про це простою мовою.
+  let plainBoltPromoNote = '';
+  if (ciLast != null && bpLast > 5) {{
+    if (cpLast != null && cpLast > 0 && ciLast < 0)
+      plainBoltPromoNote = `Важливо: у цій сумі ще не враховані знижки, які оплачує сам Bolt — цього тижня це ${{fmtEurVal(bpLast)}}. Якщо їх відняти, замість заробітку виходить мінус ${{fmtEurVal(Math.abs(ciLast))}}. Тобто партнер прибутковий лише поки Bolt сам за нього доплачує.`;
+    else if (boltUpPromo)
+      plainBoltPromoNote = `І окремо: у цій сумі не враховані знижки, які оплачує сам Bolt — цього тижня він витратив на них ${{fmtEurVal(bpLast)}} замість ${{fmtEurVal(bpPrev)}}. З урахуванням цих витрат лишається ${{fmtEurVal(ciLast)}}.`;
+    else if (boltCutPromo)
+      plainBoltPromoNote = `І окремо: Bolt цього тижня витратив на знижки менше — ${{fmtEurVal(bpLast)}} замість ${{fmtEurVal(bpPrev)}}. З урахуванням цих витрат лишається ${{fmtEurVal(ciLast)}} замість ${{fmtEurVal(ciPrev)}}.`;
+  }}
 
   let plainCp;
   if (cpPrev == null || cpLast == null) {{
@@ -2070,14 +2318,18 @@ function analyzeBrandDynamics(d) {{
     }} else {{
       s.push('Ані продажі, ані заробіток зі 100 € замовлень помітно не змінились — схоже, у цьому тижні було якесь разове списання чи коригування.');
     }}
+    if (partnerUpPromo)
+      s.push(`Ще одна витрата: партнер цього тижня доплатив за свої знижки ${{fmtEurVal(pdLast)}} замість ${{fmtEurVal(pdPrev)}}, і ці гроші йдуть із суми, з якої Bolt бере комісію.`);
     if (cpLast < 0) s.push('Зараз цей партнер приносить збиток, а не прибуток.');
     if (lowVolume) s.push('Але замовлень тут дуже мало, тож суми маленькі й стрибають від тижня до тижня.');
+    if (plainBoltPromoNote) s.push(plainBoltPromoNote);
     plainCp = s.join(' ');
   }} else {{
     const s = [hasCpGrowth
       ? `Тут добре: Bolt заробив із цього партнера ${{fmtEurVal(cpLast)}} замість ${{fmtEurVal(cpPrev)}} — на ${{fmtEurVal(Math.abs(cpDiff))}} більше.`
       : `Заробіток Bolt із цього партнера майже не змінився: ${{fmtEurVal(cpLast)}} проти ${{fmtEurVal(cpPrev)}}.`];
     if (cpLast < 0) s.push('Але це все ще збиток — партнер поки що не приносить прибутку.');
+    if (plainBoltPromoNote) s.push(plainBoltPromoNote);
     plainCp = s.join(' ');
   }}
 
@@ -2098,10 +2350,25 @@ function analyzeBrandDynamics(d) {{
     explainedPp += dpp;
     mReasons.push(`<b>${{label}}</b> ${{shPrev.toFixed(1)}}% → ${{shLast.toFixed(1)}}% від GMV (${{fmtDeltaPp(dpp)}}): забирає приблизно стільки ж п.п. маржі. ${{hint}}`);
   }};
-  addShare('Знижки партнера', pdShPrev, pdShLast, 'Кампанія стала дорожчою або охопила більшу частку чеків.');
-  addShare('Знижки Bolt', btShPrev, btShLast, 'Вища частка промо-замовлень у міксі.');
+  addShare('Знижки партнера', pdShPrev, pdShLast, 'Партнер доплачує за акцію зі свого боку, і це зменшує суму, з якої Bolt бере комісію.');
   addShare('Refunds покупцям', drShPrev, drShLast, 'Компенсації за помилки в замовленнях і скарги.');
   addShare('Refunds курʼєрам', srShPrev, srShLast, 'Компенсації за очікування, скасування та довгі маршрути.');
+
+  // Промо-витрати Bolt у цю маржу не входять (CP їх не вираховує), тому вони
+  // не «зʼїдають» показані п.п. — показуємо їх окремо і з власною маржею.
+  const bpShPrev = shareOfGmv(bpPrev, gPrev), bpShLast = shareOfGmv(bpLast, gLast);
+  const mAfterPrev = (ciPrev != null && gPrev) ? ciPrev / gPrev * 100 : null;
+  const mAfterLast = (ciLast != null && gLast) ? ciLast / gLast * 100 : null;
+  const mAfterPp   = ppChange(mAfterPrev, mAfterLast);
+  const mAfterTxt  = (mAfterPrev != null && mAfterLast != null)
+    ? ` З їх урахуванням маржа ${{mAfterPrev.toFixed(1)}}% → ${{mAfterLast.toFixed(1)}}% (${{fmtDeltaPp(mAfterPp)}}).`
+    : '';
+  if (bpShPrev != null && bpShLast != null && bpShLast - bpShPrev >= 0.3)
+    mReasons.push(`<b>Промо-витрати Bolt</b> ${{bpShPrev.toFixed(1)}}% → ${{bpShLast.toFixed(1)}}% від GMV (${{fmtDeltaPp(bpShLast - bpShPrev)}}): у показаній вище CP L2 маржі вони не враховані, бо метрика CP вираховує знижки Bolt окремо. Але це реальні гроші платформи.${{mAfterTxt}}`);
+  else if (bpShPrev != null && bpShLast != null && bpShPrev - bpShLast >= 0.3)
+    mReasons.push(`<b>Промо-витрати Bolt</b> ${{bpShPrev.toFixed(1)}}% → ${{bpShLast.toFixed(1)}}% від GMV (${{fmtDeltaPp(bpShLast - bpShPrev)}}) — платформа витрачає на знижки менше, і це покращує реальну економіку.${{mAfterTxt}}`);
+  if (mLast != null && mLast > 0 && mAfterLast != null && mAfterLast < 0)
+    mReasons.push(`<b>Маржа з урахуванням промо Bolt негативна (${{mAfterLast.toFixed(1)}}%)</b> — на папері бренд рентабельний, але після знижок, які оплачує сам Bolt, кожне замовлення в мінусі.`);
 
   if (aovWow != null && aovWow < -3)
     mReasons.push(`<b>Середній чек</b> ${{fmtEurVal(aovPrev)}} → ${{fmtEurVal(aovLast)}} (${{fmtDeltaPct(aovWow)}}): фіксовані витрати на замовлення (доставка, платіжна комісія) майже не залежать від суми чека, тож на меншому чеку зʼїдають більший % маржі.`);
@@ -2113,7 +2380,7 @@ function analyzeBrandDynamics(d) {{
     mReasons.push(`<b>Late Delivery</b> ${{fmtDeltaPp(ltLast - ltPrev)}}: довші доставки — дорожча логістика і більше компенсацій за затримки.`);
 
   let mTitle = 'Чому просіла CP L2 Маржа (%)';
-  let mList  = 'Що зʼїло маржу:';
+  let mList  = 'Що впливало на маржу:';
   let mText;
   if (mPrev == null || mLast == null) {{
     mTitle = 'CP L2 Маржа (%)';
@@ -2153,10 +2420,13 @@ function analyzeBrandDynamics(d) {{
         : `на ${{what}} тепер іде ${{per100(shLast)}} зі 100 замість ${{per100(shPrev)}}`);
     }};
     addEater('знижки від партнера', pdShPrev, pdShLast);
-    addEater('знижки Bolt', btShPrev, btShLast);
     addEater('повернення грошей покупцям', drShPrev, drShLast);
     addEater('компенсації курʼєрам', srShPrev, srShLast);
     if (eaters.length) s.push(`Куди пішли ці гроші: ${{eaters.join('; ')}}.`);
+    if (mAfterLast != null && bpShLast != null && bpShLast >= 0.5)
+      s.push(mLast > 0 && mAfterLast < 0
+        ? `І ще одне, що не видно в цій цифрі: знижки, які оплачує сам Bolt, тут не враховані. Якщо їх додати, то зі 100 € замовлень платформа не заробляє ${{per100(mLast)}}, а втрачає ${{per100(Math.abs(mAfterLast))}}.`
+        : `Зверніть увагу: знижки, які оплачує сам Bolt, у цій цифрі не враховані. З ними зі 100 € замовлень лишається ${{per100(mAfterLast)}}.`);
     if (aovWow != null && aovWow < -3 && aovPrev != null && aovLast != null)
       s.push(`Ще одна причина — люди стали замовляти на менші суми (${{fmtEurVal(aovLast)}} замість ${{fmtEurVal(aovPrev)}}). Довезти замовлення коштує майже однаково, велике воно чи маленьке, тож із дрібних чеків прибутку лишається менше.`);
     if (!eaters.length && !(aovWow != null && aovWow < -3))
@@ -2204,6 +2474,7 @@ function analyzeBrandDynamics(d) {{
     plainOrders, ordersText,
     [{{ title: ordersListTitle, items: orderReasons }},
      {{ title: 'Розклад падіння GMV:', items: gmvReasons }},
+     {{ title: '💸 Реклама та знижки:', items: promoReasons }},
      {{ title: '🌍 Зовнішні фактори:', items: externalReasons }}]);
   html += card('💶', cpTitle,
     fmtEurDelta(cpDiff), cls(cpDiff, -cpMaterial, cpMaterial),
@@ -2215,7 +2486,20 @@ function analyzeBrandDynamics(d) {{
     plainMargin, mText, [{{ title: mList, items: mReasons }}]);
   html += `</div>`;
 
-  html += `<div class="dyn-analysis-hint">Головне в кожній картці написано простою мовою, а точні цифри сховані під «Детальні цифри та метрики». Аналіз побудовано автоматично з WoW-зміни метрик (Availability, Acceptance, Failed/Bad/Late, знижки, refunds, покази та конверсія по локаціях, середній чек) і порівняння з рештою ринку міста за той самий тиждень. Зовнішні фактори (погода, тривоги, сезон) — це підказки для перевірки, а не зафіксовані дані. Це гіпотези для розмови з партнером, не остаточний вердикт.</div>`;
+  html += `<div class="dyn-analysis-hint">`;
+  html += `Головне в кожній картці написано простою мовою, а точні цифри сховані під `;
+  html += `«Детальні цифри та метрики». Аналіз побудовано автоматично з WoW-зміни метрик `;
+  html += `(Availability, Acceptance, Failed/Bad/Late, покази та конверсія по локаціях, `;
+  html += `середній чек), з реклами та промо (Sponsored Listing, знижки партнера, `;
+  html += `промо-витрати Bolt, частка замовлень зі знижкою, refunds) і з порівняння з `;
+  html += `рештою ринку міста за той самий тиждень. `;
+  html += `<b>Важливо про CP:</b> метрика Contribution Profit не вираховує знижки, які `;
+  html += `оплачує сам Bolt, тому там, де це суттєво, окремо показано CP і маржу з їх `;
+  html += `урахуванням (метрика contribution profit without demand incentives — `;
+  html += `найближчий доступний аналог CPL2). `;
+  html += `Зовнішні фактори (погода, тривоги, сезон) — це підказки для перевірки, а не `;
+  html += `зафіксовані дані. Це гіпотези для розмови з партнером, не остаточний вердикт.`;
+  html += `</div>`;
   return {{ html, severity }};
 }}
 
@@ -2280,6 +2564,16 @@ function renderCharts() {{
     makeOrUpdate('chartBoltDiscount',    labels, d.bolt_discount_eur,    GREEN,     'Знижки Bolt, \u20ac',     false);
     makeOrUpdate('chartDemandRefunds',   labels, d.demand_refunds_eur,   RED,       'Refunds покупці, \u20ac', false);
     makeOrUpdate('chartSupplyRefunds',   labels, d.supply_refunds_eur,   PURPLE,    'Refunds кур\u2019єри, \u20ac', false);
+  }}
+
+  // Реклама та промо
+  if (d.sl_attr_orders && d.sl_attr_orders.length) {{
+    makeOrUpdate('chartSlOrders',   labels, d.sl_attr_orders,          INDIGO, 'Замовлення з реклами', false);
+    makeOrUpdate('chartSlGmv',      labels, d.sl_attr_gmv_eur,         TEAL,   'GMV з реклами, \u20ac', false);
+    makeOrUpdate('chartSlSpend',    labels, d.sl_spend_eur,            AMBER,  'Рекламний бюджет, \u20ac', false);
+    makeOrUpdate('chartBoltPromo',  labels, d.bolt_promo_spend_eur,    GREEN,  'Промо-витрати Bolt, \u20ac', false);
+    makeOrUpdate('chartCpAfterIncentives', labels, d.cp_after_incentives_eur, PURPLE, 'CP після промо Bolt, \u20ac', false);
+    makeOrUpdate('chartCampaignOrders',    labels, d.campaign_orders,   ORANGE, 'Замовлення зі знижкою', false);
   }}
 
   // ── Per-location conversion section ──────────────────────────────────────
@@ -2420,7 +2714,10 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
                 "bad_order_rate_pct", "acceptance_rate_pct", "late_delivery_rate_pct",
                 "availability_pct",
                 "partner_discount_eur", "bolt_discount_eur",
-                "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur"]:
+                "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur",
+                "bolt_promo_spend_eur", "partner_promo_spend_eur",
+                "campaign_discount_eur", "campaign_orders", "cp_after_incentives_eur",
+                "sl_hours", "sl_attr_orders", "sl_attr_gmv_eur", "sl_spend_eur"]:
         if col in df_trends.columns:
             df_trends[col] = pd.to_numeric(df_trends[col], errors="coerce")
 
@@ -2460,6 +2757,15 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
             "demand_refunds_eur":      gcol("demand_refunds_eur"),
             "supply_refunds_eur":      gcol("supply_refunds_eur"),
             "total_refunds_eur":       gcol("total_refunds_eur"),
+            "bolt_promo_spend_eur":    gcol("bolt_promo_spend_eur"),
+            "partner_promo_spend_eur": gcol("partner_promo_spend_eur"),
+            "campaign_discount_eur":   gcol("campaign_discount_eur"),
+            "campaign_orders":         gcol("campaign_orders"),
+            "cp_after_incentives_eur": gcol("cp_after_incentives_eur"),
+            "sl_hours":                gcol("sl_hours"),
+            "sl_attr_orders":          gcol("sl_attr_orders"),
+            "sl_attr_gmv_eur":         gcol("sl_attr_gmv_eur"),
+            "sl_spend_eur":            gcol("sl_spend_eur"),
             "locations": {},  # filled below
         }
 
@@ -2472,7 +2778,9 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
                     "bad_order_rate_pct", "failed_order_rate_pct",
                     "acceptance_rate_pct", "availability_pct",
                     "partner_discount_eur", "bolt_discount_eur",
-                    "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur"]:
+                    "demand_refunds_eur", "supply_refunds_eur", "total_refunds_eur",
+                    "bolt_promo_spend_eur", "campaign_orders",
+                    "sl_hours", "sl_attr_orders", "sl_attr_gmv_eur", "sl_spend_eur"]:
             if col in df_loc.columns:
                 df_loc[col] = pd.to_numeric(df_loc[col], errors="coerce")
 
@@ -2508,6 +2816,12 @@ def build_trends_json(df_trends: pd.DataFrame, df_loc: pd.DataFrame,
                 "demand_refunds":     lc("demand_refunds_eur"),
                 "supply_refunds":     lc("supply_refunds_eur"),
                 "total_refunds":      lc("total_refunds_eur"),
+                "bolt_promo_spend":   lc("bolt_promo_spend_eur"),
+                "campaign_orders":    lc("campaign_orders"),
+                "sl_hours":           lc("sl_hours"),
+                "sl_attr_orders":     lc("sl_attr_orders"),
+                "sl_attr_gmv":        lc("sl_attr_gmv_eur"),
+                "sl_spend":           lc("sl_spend_eur"),
             }
 
             if brand_key in data:
@@ -2827,6 +3141,70 @@ def build_overview_section(df_portfolio: pd.DataFrame) -> str:
         prev_bad     = float(prev_row.get("bad_rate",    0) or 0)
         prev_accept  = float(prev_row.get("acceptance",  0) or 0)
 
+        def num(row, key):
+            try:
+                v = float(row.get(key))
+                return None if math.isnan(v) else v
+            except (TypeError, ValueError):
+                return None
+
+        pd_last, pd_prev = num(last_row, "partner_discount_eur"), num(prev_row, "partner_discount_eur")
+        bp_last, bp_prev = num(last_row, "bolt_promo_spend_eur"), num(prev_row, "bolt_promo_spend_eur")
+        ci_last, ci_prev = num(last_row, "cp_after_incentives_eur"), num(prev_row, "cp_after_incentives_eur")
+        slo_last, slo_prev = num(last_row, "sl_attr_orders"), num(prev_row, "sl_attr_orders")
+        slg_last, slg_prev = num(last_row, "sl_attr_gmv_eur"), num(prev_row, "sl_attr_gmv_eur")
+        slh_last, slh_prev = num(last_row, "sl_hours"), num(prev_row, "sl_hours")
+        gmv_last, gmv_prev = num(last_row, "gmv"), num(prev_row, "gmv")
+
+        # По всьому портфелю реклама не може зникнути одночасно — якщо годин 0,
+        # це прогалина в даних, а не реальна зупинка, тож про SL не пишемо.
+        sl_reliable = bool(slh_last and slh_last > 0) and bool(slh_prev and slh_prev > 0)
+        material = max(50.0, (gmv_prev or 0) * 0.002)
+
+        def promo_lines() -> list:
+            out = []
+            if pd_last is not None and pd_prev is not None:
+                diff = pd_last - pd_prev
+                if diff < -material:
+                    out.append(
+                        f"Партнери згорнули власні знижки: {fmt_eur(pd_prev)} → {fmt_eur(pd_last)} "
+                        f"({fmt_eur(diff)}) — разом з акціями зникають і промо-замовлення"
+                    )
+                elif diff > material:
+                    out.append(
+                        f"Партнери збільшили власні знижки: {fmt_eur(pd_prev)} → {fmt_eur(pd_last)} "
+                        f"({fmt_eur(diff)}) — частина обороту куплена акціями"
+                    )
+            if bp_last is not None and bp_prev is not None:
+                diff = bp_last - bp_prev
+                if diff < -material:
+                    out.append(
+                        f"Bolt зменшив промо-витрати: {fmt_eur(bp_prev)} → {fmt_eur(bp_last)} "
+                        f"({fmt_eur(diff)}) — попит, який підігрівали знижки платформи, не прийшов"
+                    )
+                elif diff > material:
+                    out.append(
+                        f"Bolt збільшив промо-витрати: {fmt_eur(bp_prev)} → {fmt_eur(bp_last)} "
+                        f"({fmt_eur(diff)}) — оцінюйте тиждень з поправкою на це"
+                    )
+            if sl_reliable and slo_last is not None and slo_prev is not None:
+                diff = slo_last - slo_prev
+                if diff < -0.05 * max(slo_prev, 1) and abs(diff) >= 5:
+                    gmv_bit = (
+                        f", а привезений нею GMV {fmt_eur(slg_prev)} → {fmt_eur(slg_last)}"
+                        if slg_last is not None and slg_prev is not None else ""
+                    )
+                    out.append(
+                        f"Sponsored Listing привів менше замовлень: {int(slo_prev)} → {int(slo_last)}"
+                        f"{gmv_bit} — частина партнерів скоротила або зупинила рекламу"
+                    )
+                elif diff > 0.05 * max(slo_prev, 1) and abs(diff) >= 5:
+                    out.append(
+                        f"Sponsored Listing, навпаки, привів більше замовлень: "
+                        f"{int(slo_prev)} → {int(slo_last)} — реклама працювала на плюс"
+                    )
+            return out
+
         if metric == "gmv":
             # Check if orders also dropped
             o_wow = wow(last_row["orders"], prev_row["orders"])
@@ -2838,6 +3216,7 @@ def build_overview_section(df_portfolio: pd.DataFrame) -> str:
                 lines.append(f"Висока частка поганих замовлень ({bad:.1f}%) — збільшились витрати на компенсації")
             if failed > 3 and failed > prev_failed * 1.1:
                 lines.append(f"Зросла кількість зафейлених замовлень ({failed:.1f}%) — прямі втрати GMV")
+            lines.extend(promo_lines())
 
         elif metric == "orders":
             if accept < 90 and accept < prev_accept - 2:
@@ -2846,6 +3225,7 @@ def build_overview_section(df_portfolio: pd.DataFrame) -> str:
                 lines.append(f"Зросла частка failed замовлень ({failed:.1f}%) — заклади не приймали замовлення")
             if late > 20:
                 lines.append(f"Висока частка запізнень ({late:.1f}%) — погіршення досвіду покупців знижує повторні замовлення")
+            lines.extend(promo_lines())
             if not lines:
                 lines.append("Можлива сезонність або зниження активності в окремих містах")
 
@@ -2860,6 +3240,19 @@ def build_overview_section(df_portfolio: pd.DataFrame) -> str:
             g_wow = wow(last_row["gmv"], prev_row["gmv"])
             if g_wow is not None and g_wow < -2:
                 lines.append(f"Загальний GMV знизився на {abs(g_wow):.1f}% — менший обсяг для покриття постійних витрат")
+            if pd_last is not None and pd_prev is not None and pd_last - pd_prev > material:
+                lines.append(
+                    f"Знижки партнерів зросли: {fmt_eur(pd_prev)} → {fmt_eur(pd_last)} — "
+                    f"це зменшує суму, з якої Bolt бере комісію"
+                )
+            # CP не вираховує знижки Bolt, тому показуємо їх окремо, а не як
+            # причину падіння самого CP
+            if ci_last is not None and ci_prev is not None and bp_last:
+                lines.append(
+                    f"Знижки, які оплачує Bolt ({fmt_eur(bp_last)} за тиждень), у показнику CP "
+                    f"не враховані. З ними CP становить {fmt_eur(ci_last)} проти "
+                    f"{fmt_eur(ci_prev)} тижнем раніше"
+                )
             if not lines:
                 lines.append("Зміна структури замовлень або умов комісії — рекомендується детальний аналіз по брендах")
 
