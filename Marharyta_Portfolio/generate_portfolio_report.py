@@ -2030,17 +2030,32 @@ function analyzeBrandDynamics(d) {{
   }} else if (slStarted) {{
     promoReasons.push(`<b>Sponsored Listing запустили цього тижня</b>${{sloLast > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}. Якщо замовлення все одно впали — падіння сталося попри рекламу, тобто причина деінде.`);
   }} else if (slUp) {{
-    promoReasons.push(`<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}%${{slOrdDiffText(sloPrev, sloLast)}} — реклама працювала на плюс.`);
+    // Більше показів само собою нічого не означає — дивимось на віддачу
+    promoReasons.push(sloLast > sloPrev
+      ? `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}%${{slOrdDiffText(sloPrev, sloLast)}} — реклама працювала на плюс.`
+      : `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}% за тривалістю показів, але замовлень з реклами стало <b>менше</b> (${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}}). Рекламний бюджет віддає гірше — варто перевірити ставки, зону й те, чи не з'явився сильніший конкурент у цій категорії.`);
+  }} else if (slWeeksOk && slPrevOn && slLastOn) {{
+    // Обсяг показів майже не змінився — тоді дивимось на віддачу реклами,
+    // бо «стабільно ранить» і «стабільно приводить замовлення» — різні речі
+    const ordWow = pctChange(sloPrev, sloLast);
+    const outDown = ordWow != null && ordWow <= -25 && (sloPrev - sloLast) >= 5;
+    const outUp   = ordWow != null && ordWow >= 25 && (sloLast - sloPrev) >= 5;
+    if (outDown)
+      promoReasons.push(`<b>Реклама ранить так само, але віддає помітно менше:</b> замовлень з Sponsored Listing ${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при майже незмінній тривалості показів. Схоже на зростання конкуренції в аукціоні або на те, що заклад гірше клікають — перевірте ставку, фото й ціни в меню.`);
+    else if (outUp)
+      promoReasons.push(`<b>Реклама віддає краще:</b> замовлень з Sponsored Listing ${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при тій самій тривалості показів.`);
+    else
+      promoReasons.push(`<b>Sponsored Listing працює стабільно</b>${{sloLast > 0 || sloPrev > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}} проти ${{Math.round(sloPrev)}} тижнем раніше` : ''}}. Різких змін у рекламі не було, тож ${{hasOrdersDrop || hasGmvDrop ? 'причину падіння варто шукати не тут' : 'динаміка тижня склалася не через рекламу'}}.`);
   }} else if (slWeeksOk && !slPrevOn && !slLastOn && (hasOrdersDrop || hasGmvDrop)) {{
     promoReasons.push(`<b>Sponsored Listing не використовується</b> — жодного рекламного показу ні цього тижня, ні попереднього. Це не причина падіння, але це найдоступніший інструмент, щоб повернути трафік.`);
-  }} else if (slWeekReliable(wLast)) {{
+  }} else if (slWeekReliable(wLast) && !slWeekReliable(wPrev)) {{
     // Порівняти тижні не можемо, але поточний стан реклами все одно корисний
     const cmp = ' Порівняти з попереднім тижнем не вийшло — там дані по Sponsored Listing відсутні по всьому портфелю.';
     if (slLastOn)
       promoReasons.push(`<b>Sponsored Listing зараз ранить</b>${{sloLast > 0 ? `: за тиждень реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}.${{cmp}}`);
     else if (hasOrdersDrop || hasGmvDrop)
       promoReasons.push(`<b>Sponsored Listing зараз не ранить</b> — цього тижня жодного рекламного показу.${{cmp}} Варто перевірити в порталі, чи партнер не зупинив рекламу.`);
-  }} else if (hasOrdersDrop || hasGmvDrop) {{
+  }} else if (!slWeekReliable(wLast) && (hasOrdersDrop || hasGmvDrop)) {{
     promoReasons.push(`<b>Дані Sponsored Listing за цей тиждень недоступні</b> (прогалина в даних по всьому портфелю) — перевірте статус реклами вручну в порталі.`);
   }}
 
