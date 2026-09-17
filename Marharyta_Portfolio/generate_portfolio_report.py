@@ -16,7 +16,9 @@ from datetime import date, datetime, timedelta
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 DATABRICKS_HOST = os.getenv("DATABRICKS_HOST", "https://bolt-incentives.cloud.databricks.com")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN", "")
-CLUSTER_ID = os.getenv("DATABRICKS_CLUSTER_ID", "0221-081903-9ag4bh69")
+# Старий кластер 0221-081903-9ag4bh69 («… all purpose [Legacy]») виводять з експлуатації:
+# права на його перезапуск забрали, тож після автотермінації звіти перестали збиратися.
+CLUSTER_ID = os.getenv("DATABRICKS_CLUSTER_ID", "0505-112942-d3yviznw")
 
 ACCOUNT_MANAGER = "Marharyta Zhytnyk"
 COUNTRY_CODE = "ua"
@@ -46,8 +48,83 @@ def _headers() -> dict:
     return {"Authorization": f"Bearer {DATABRICKS_TOKEN}", "Content-Type": "application/json"}
 
 
+def _request(method: str, url: str, attempts: int = 5, **kw):
+    """
+    Кластер спільний і автоскейлиться, тож під час ресайзу API 1.2 періодично
+    віддає 5xx на цілком валідні запити. Такі помилки перебіжні — повторюємо.
+    """
+    delay = 5
+    for i in range(1, attempts + 1):
+        try:
+            resp = requests.request(method, url, timeout=120, **kw)
+        except requests.exceptions.RequestException as exc:
+            if i == attempts:
+                raise
+            print(f"  request error ({exc.__class__.__name__}), retry {i}/{attempts - 1} in {delay}s...")
+        else:
+            if resp.status_code < 500 or i == attempts:
+                return resp
+            print(f"  got {resp.status_code} from Databricks, retry {i}/{attempts - 1} in {delay}s...")
+        time.sleep(delay)
+        delay = min(delay * 2, 60)
+
+
+_cluster_checked = False
+
+
+def _ensure_cluster_running(timeout: int = 900) -> None:
+    """
+    Legacy API 1.2 не вміє піднімати кластер: якщо той згорнувся по автотермінації,
+    contexts/create просто віддає 500 без пояснень. Тому стан кластера перевіряємо
+    й за потреби стартуємо самі — інакше воркфлоу падає при кожному запуску
+    поза робочими годинами.
+    """
+    global _cluster_checked
+    if _cluster_checked:
+        return
+
+    deadline = time.time() + timeout
+    start_requested = False
+    while time.time() < deadline:
+        r = _request(
+            "GET",
+            f"{DATABRICKS_HOST}/api/2.1/clusters/get",
+            headers=_headers(),
+            params={"cluster_id": CLUSTER_ID},
+        )
+        r.raise_for_status()
+        state = r.json().get("state")
+
+        if state == "RUNNING":
+            _cluster_checked = True
+            return
+
+        if state in ("TERMINATED", "ERROR") and not start_requested:
+            print(f"Cluster is {state} — starting it...")
+            s = _request(
+                "POST",
+                f"{DATABRICKS_HOST}/api/2.1/clusters/start",
+                headers=_headers(),
+                json={"cluster_id": CLUSTER_ID},
+            )
+            # 400 INVALID_STATE означає, що хтось уже стартував кластер — це не помилка
+            if s.status_code >= 400 and "INVALID_STATE" not in s.text:
+                s.raise_for_status()
+            start_requested = True
+        elif state in ("TERMINATING",):
+            # Треба дочекатися повного вимкнення, лише тоді старт буде прийнято
+            start_requested = False
+
+        print(f"  waiting for cluster (state={state})...")
+        time.sleep(15)
+
+    raise TimeoutError(f"Cluster {CLUSTER_ID} did not reach RUNNING within {timeout}s")
+
+
 def _create_context() -> str:
-    resp = requests.post(
+    _ensure_cluster_running()
+    resp = _request(
+        "POST",
         f"{DATABRICKS_HOST}/api/1.2/contexts/create",
         headers=_headers(),
         json={"language": "sql", "clusterId": CLUSTER_ID},
@@ -57,7 +134,8 @@ def _create_context() -> str:
 
 
 def _exec_sql(ctx: str, sql: str, timeout: int = 300) -> dict:
-    resp = requests.post(
+    resp = _request(
+        "POST",
         f"{DATABRICKS_HOST}/api/1.2/commands/execute",
         headers=_headers(),
         json={"language": "sql", "clusterId": CLUSTER_ID, "contextId": ctx, "command": sql},
@@ -67,7 +145,8 @@ def _exec_sql(ctx: str, sql: str, timeout: int = 300) -> dict:
 
     deadline = time.time() + timeout
     while time.time() < deadline:
-        r = requests.get(
+        r = _request(
+            "GET",
             f"{DATABRICKS_HOST}/api/1.2/commands/status",
             headers=_headers(),
             params={"clusterId": CLUSTER_ID, "contextId": ctx, "commandId": cmd_id},
@@ -219,8 +298,8 @@ def fetch_provider_summary() -> pd.DataFrame:
             / NULLIF(SUM(f.delivered_orders_count), 0) AS late_delivery_rate,
         SUM(f.provider_active_rate_value     * f.delivered_orders_count)
             / NULLIF(SUM(f.delivered_orders_count), 0) AS active_rate
-    FROM ng_delivery_spark.dim_provider_v2 p
-    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+    FROM main.ng_delivery.dim_provider_v2 p
+    INNER JOIN main.ng_delivery.fact_provider_weekly f
         ON p.provider_id = f.provider_id
     WHERE
         p.account_manager_name = '{ACCOUNT_MANAGER}'
@@ -276,8 +355,8 @@ def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
                 * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
             AS sl_attr_gmv_eur,
         COUNT(DISTINCT p.provider_id)                          AS active_locations
-    FROM ng_delivery_spark.dim_provider_v2 p
-    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+    FROM main.ng_delivery.dim_provider_v2 p
+    INNER JOIN main.ng_delivery.fact_provider_weekly f
         ON p.provider_id = f.provider_id
     WHERE
         p.account_manager_name = '{ACCOUNT_MANAGER}'
@@ -354,8 +433,8 @@ def fetch_weekly_trends(n_weeks: int = 12) -> pd.DataFrame:
                 * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
             AS sl_attr_gmv_eur,
         ROUND(SUM(COALESCE(f.total_portal_campaign_spend_provider_eur, 0)), 2) AS sl_spend_eur
-    FROM ng_delivery_spark.dim_provider_v2 p
-    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+    FROM main.ng_delivery.dim_provider_v2 p
+    INNER JOIN main.ng_delivery.fact_provider_weekly f
         ON p.provider_id = f.provider_id
     WHERE
         p.account_manager_name = '{ACCOUNT_MANAGER}'
@@ -438,8 +517,8 @@ def fetch_location_trends(n_weeks: int = 12) -> pd.DataFrame:
                 * COALESCE(f.sponsored_listing_attributed_gmv_share_weight, 0)), 2)
             AS sl_attr_gmv_eur,
         ROUND(SUM(COALESCE(f.total_portal_campaign_spend_provider_eur, 0)), 2) AS sl_spend_eur
-    FROM ng_delivery_spark.dim_provider_v2 p
-    INNER JOIN ng_delivery_spark.fact_provider_weekly f
+    FROM main.ng_delivery.dim_provider_v2 p
+    INNER JOIN main.ng_delivery.fact_provider_weekly f
         ON p.provider_id = f.provider_id
     WHERE
         p.account_manager_name = '{ACCOUNT_MANAGER}'
