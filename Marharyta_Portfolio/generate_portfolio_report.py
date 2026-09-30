@@ -72,7 +72,7 @@ def _request(method: str, url: str, attempts: int = 5, **kw):
 _cluster_checked = False
 
 
-def _ensure_cluster_running(timeout: int = 900) -> None:
+def _ensure_cluster_running(timeout: int = 900, force: bool = False) -> None:
     """
     Legacy API 1.2 не вміє піднімати кластер: якщо той згорнувся по автотермінації,
     contexts/create просто віддає 500 без пояснень. Тому стан кластера перевіряємо
@@ -80,6 +80,8 @@ def _ensure_cluster_running(timeout: int = 900) -> None:
     поза робочими годинами.
     """
     global _cluster_checked
+    if force:
+        _cluster_checked = False
     if _cluster_checked:
         return
 
@@ -133,7 +135,42 @@ def _create_context() -> str:
     return resp.json()["id"]
 
 
-def _exec_sql(ctx: str, sql: str, timeout: int = 300) -> dict:
+_context_id = None
+
+# Кластер спільний, тож його драйвер інколи прибиває чужим навантаженням
+# (DRIVER_STOPPED, exit code 137 — це OOM). Разом із драйвером помирає й контекст
+# виконання, тому такий запит треба повторювати вже з новим контекстом.
+_TRANSIENT_SQL_ERRORS = (
+    "DRIVER_STOPPED",
+    "Driver down",
+    "ContextNotFound",
+    "context is not valid",
+    "INVALID_STATE",
+)
+
+
+def _get_context(refresh: bool = False) -> str:
+    global _context_id
+    if refresh or _context_id is None:
+        _ensure_cluster_running(force=refresh)
+        _context_id = _create_context()
+    return _context_id
+
+
+def _exec_sql(sql: str, timeout: int = 300, attempts: int = 3) -> dict:
+    for i in range(1, attempts + 1):
+        try:
+            return _exec_sql_once(_get_context(), sql, timeout=timeout)
+        except RuntimeError as exc:
+            msg = str(exc)
+            if i == attempts or not any(m.lower() in msg.lower() for m in _TRANSIENT_SQL_ERRORS):
+                raise
+            print(f"  driver/context died ({msg[:90]}), retry {i}/{attempts - 1} with a fresh context...")
+            time.sleep(30)
+            _get_context(refresh=True)
+
+
+def _exec_sql_once(ctx: str, sql: str, timeout: int = 300) -> dict:
     resp = _request(
         "POST",
         f"{DATABRICKS_HOST}/api/1.2/commands/execute",
@@ -176,12 +213,11 @@ def _exec_sql_paginated(sql_template: str, timeout: int = 300, page_size: int = 
     Execute a SQL query with LIMIT/OFFSET pagination to bypass the 1000-row API limit.
     sql_template must contain {limit} and {offset} placeholders.
     """
-    ctx = _create_context()
     all_frames = []
     offset = 0
     while True:
         sql = sql_template.format(limit=page_size, offset=offset)
-        result = _exec_sql(ctx, sql, timeout=timeout)
+        result = _exec_sql(sql, timeout=timeout)
         df_page = _to_df(result)
         if df_page.empty:
             break
@@ -201,7 +237,6 @@ def fetch_data() -> pd.DataFrame:
     start_date, end_date = get_last_4_full_weeks()
     print(f"Fetching data for period: {start_date} to {end_date}")
 
-    ctx = _create_context()
 
     sql = f"""
     SELECT
@@ -250,7 +285,7 @@ def fetch_data() -> pd.DataFrame:
     """
 
     print("Running main data query...")
-    result = _exec_sql(ctx, sql, timeout=300)
+    result = _exec_sql(sql, timeout=300)
     df = _to_df(result)
     print(f"Fetched {len(df):,} rows")
     return df, start_date, end_date
@@ -259,7 +294,6 @@ def fetch_data() -> pd.DataFrame:
 def fetch_provider_summary() -> pd.DataFrame:
     """Fetch brand-level aggregated summary (4-week total), active providers only."""
     start_date, end_date = get_last_4_full_weeks()
-    ctx = _create_context()
 
     # Aggregate at brand + city level so each row = one brand in one city.
     # Rates are weighted by delivered_orders_count so multi-location brands
@@ -313,7 +347,7 @@ def fetch_provider_summary() -> pd.DataFrame:
     """
 
     print("Running brand-level summary query...")
-    result = _exec_sql(ctx, sql, timeout=300)
+    result = _exec_sql(sql, timeout=300)
     df = _to_df(result)
     print(f"Fetched {len(df):,} brand-city rows")
     return df
@@ -325,7 +359,6 @@ def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
     Returns only ~N rows — no pagination needed, used for the Overview tab.
     """
     start_date, end_date = get_last_n_full_weeks(n_weeks)
-    ctx = _create_context()
 
     sql = f"""
     SELECT
@@ -368,7 +401,7 @@ def fetch_portfolio_weekly(n_weeks: int = 12) -> pd.DataFrame:
     """
 
     print(f"Running portfolio-weekly query ({n_weeks} weeks)...")
-    result = _exec_sql(ctx, sql, timeout=120)
+    result = _exec_sql(sql, timeout=120)
     df = _to_df(result)
     for col in ["delivered_orders", "failed_orders", "gmv_eur", "contribution_profit_eur",
                 "failed_order_rate_pct", "bad_order_rate_pct",
@@ -1852,6 +1885,17 @@ function slWeekReliable(week) {{
   return week == null ? false : SL_WEEKS_CACHE[week] === true;
 }}
 
+// Якщо за попередній тиждень дані SL зіпсовані, беремо за базу порівняння
+// останній тиждень, де вони є. Інакше аналіз реклами просто зникав би з звіту
+// щоразу, коли в пайплайні трапляється прогалина.
+function slBaselineWeek(weeks) {{
+  for (let i = (weeks || []).length - 2; i >= 0; i--) {{
+    if (slWeekReliable(weeks[i]))
+      return {{ week: weeks[i], idx: i, isPrev: i === weeks.length - 2 }};
+  }}
+  return null;
+}}
+
 // ── Ринковий контекст: сума по інших брендах міста за той самий тиждень ──────
 // Дає змогу відрізнити зовнішній фактор (просів увесь ринок) від проблеми
 // конкретного партнера (ринок стабільний, а він падає).
@@ -2006,25 +2050,47 @@ function analyzeBrandDynamics(d) {{
   // Дані по SL місцями мають прогалини, тому спираємось на кілька сигналів
   // одразу (години, атрибутовані замовлення, витрати) і тільки на тижнях,
   // де по портфелю взагалі є SL-активність.
-  const slWeeksOk = slWeekReliable(wLast) && slWeekReliable(wPrev);
+  const slBase = slWeekReliable(wLast) ? slBaselineWeek(weeks) : null;
+  const slWeeksOk = slBase != null;
+  // Коли база зсунута, читаємо значення саме з того тижня, а не «попереднього»
+  const slShifted = slWeeksOk && !slBase.isPrev;
+  const atWeek = (arr, i) => {{
+    const v = (arr || [])[i];
+    return (v == null || Number.isNaN(v)) ? null : v;
+  }};
+  const slhBase = slShifted ? atWeek(d.sl_hours, slBase.idx) : slhPrev;
+  const sloBase = slShifted ? atWeek(d.sl_attr_orders, slBase.idx) : sloPrev;
+  const slgBase = slShifted ? atWeek(d.sl_attr_gmv_eur, slBase.idx) : slgPrev;
+  const slsBase = slShifted ? atWeek(d.sl_spend_eur, slBase.idx) : slsPrev;
+  // Читача треба попередити, що порівнюємо не з сусіднім тижнем
+  const slBaseNote = slShifted
+    ? ` Порівняння з тижнем ${{fmtWeek(slBase.week)}}: за ${{fmtWeek(wPrev)}} дані Sponsored Listing зіпсовані по всьому портфелю (нулі замість годин і замовлень).`
+    : '';
+
   const slOn = (h, o, s) => (h > 0) || (o > 0) || (s > 0);
-  const slPrevOn = slOn(slhPrev || 0, sloPrev || 0, slsPrev || 0);
+  const slPrevOn = slOn(slhBase || 0, sloBase || 0, slsBase || 0);
   const slLastOn = slOn(slhLast || 0, sloLast || 0, slsLast || 0);
-  const slHoursWow = (slhPrev > 0 && slhLast != null) ? (slhLast / slhPrev - 1) * 100 : null;
+  const slHoursWow = (slhBase > 0 && slhLast != null) ? (slhLast / slhBase - 1) * 100 : null;
 
   const slStopped = slWeeksOk && slPrevOn && !slLastOn;
   const slStarted = slWeeksOk && !slPrevOn && slLastOn;
   const slCut     = slWeeksOk && slPrevOn && slLastOn && slHoursWow != null && slHoursWow <= -30;
   const slUp      = slWeeksOk && slPrevOn && slLastOn && slHoursWow != null && slHoursWow >= 30;
-  // Частка замовлень, яку реклама приводила минулого тижня
-  const slSharePrev = (sloPrev > 0 && oPrev) ? sloPrev / oPrev * 100 : null;
+  // Частка замовлень, яку реклама приводила на базовому тижні
+  const slSharePrev = (sloBase > 0 && oPrev) ? sloBase / oPrev * 100 : null;
 
   // Які саме локації зупинили рекламу — це те, що AM піде перевіряти першим
   const slLocStopped = [];
   if (slWeeksOk) {{
     Object.values(locs).forEach(loc => {{
-      const [hp, hl] = seriesLastTwo(loc.sl_hours);
-      const [op, ol] = seriesLastTwo(loc.sl_attr_orders);
+      // Локації мають власну сітку тижнів, тому шукаємо ті самі тижні за назвою
+      const lw = loc.weeks || [];
+      const bi = lw.indexOf(slBase.week), li = lw.indexOf(wLast);
+      const hp = bi >= 0 ? atWeek(loc.sl_hours, bi) : null;
+      const op = bi >= 0 ? atWeek(loc.sl_attr_orders, bi) : null;
+      const hl = li >= 0 ? atWeek(loc.sl_hours, li) : null;
+      const ol = li >= 0 ? atWeek(loc.sl_attr_orders, li) : null;
+      if (bi < 0 || li < 0) return;
       if (((hp || 0) > 0 || (op || 0) > 0) && (hl || 0) === 0 && (ol || 0) === 0)
         slLocStopped.push(loc.name);
     }});
@@ -2099,37 +2165,38 @@ function analyzeBrandDynamics(d) {{
   // Промо і Sponsored Listing напряму керують трафіком: згорнули акцію чи
   // рекламу — замовлення падають, і це не «проблема закладу», а рішення.
   const promoReasons = [];
+  const slLineAt = promoReasons.length;
   if (slStopped) {{
-    const lost = sloPrev > 0
-      ? ` Тижнем раніше реклама привела ${{pluralUa(Math.round(sloPrev), 'замовлення', 'замовлення', 'замовлень')}}${{slgPrev > 0 ? ` на ${{fmtEurVal(slgPrev)}}` : ''}}${{slSharePrev != null ? ` — це ${{slSharePrev.toFixed(0)}}% усіх замовлень бренду` : ''}}, цього тижня — жодного.`
+    const lost = sloBase > 0
+      ? ` ${{slShifted ? 'На базовому тижні' : 'Тижнем раніше'}} реклама привела ${{pluralUa(Math.round(sloBase), 'замовлення', 'замовлення', 'замовлень')}}${{slgBase > 0 ? ` на ${{fmtEurVal(slgBase)}}` : ''}}${{slSharePrev != null ? ` — це ${{slSharePrev.toFixed(0)}}% усіх замовлень бренду` : ''}}, цього тижня — жодного.`
       : '';
     promoReasons.push(`<b>Sponsored Listing припинив ранити.</b>${{lost}} Без рекламних показів заклад втрачає видимість у пошуку й на головній, тобто вхідний трафік падає одразу.${{slLocStopped.length ? ` Зупинили: ${{slLocStopped.slice(0, 3).join(', ')}}${{slLocStopped.length > 3 ? ` та ще ${{pluralUa(slLocStopped.length - 3, 'локація', 'локації', 'локацій')}}` : ''}}.` : ''}}`);
   }} else if (slCut) {{
-    promoReasons.push(`<b>Sponsored Listing скоротили</b> на ${{Math.abs(slHoursWow).toFixed(0)}}% за тривалістю показів${{slOrdDiffText(sloPrev, sloLast)}}. Менше рекламних показів — менше вхідного трафіку.`);
+    promoReasons.push(`<b>Sponsored Listing скоротили</b> на ${{Math.abs(slHoursWow).toFixed(0)}}% за тривалістю показів${{slOrdDiffText(sloBase, sloLast)}}. Менше рекламних показів — менше вхідного трафіку.`);
   }} else if (slStarted) {{
     promoReasons.push(`<b>Sponsored Listing запустили цього тижня</b>${{sloLast > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}. Якщо замовлення все одно впали — падіння сталося попри рекламу, тобто причина деінде.`);
   }} else if (slUp) {{
     // Більше показів само собою нічого не означає — дивимось на віддачу
-    promoReasons.push(sloLast > sloPrev
-      ? `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}%${{slOrdDiffText(sloPrev, sloLast)}} — реклама працювала на плюс.`
-      : `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}% за тривалістю показів, але замовлень з реклами стало <b>менше</b> (${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}}). Рекламний бюджет віддає гірше — варто перевірити ставки, зону й те, чи не з'явився сильніший конкурент у цій категорії.`);
+    promoReasons.push(sloLast > sloBase
+      ? `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}%${{slOrdDiffText(sloBase, sloLast)}} — реклама працювала на плюс.`
+      : `<b>Sponsored Listing розширили</b> на ${{slHoursWow.toFixed(0)}}% за тривалістю показів, але замовлень з реклами стало <b>менше</b> (${{Math.round(sloBase)}} → ${{Math.round(sloLast)}}). Рекламний бюджет віддає гірше — варто перевірити ставки, зону й те, чи не з'явився сильніший конкурент у цій категорії.`);
   }} else if (slWeeksOk && slPrevOn && slLastOn) {{
     // Обсяг показів майже не змінився — тоді дивимось на віддачу реклами,
     // бо «стабільно ранить» і «стабільно приводить замовлення» — різні речі
-    const ordWow = pctChange(sloPrev, sloLast);
-    const outDown = ordWow != null && ordWow <= -25 && (sloPrev - sloLast) >= 5;
-    const outUp   = ordWow != null && ordWow >= 25 && (sloLast - sloPrev) >= 5;
+    const ordWow = pctChange(sloBase, sloLast);
+    const outDown = ordWow != null && ordWow <= -25 && (sloBase - sloLast) >= 5;
+    const outUp   = ordWow != null && ordWow >= 25 && (sloLast - sloBase) >= 5;
     if (outDown)
-      promoReasons.push(`<b>Реклама ранить так само, але віддає помітно менше:</b> замовлень з Sponsored Listing ${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при майже незмінній тривалості показів. Схоже на зростання конкуренції в аукціоні або на те, що заклад гірше клікають — перевірте ставку, фото й ціни в меню.`);
+      promoReasons.push(`<b>Реклама ранить так само, але віддає помітно менше:</b> замовлень з Sponsored Listing ${{Math.round(sloBase)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при майже незмінній тривалості показів. Схоже на зростання конкуренції в аукціоні або на те, що заклад гірше клікають — перевірте ставку, фото й ціни в меню.`);
     else if (outUp)
-      promoReasons.push(`<b>Реклама віддає краще:</b> замовлень з Sponsored Listing ${{Math.round(sloPrev)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при тій самій тривалості показів.`);
+      promoReasons.push(`<b>Реклама віддає краще:</b> замовлень з Sponsored Listing ${{Math.round(sloBase)}} → ${{Math.round(sloLast)}} (${{fmtDeltaPct(ordWow)}}) при тій самій тривалості показів.`);
     else
-      promoReasons.push(`<b>Sponsored Listing працює стабільно</b>${{sloLast > 0 || sloPrev > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}} проти ${{Math.round(sloPrev)}} тижнем раніше` : ''}}. Різких змін у рекламі не було, тож ${{hasOrdersDrop || hasGmvDrop ? 'причину падіння варто шукати не тут' : 'динаміка тижня склалася не через рекламу'}}.`);
+      promoReasons.push(`<b>Sponsored Listing працює стабільно</b>${{sloLast > 0 || sloBase > 0 ? `: реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}} проти ${{Math.round(sloBase)}} ${{slShifted ? 'на базовому тижні' : 'тижнем раніше'}}` : ''}}. Різких змін у рекламі не було, тож ${{hasOrdersDrop || hasGmvDrop ? 'причину падіння варто шукати не тут' : 'динаміка тижня склалася не через рекламу'}}.`);
   }} else if (slWeeksOk && !slPrevOn && !slLastOn && (hasOrdersDrop || hasGmvDrop)) {{
-    promoReasons.push(`<b>Sponsored Listing не використовується</b> — жодного рекламного показу ні цього тижня, ні попереднього. Це не причина падіння, але це найдоступніший інструмент, щоб повернути трафік.`);
-  }} else if (slWeekReliable(wLast) && !slWeekReliable(wPrev)) {{
-    // Порівняти тижні не можемо, але поточний стан реклами все одно корисний
-    const cmp = ' Порівняти з попереднім тижнем не вийшло — там дані по Sponsored Listing відсутні по всьому портфелю.';
+    promoReasons.push(`<b>Sponsored Listing не використовується</b> — жодного рекламного показу ні цього тижня, ні на базовому тижні порівняння. Це не причина падіння, але це найдоступніший інструмент, щоб повернути трафік.`);
+  }} else if (slWeekReliable(wLast) && !slWeeksOk) {{
+    // Жодного придатного тижня для порівняння немає — лишається поточний стан
+    const cmp = ' Порівняти немає з чим: у всіх попередніх тижнях дані по Sponsored Listing відсутні по всьому портфелю.';
     if (slLastOn)
       promoReasons.push(`<b>Sponsored Listing зараз ранить</b>${{sloLast > 0 ? `: за тиждень реклама привела ${{pluralUa(Math.round(sloLast), 'замовлення', 'замовлення', 'замовлень')}}${{slgLast > 0 ? ` на ${{fmtEurVal(slgLast)}}` : ''}}` : ''}}.${{cmp}}`);
     else if (hasOrdersDrop || hasGmvDrop)
@@ -2137,6 +2204,13 @@ function analyzeBrandDynamics(d) {{
   }} else if (!slWeekReliable(wLast) && (hasOrdersDrop || hasGmvDrop)) {{
     promoReasons.push(`<b>Дані Sponsored Listing за цей тиждень недоступні</b> (прогалина в даних по всьому портфелю) — перевірте статус реклами вручну в порталі.`);
   }}
+
+  // База порівняння зсунута — це треба сказати прямо, інакше цифри виглядають
+  // як тиждень-до-тижня, хоча насправді це не так. Примітка має сенс лише якщо
+  // блок Sponsored Listing справді щось написав, інакше вона причепиться до
+  // рядка про знижки, який порівнює звичайні сусідні тижні.
+  if (slBaseNote && promoReasons.length > slLineAt)
+    promoReasons[slLineAt] += slBaseNote;
 
   if (partnerCutPromo)
     promoReasons.push(`<b>Партнер згорнув свої знижки:</b> ${{fmtEurVal(pdPrev)}} → ${{fmtEurVal(pdLast)}} (${{fmtEurDelta(pdDiff)}}). Промо-замовлення зникають разом з акцією, тож частина падіння — це не втрата інтересу до закладу, а просто закінчена кампанія.`);
@@ -2205,8 +2279,8 @@ function analyzeBrandDynamics(d) {{
   // Реклама і знижки — часто найсильніша причина, тож даємо їм високу вагу
   if (slStopped)
     addPlain(slSharePrev != null ? Math.max(12, slSharePrev * 2) : 12,
-      sloPrev > 0
-        ? `партнер вимкнув платну рекламу в застосунку (Sponsored Listing). Минулого тижня саме реклама привела ${{pluralUa(Math.round(sloPrev), 'замовлення', 'замовлення', 'замовлень')}}, а цього — жодного, бо заклад просто перестали показувати на видних місцях`
+      sloBase > 0
+        ? `партнер вимкнув платну рекламу в застосунку (Sponsored Listing). ${{slShifted ? `На тижні ${{fmtWeek(slBase.week)}}` : 'Минулого тижня'}} саме реклама привела ${{pluralUa(Math.round(sloBase), 'замовлення', 'замовлення', 'замовлень')}}, а цього — жодного, бо заклад просто перестали показувати на видних місцях`
         : 'партнер вимкнув платну рекламу в застосунку (Sponsored Listing), тож заклад перестали показувати на видних місцях і його стало важче знайти');
   else if (slCut)
     addPlain(10, 'партнер урізав платну рекламу в застосунку, тож заклад стали показувати рідше');
@@ -3627,23 +3701,24 @@ def main():
         print(f"ERROR fetching summary data: {exc}")
         sys.exit(1)
 
-    try:
-        df_trends = fetch_weekly_trends(n_weeks=12)
-    except Exception as exc:
-        print(f"WARNING: Could not fetch weekly trends: {exc}")
-        df_trends = pd.DataFrame()
+    # Раніше ці помилки лише друкували WARNING і йшли далі з порожнім DataFrame.
+    # Це давало або незрозуміле падіння нижче (KeyError на brand_name), або —
+    # що гірше — звіт без вкладки «Динаміка», який тихо перезаписував справний.
+    # Краще впасти явно й залишити попередню версію звіту на місці.
+    def fetch_required(label: str, fn):
+        try:
+            frame = fn()
+        except Exception as exc:
+            print(f"ERROR: не вдалося отримати {label}: {exc}")
+            sys.exit(1)
+        if frame is None or frame.empty:
+            print(f"ERROR: {label} — запит повернув порожній результат")
+            sys.exit(1)
+        return frame
 
-    try:
-        df_loc = fetch_location_trends(n_weeks=12)
-    except Exception as exc:
-        print(f"WARNING: Could not fetch location trends: {exc}")
-        df_loc = pd.DataFrame()
-
-    try:
-        df_portfolio = fetch_portfolio_weekly(n_weeks=12)
-    except Exception as exc:
-        print(f"WARNING: Could not fetch portfolio weekly data: {exc}")
-        df_portfolio = pd.DataFrame()
+    df_trends = fetch_required("тижневі тренди", lambda: fetch_weekly_trends(n_weeks=12))
+    df_loc = fetch_required("тренди по локаціях", lambda: fetch_location_trends(n_weeks=12))
+    df_portfolio = fetch_required("тижневу агрегацію портфеля", lambda: fetch_portfolio_weekly(n_weeks=12))
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     out_path = os.path.join(base_dir, OUTPUT_FILE)
